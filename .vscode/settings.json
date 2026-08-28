@@ -1,0 +1,56 @@
+{
+  // ---------- General ----------
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.formatOnSave": true,
+  "editor.rulers": [100],
+
+  // ---------- Java / Spring Boot ----------
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.format.settings.profile": "GoogleStyle",
+  "java.sources.organizeImports.starThreshold": 99,
+  "java.sources.organizeImports.staticStarThreshold": 99,
+  // El backend es un modulo dentro del repo, no la raiz.
+  "java.import.maven.enabled": true,
+  "spring.initializr.defaultLanguage": "Java",
+  "spring.initializr.defaultJavaVersion": "21",
+
+  // ---------- Frontend ----------
+  "[typescript]":      { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascript]":      { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]":            { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "relative",
+
+  // ---------- SQL ----------
+  // Las migraciones Flyway son inmutables una vez aplicadas: no se reformatean
+  // solas, porque cambiar un byte invalida el checksum y Flyway aborta.
+  "[sql]": { "editor.formatOnSave": false },
+
+  // ---------- Busqueda ----------
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/dist": true,
+    "**/storage": true
+  },
+  "files.watcherExclude": {
+    "**/target/**": true,
+    "**/node_modules/**": true
+  },
+
+  // ---------- Conexion a PostgreSQL (extension ckolkman.vscode-postgres) ----------
+  // Sin contrasena aqui: la pide al conectar. Nunca se guardan credenciales.
+  "pgsql.connections": [
+    {
+      "label": "SEA local (docker)",
+      "host": "localhost",
+      "port": 5433,
+      "database": "sea",
+      "user": "sea_app"
+    }
+  ]
+}

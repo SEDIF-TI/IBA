@@ -1,0 +1,51 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Arranca el backend desde VS Code (F5) o desde el Spring Boot Dashboard.
+      // Requiere la BD levantada:
+      //   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d db
+      "type": "java",
+      "name": "SEA Backend (local)",
+      "request": "launch",
+      "mainClass": "mx.gob.sedif.sea.SeaApplication",
+      "projectName": "sea",
+      "cwd": "${workspaceFolder}/backend",
+      // Lee las variables del .env de la raiz: mismos valores que usa Docker,
+      // asi no hay que mantener dos copias de la configuracion.
+      "envFile": "${workspaceFolder}/.env",
+      // El datasource se arma solo con POSTGRES_* del .env: fuera de Docker
+      // apunta a localhost:5433, que es el puerto publicado por el compose.
+      "env": { "SPRING_PROFILES_ACTIVE": "dev" },
+      "console": "internalConsole"
+    },
+    {
+      // Igual que el anterior, pero con recarga en caliente de clases.
+      "type": "java",
+      "name": "SEA Backend (debug con recarga)",
+      "request": "launch",
+      "mainClass": "mx.gob.sedif.sea.SeaApplication",
+      "projectName": "sea",
+      "cwd": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/.env",
+      "env": { "SPRING_PROFILES_ACTIVE": "dev" },
+      "vmArgs": "-XX:+AllowEnhancedClassRedefinition",
+      "console": "internalConsole"
+    },
+    {
+      // Depura el frontend en Chrome contra el servidor de Vite.
+      "type": "chrome",
+      "name": "SEA Frontend (Vite)",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src"
+    }
+  ],
+  "compounds": [
+    {
+      // Levanta backend y frontend juntos.
+      "name": "SEA completo (backend + frontend)",
+      "configurations": ["SEA Backend (local)", "SEA Frontend (Vite)"]
+    }
+  ]
+}

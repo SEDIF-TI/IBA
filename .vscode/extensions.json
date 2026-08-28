@@ -1,0 +1,28 @@
+{
+  // Extensiones recomendadas para este proyecto. VS Code las sugiere al abrirlo.
+  "recommendations": [
+    // --- Backend: Java 21 + Spring Boot ---
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack",
+    "vmware.vscode-spring-boot",
+    "vscjava.vscode-spring-boot-dashboard",
+    "vscjava.vscode-maven",
+    "vscjava.vscode-java-test",
+    "vscjava.vscode-java-debug",
+
+    // --- Frontend: React + Vite + TypeScript ---
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "rodrigovallades.es7-react-js-snippets",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+
+    // --- Base de datos: para consultar PostgreSQL sin salir del editor ---
+    "ckolkman.vscode-postgres",
+
+    // --- Infraestructura y utilidades ---
+    "ms-azuretools.vscode-docker",
+    "usernamehw.errorlens",
+    "eamodio.gitlens"
+  ]
+}

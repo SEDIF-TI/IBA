@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "SEA: levantar BD (docker)",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.local.yml up -d db",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "SEA: levantar todo (docker)",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.local.yml up --build",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "SEA: detener todo",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.local.yml down",
+      "problemMatcher": []
+    },
+    {
+      "label": "SEA: ver bitacora del backend",
+      "type": "shell",
+      "command": "docker compose logs -f backend",
+      "problemMatcher": []
+    },
+    {
+      "label": "SEA: psql (consola de la BD)",
+      "type": "shell",
+      "command": "docker exec -it sea-db psql -U sea_app -d sea",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "SEA: estado de las migraciones Flyway",
+      "type": "shell",
+      "command": "docker exec sea-db psql -U sea_app -d sea -c 'select version, description, success, installed_on from flyway_schema_history order by installed_rank;'",
+      "problemMatcher": []
+    },
+    {
+      "label": "SEA: recrear BD desde cero",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.local.yml down -v && docker compose -f docker-compose.yml -f docker-compose.local.yml up -d db",
+      "problemMatcher": [],
+      "detail": "BORRA el volumen de la BD y vuelve a aplicar todas las migraciones."
+    },
+    {
+      "label": "SEA: compilar backend",
+      "type": "shell",
+      "command": "./mvnw -B clean package",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "build",
+      "problemMatcher": ["$maven"]
+    },
+    {
+      "label": "SEA: pruebas del backend",
+      "type": "shell",
+      "command": "./mvnw -B test",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "test",
+      "problemMatcher": ["$maven"]
+    }
+  ]
+}
