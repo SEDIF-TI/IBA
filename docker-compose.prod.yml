@@ -1,0 +1,38 @@
+# =============================================================================
+# Override para SERVIDOR.
+# No publica puertos: el acceso entra por el reverse proxy (NPM), que vive en
+# su propia red externa y enruta por nombre de servicio.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# =============================================================================
+
+services:
+
+  db:
+    # Sin puertos publicados: la BD solo es alcanzable desde la red interna.
+    networks:
+      - sea_interna
+
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # Detras del proxy, sin esto la IP que ve el rate limiting es la del
+      # proxy y no la del cliente: todos compartirian el mismo bucket.
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    networks:
+      - sea_interna
+      - proxy
+
+  frontend:
+    build:
+      args:
+        # En prod el frontend y el backend cuelgan del mismo dominio:
+        # el proxy enruta /api al backend. Ruta relativa, sin host.
+        VITE_API_URL: /api
+    networks:
+      - sea_interna
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-npm_default}

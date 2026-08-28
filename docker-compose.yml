@@ -1,0 +1,94 @@
+# =============================================================================
+# SEA - Definicion BASE de los servicios.
+# No publica puertos: eso depende del entorno.
+#   Local:  docker compose -f docker-compose.yml -f docker-compose.local.yml up
+#   Prod:   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# =============================================================================
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: sea-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Coteja acentos y enie correctamente en busquedas por apellido.
+      LANG: es_MX.utf8
+    volumes:
+      - sea_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - sea_interna
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sea-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # El host es el nombre del servicio en la red interna, no localhost.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
+      APP_JWT_ACCESS_EXPIRATION: ${APP_JWT_ACCESS_EXPIRATION}
+      APP_JWT_REFRESH_EXPIRATION: ${APP_JWT_REFRESH_EXPIRATION}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_ADMIN_USUARIO: ${APP_ADMIN_USUARIO}
+      APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD}
+      APP_ADMIN_CORREO: ${APP_ADMIN_CORREO}
+      APP_STORAGE_PATH: ${APP_STORAGE_PATH}
+      APP_STORAGE_MAX_FILE_MB: ${APP_STORAGE_MAX_FILE_MB}
+      APP_MAIL_ENABLED: ${APP_MAIL_ENABLED}
+      APP_MAIL_HOST: ${APP_MAIL_HOST}
+      APP_MAIL_PORT: ${APP_MAIL_PORT}
+      APP_MAIL_USERNAME: ${APP_MAIL_USERNAME}
+      APP_MAIL_PASSWORD: ${APP_MAIL_PASSWORD}
+      APP_MAIL_FROM: ${APP_MAIL_FROM}
+    volumes:
+      # Documentos personales: volumen nombrado, FUERA del document root.
+      # Ningun servidor web tiene acceso a esta ruta.
+      - sea_storage:${APP_STORAGE_PATH}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - sea_interna
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Vite inyecta las VITE_* en tiempo de BUILD, no de ejecucion.
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: sea-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - sea_interna
+
+volumes:
+  sea_db_data:
+  sea_storage:
+
+networks:
+  sea_interna:
+    driver: bridge

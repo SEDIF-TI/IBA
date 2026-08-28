@@ -1,0 +1,23 @@
+# =============================================================================
+# Override para DESARROLLO LOCAL.
+# Unico proposito: publicar puertos en el host para poder entrar desde tu PC.
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+# =============================================================================
+
+services:
+
+  db:
+    ports:
+      # 5433 en el host por convencion del equipo: no choca con un
+      # PostgreSQL instalado localmente, que usa el 5432.
+      - "${POSTGRES_PORT_HOST:-5433}:5432"
+
+  backend:
+    ports:
+      - "${BACKEND_PORT_HOST:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+  frontend:
+    ports:
+      - "${FRONTEND_PORT_HOST:-80}:8080"

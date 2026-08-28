@@ -1,0 +1,35 @@
+# ---- Credenciales: NUNCA se commitean ----
+.env
+.env.local
+.env.*.local
+
+# ---- Backend (Maven / Java) ----
+backend/target/
+!backend/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+*.war
+hs_err_pid*
+
+# ---- Frontend (Node / Vite) ----
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Almacenamiento de documentos personales ----
+# Fuera del document root; jamas versionado.
+storage/
+uploads/
+
+# ---- IDE ----
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# ---- Sistema operativo ----
+.DS_Store
+Thumbs.db
