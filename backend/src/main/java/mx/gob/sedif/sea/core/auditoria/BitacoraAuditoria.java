@@ -77,6 +77,9 @@ public class BitacoraAuditoria {
     @Column(name = "j_valor_nuevo", columnDefinition = "jsonb")
     private String valorNuevo;
 
+    // PostgreSQL rechaza recibir texto plano en una columna inet: hay que
+    // indicarle explicitamente el tipo.
+    @JdbcTypeCode(SqlTypes.INET)
     @Column(name = "s_ip", columnDefinition = "inet")
     private String ip;
 

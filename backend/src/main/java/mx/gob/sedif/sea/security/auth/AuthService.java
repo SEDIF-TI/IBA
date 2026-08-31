@@ -145,12 +145,13 @@ public class AuthService {
         log.info("Contrasena cambiada por '{}'", usuario.getUsuario());
     }
 
-    /** Arma el principal con roles y permisos como autoridades. */
+    /** Arma el principal con los roles y los permisos por separado. */
     private UsuarioAutenticado construirPrincipal(Usuario usuario) {
-        java.util.Set<String> autoridades = new java.util.HashSet<>();
+        java.util.Set<String> roles = new java.util.HashSet<>();
+        java.util.Set<String> permisos = new java.util.HashSet<>();
         usuario.getRoles().forEach(rol -> {
-            autoridades.add(rol.getClave());
-            rol.getPermisos().forEach(permiso -> autoridades.add(permiso.getClave()));
+            roles.add(rol.getClave());
+            rol.getPermisos().forEach(permiso -> permisos.add(permiso.getClave()));
         });
 
         return new UsuarioAutenticado(
@@ -160,7 +161,8 @@ public class AuthService {
                 Boolean.TRUE.equals(usuario.getActivo()),
                 Boolean.TRUE.equals(usuario.getCambioPasswordRequerido()),
                 !usuario.estaBloqueado(),
-                autoridades);
+                roles,
+                permisos);
     }
 
     /** Construye la respuesta de sesion, sin incluir el token de refresco. */

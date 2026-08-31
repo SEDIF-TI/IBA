@@ -3,6 +3,9 @@ package mx.gob.sedif.sea.core.solicitud;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import mx.gob.sedif.sea.core.animal.Animal;
 import mx.gob.sedif.sea.core.catalogo.EstatusSolicitud;
 import mx.gob.sedif.sea.core.catalogo.MotivoRechazo;
@@ -130,7 +133,13 @@ public class Solicitud extends Auditable {
     @Column(name = "d_fecha_aceptacion_aviso", nullable = false, updatable = false)
     private OffsetDateTime fechaAceptacionAviso;
 
-    /** Se mapea como texto; en la tabla la columna es de tipo INET. */
+    /**
+     * Direccion desde la que se acepto el aviso.
+     *
+     * <p>La columna es de tipo inet y PostgreSQL rechaza recibir texto plano,
+     * asi que se declara el tipo de forma explicita.
+     */
+    @JdbcTypeCode(SqlTypes.INET)
     @Column(name = "s_ip_origen", nullable = false, columnDefinition = "inet", updatable = false)
     private String ipOrigen;
 

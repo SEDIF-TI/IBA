@@ -1,5 +1,6 @@
 package mx.gob.sedif.sea.security;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,23 +28,33 @@ public class UsuarioAutenticado implements UserDetails {
     private final boolean cuentaNoBloqueada;
     private final List<GrantedAuthority> autoridades;
 
+    /**
+     * @param roles    claves de rol, por ejemplo ADMINISTRADOR
+     * @param permisos claves de permiso, por ejemplo documento:descargar
+     */
     public UsuarioAutenticado(Long id,
                               String usuario,
                               String passwordHash,
                               boolean activo,
                               boolean cambioPasswordRequerido,
                               boolean cuentaNoBloqueada,
-                              Collection<String> roles) {
+                              Collection<String> roles,
+                              Collection<String> permisos) {
         this.id = id;
         this.usuario = usuario;
         this.passwordHash = passwordHash;
         this.activo = activo;
         this.cambioPasswordRequerido = cambioPasswordRequerido;
         this.cuentaNoBloqueada = cuentaNoBloqueada;
-        // Spring Security espera el prefijo ROLE_ para que hasRole() funcione.
-        this.autoridades = roles.stream()
-                .map(rol -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + rol))
-                .toList();
+
+        // Los roles llevan el prefijo ROLE_, que es lo que espera hasRole().
+        // Los permisos van sin prefijo, para poder escribir
+        // hasAuthority('documento:descargar') tal cual esta en el catalogo.
+        // Mezclarlos hace que ninguna comprobacion de permiso llegue a cumplirse.
+        List<GrantedAuthority> lista = new ArrayList<>();
+        roles.forEach(rol -> lista.add(new SimpleGrantedAuthority("ROLE_" + rol)));
+        permisos.forEach(permiso -> lista.add(new SimpleGrantedAuthority(permiso)));
+        this.autoridades = List.copyOf(lista);
     }
 
     public Long getId() {

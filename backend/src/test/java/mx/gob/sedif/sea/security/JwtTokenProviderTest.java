@@ -32,7 +32,8 @@ class JwtTokenProviderTest {
         proveedor = new JwtTokenProvider(SECRETO, 3_600_000L, 604_800_000L, EMISOR);
         usuario = new UsuarioAutenticado(
                 42L, "jperez", "$2a$10$hash", true, false, true,
-                Set.of("ADMINISTRADOR"));
+                Set.of("ADMINISTRADOR"),
+                Set.of("solicitud:aprobar"));
     }
 
     @Nested
@@ -50,7 +51,9 @@ class JwtTokenProviderTest {
             assertThat(proveedor.esTokenAcceso(token)).isTrue();
             assertThat(proveedor.esTokenRefresco(token)).isFalse();
 
-            assertThat(leerRoles(token)).containsExactly("ROLE_ADMINISTRADOR");
+            // El rol lleva prefijo; el permiso va tal cual.
+            assertThat(leerRoles(token))
+                    .containsExactlyInAnyOrder("ROLE_ADMINISTRADOR", "solicitud:aprobar");
         }
     }
 

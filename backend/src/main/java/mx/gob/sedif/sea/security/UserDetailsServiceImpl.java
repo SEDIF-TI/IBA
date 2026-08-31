@@ -35,10 +35,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(
                         MessageConstants.CREDENCIALES_INVALIDAS));
 
-        Set<String> autoridades = new HashSet<>();
+        Set<String> roles = new HashSet<>();
+        Set<String> permisos = new HashSet<>();
         usuario.getRoles().forEach(rol -> {
-            autoridades.add(rol.getClave());
-            rol.getPermisos().forEach(permiso -> autoridades.add(permiso.getClave()));
+            roles.add(rol.getClave());
+            rol.getPermisos().forEach(permiso -> permisos.add(permiso.getClave()));
         });
 
         return new UsuarioAutenticado(
@@ -48,6 +49,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 Boolean.TRUE.equals(usuario.getActivo()),
                 Boolean.TRUE.equals(usuario.getCambioPasswordRequerido()),
                 !usuario.estaBloqueado(),
-                autoridades);
+                roles,
+                permisos);
     }
 }
