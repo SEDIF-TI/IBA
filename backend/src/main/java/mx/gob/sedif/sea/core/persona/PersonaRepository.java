@@ -37,9 +37,21 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
             WHERE p.activo = TRUE
               AND sea_unaccent(UPPER(CONCAT(p.apellidoPaterno, ' ',
                       COALESCE(p.apellidoMaterno, ''), ' ', p.nombre)))
-                  LIKE sea_unaccent(UPPER(CONCAT('%', :texto, '%')))
+                  LIKE sea_unaccent(:patron)
             """)
-    Page<Persona> buscarPorNombre(@Param("texto") String texto, Pageable pageable);
+    Page<Persona> buscarPorPatron(@Param("patron") String patron, Pageable pageable);
+
+    /**
+     * Buscador del padron por nombre o apellidos.
+     *
+     * @param texto texto a buscar, sin comodines
+     */
+    default Page<Persona> buscarPorNombre(String texto, Pageable pageable) {
+        String patron = (texto == null || texto.isBlank())
+                ? "%"
+                : "%" + texto.trim().toUpperCase() + "%";
+        return buscarPorPatron(patron, pageable);
+    }
 
     /**
      * Cuenta los animales que la persona tiene a su cargo ahora mismo.

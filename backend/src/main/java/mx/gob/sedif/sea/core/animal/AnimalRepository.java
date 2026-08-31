@@ -26,10 +26,21 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
     @Query("""
             SELECT a FROM Animal a
             WHERE a.activo = TRUE
-              AND sea_unaccent(UPPER(a.nombre))
-                  LIKE sea_unaccent(UPPER(CONCAT('%', :texto, '%')))
+              AND sea_unaccent(UPPER(a.nombre)) LIKE sea_unaccent(:patron)
             """)
-    Page<Animal> buscarPorNombre(@Param("texto") String texto, Pageable pageable);
+    Page<Animal> buscarPorPatron(@Param("patron") String patron, Pageable pageable);
+
+    /**
+     * Buscador por nombre del animal.
+     *
+     * @param texto texto a buscar, sin comodines
+     */
+    default Page<Animal> buscarPorNombre(String texto, Pageable pageable) {
+        String patron = (texto == null || texto.isBlank())
+                ? "%"
+                : "%" + texto.trim().toUpperCase() + "%";
+        return buscarPorPatron(patron, pageable);
+    }
 
     /**
      * Animales que una persona tiene a su cargo ahora mismo.

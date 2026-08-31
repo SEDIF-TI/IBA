@@ -39,15 +39,32 @@ public interface CatalogoRepository<T extends CatalogoBase> extends JpaRepositor
      * Listado paginado para el panel, con filtro de texto opcional sobre clave
      * y nombre. Ignora acentos y mayusculas: buscar "tehuacan" encuentra
      * "Tehuacán".
+     *
+     * <p>El filtro se recibe ya envuelto en comodines y en mayusculas, con
+     * cadena vacia en lugar de nulo. Es a proposito: PostgreSQL no puede
+     * deducir el tipo de un parametro nulo dentro de UPPER() y rechaza la
+     * consulta, asi que se evita pasarle nulos.
      */
     @Query("""
             SELECT c FROM #{#entityName} c
             WHERE (:soloActivos = FALSE OR c.activo = TRUE)
-              AND (:texto IS NULL
-                   OR sea_unaccent(UPPER(c.nombre)) LIKE sea_unaccent(UPPER(CONCAT('%', :texto, '%')))
-                   OR UPPER(c.clave) LIKE UPPER(CONCAT('%', :texto, '%')))
+              AND (:patron = ''
+                   OR sea_unaccent(UPPER(c.nombre)) LIKE sea_unaccent(:patron)
+                   OR UPPER(c.clave) LIKE :patron)
             """)
-    Page<T> buscar(@Param("texto") String texto,
-                   @Param("soloActivos") boolean soloActivos,
-                   Pageable pageable);
+    Page<T> buscarPorPatron(@Param("patron") String patron,
+                            @Param("soloActivos") boolean soloActivos,
+                            Pageable pageable);
+
+    /**
+     * Listado paginado con filtro de texto opcional.
+     *
+     * @param texto texto a buscar; nulo o vacio para no filtrar
+     */
+    default Page<T> buscar(String texto, boolean soloActivos, Pageable pageable) {
+        String patron = (texto == null || texto.isBlank())
+                ? ""
+                : "%" + texto.trim().toUpperCase() + "%";
+        return buscarPorPatron(patron, soloActivos, pageable);
+    }
 }
