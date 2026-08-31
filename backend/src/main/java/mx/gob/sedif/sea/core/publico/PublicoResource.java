@@ -1,0 +1,102 @@
+package mx.gob.sedif.sea.core.publico;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import mx.gob.sedif.sea.core.solicitud.RegistroPublicoRequest;
+import mx.gob.sedif.sea.core.solicitud.SeguimientoRecord;
+import mx.gob.sedif.sea.core.solicitud.Solicitud;
+import mx.gob.sedif.sea.core.solicitud.SolicitudService;
+import mx.gob.sedif.sea.security.SecurityUtil;
+import mx.gob.sedif.sea.util.enums.CanalSolicitud;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+
+/**
+ * Portal ciudadano, sin autenticacion.
+ *
+ * <p>La ciudadania no tiene cuenta a proposito: a la persona le interesa su
+ * documentacion, no administrar un usuario mas. El sistema anterior obligaba a
+ * crear cuenta y esperar hasta 24 horas a que alguien la validara, antes
+ * siquiera de poder registrar al animal; buena parte de la gente abandonaba ahi.
+ *
+ * <p>Al estar abierto, estos destinos van con limite de peticiones por
+ * direccion: un formulario publico sin freno se llena de basura y el personal
+ * acabaria depurando en vez de resolviendo tramites.
+ */
+@RestController
+@RequestMapping("/publico")
+public class PublicoResource {
+
+    private final SolicitudService solicitudService;
+
+    public PublicoResource(SolicitudService solicitudService) {
+        this.solicitudService = solicitudService;
+    }
+
+    /**
+     * Alta de un tramite en un solo envio.
+     *
+     * <p>Devuelve el folio de seguimiento, que es lo que la persona necesita
+     * anotar para consultar despues.
+     */
+    @PostMapping("/solicitud")
+    public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<RegistroRespuesta>> registrar(
+            @Valid @RequestBody RegistroPublicoRequest peticion,
+            HttpServletRequest http) {
+
+        // La direccion de origen es la evidencia del consentimiento: sin cuenta
+        // de usuario, es la unica constancia de que la persona acepto.
+        String ip = SecurityUtil.obtenerIpCliente(http);
+
+        Solicitud solicitud = solicitudService.registrar(
+                peticion, CanalSolicitud.PUBLICO, ip);
+
+        RegistroRespuesta respuesta = new RegistroRespuesta(
+                solicitud.getFolioSolicitud(),
+                solicitud.getTokenConsulta().toString(),
+                solicitud.getEstatus().getNombre(),
+                "Guarda tu folio: lo necesitaras para consultar el avance de tu tramite.");
+
+        return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
+                respuesta, "Tramite registrado correctamente"));
+    }
+
+    /**
+     * Consulta del avance del tramite.
+     *
+     * <p>Exige folio Y CURP. Nunca solo la CURP: quien conociera la de un
+     * tercero podria ver sus datos.
+     */
+    @GetMapping("/consulta")
+    public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<SeguimientoRecord>> consultar(
+            @RequestParam @NotBlank String folio,
+            @RequestParam @NotBlank String curp) {
+
+        Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
+        return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
+                SeguimientoRecord.de(solicitud)));
+    }
+
+    /**
+     * Respuesta del alta.
+     *
+     * @param folio    folio de seguimiento
+     * @param token    identificador opaco para la liga de correccion
+     * @param estatus  situacion inicial
+     * @param mensaje  indicacion para la persona
+     */
+    public record RegistroRespuesta(
+            String folio,
+            String token,
+            String estatus,
+            String mensaje) {
+    }
+}

@@ -19,6 +19,18 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
     Optional<Solicitud> findByFolioSolicitud(String folio);
 
     /**
+     * Tramite con el tutor, el animal y su situacion ya cargados.
+     *
+     * <p>El grafo es necesario porque la conversion a DTO ocurre en el
+     * controlador, fuera de la transaccion, y ahi una relacion sin cargar ya no
+     * se puede resolver.
+     */
+    @Query("SELECT s FROM Solicitud s WHERE s.id = :id")
+    @EntityGraph(attributePaths = {"persona", "persona.municipio", "animal",
+                                   "animal.especie", "estatus", "motivoRechazo"})
+    Optional<Solicitud> findConDetallePorId(@Param("id") Long id);
+
+    /**
      * Consulta publica de seguimiento: exige folio Y CURP.
      *
      * <p>Nunca solo la CURP. Quien tuviera la CURP de un tercero podria ver sus
