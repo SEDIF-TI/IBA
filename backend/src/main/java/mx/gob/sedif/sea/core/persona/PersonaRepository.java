@@ -35,9 +35,9 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     @Query("""
             SELECT p FROM Persona p
             WHERE p.activo = TRUE
-              AND FUNCTION('sea_unaccent', UPPER(CONCAT(p.apellidoPaterno, ' ',
+              AND sea_unaccent(UPPER(CONCAT(p.apellidoPaterno, ' ',
                       COALESCE(p.apellidoMaterno, ''), ' ', p.nombre)))
-                  LIKE FUNCTION('sea_unaccent', UPPER(CONCAT('%', :texto, '%')))
+                  LIKE sea_unaccent(UPPER(CONCAT('%', :texto, '%')))
             """)
     Page<Persona> buscarPorNombre(@Param("texto") String texto, Pageable pageable);
 

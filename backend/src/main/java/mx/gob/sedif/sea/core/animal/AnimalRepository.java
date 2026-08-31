@@ -26,8 +26,8 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
     @Query("""
             SELECT a FROM Animal a
             WHERE a.activo = TRUE
-              AND FUNCTION('sea_unaccent', UPPER(a.nombre))
-                  LIKE FUNCTION('sea_unaccent', UPPER(CONCAT('%', :texto, '%')))
+              AND sea_unaccent(UPPER(a.nombre))
+                  LIKE sea_unaccent(UPPER(CONCAT('%', :texto, '%')))
             """)
     Page<Animal> buscarPorNombre(@Param("texto") String texto, Pageable pageable);
 

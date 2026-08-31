@@ -44,7 +44,7 @@ public interface CatalogoRepository<T extends CatalogoBase> extends JpaRepositor
             SELECT c FROM #{#entityName} c
             WHERE (:soloActivos = FALSE OR c.activo = TRUE)
               AND (:texto IS NULL
-                   OR FUNCTION('sea_unaccent', UPPER(c.nombre)) LIKE FUNCTION('sea_unaccent', UPPER(CONCAT('%', :texto, '%')))
+                   OR sea_unaccent(UPPER(c.nombre)) LIKE sea_unaccent(UPPER(CONCAT('%', :texto, '%')))
                    OR UPPER(c.clave) LIKE UPPER(CONCAT('%', :texto, '%')))
             """)
     Page<T> buscar(@Param("texto") String texto,
