@@ -13,7 +13,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
  * operado por el Sistema Estatal DIF Puebla.
  */
 @SpringBootApplication
-@EnableJpaAuditing(auditorAwareRef = "auditorAware")
+@EnableJpaAuditing(auditorAwareRef = "auditorAware",
+        dateTimeProviderRef = "auditoriaDateTimeProvider")
 @EnableCaching
 @EnableAsync
 public class SeaApplication {
