@@ -69,12 +69,20 @@ class GenerarMuestrasPdfTest {
         var persona = PdfGeneracionTest.TestFactoria.persona();
         var animal = PdfGeneracionTest.TestFactoria.animal();
 
+        // Si se indica una foto, se incluye: sirve para revisar como queda el
+        // recuadro con una imagen real.
+        String rutaFoto = System.getProperty("muestras.foto");
+        java.util.Optional<byte[]> fotografia = rutaFoto == null
+                ? java.util.Optional.empty()
+                : java.util.Optional.of(Files.readAllBytes(Path.of(rutaFoto)));
+
         Files.write(destino.resolve("certificado.pdf"),
-                certificadoPdf.generar(certificado, persona, animal));
+                certificadoPdf.generar(certificado, persona, animal, fotografia));
 
         List<CredencialPdfService.DatosCredencial> lote = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            lote.add(new CredencialPdfService.DatosCredencial(certificado, persona, animal));
+            lote.add(new CredencialPdfService.DatosCredencial(
+                    certificado, persona, animal, fotografia));
         }
         Files.write(destino.resolve("credenciales-3-por-hoja.pdf"),
                 credencialPdf.generarLote(lote));

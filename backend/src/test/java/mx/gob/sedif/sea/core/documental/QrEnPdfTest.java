@@ -68,7 +68,8 @@ class QrEnPdfTest {
         byte[] pdf = certificadoPdf.generar(
                 PdfGeneracionTest.TestFactoria.certificado(),
                 PdfGeneracionTest.TestFactoria.persona(),
-                PdfGeneracionTest.TestFactoria.animal());
+                PdfGeneracionTest.TestFactoria.animal(),
+                java.util.Optional.empty());
 
         BufferedImage qr = extraerPrimeraImagen(pdf);
         assertThat(qr).as("el certificado debe llevar el codigo incrustado").isNotNull();

@@ -2,6 +2,7 @@ package mx.gob.sedif.sea.core.documento;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,9 @@ import mx.gob.sedif.sea.security.UsuarioRepository;
 public class DocumentoService {
 
     private static final Logger log = LoggerFactory.getLogger(DocumentoService.class);
+
+    /** Clave del tipo de documento que corresponde a la foto del animal. */
+    private static final String CLAVE_FOTOGRAFIA = "FOTOGRAFIA_ANIMAL";
 
     private final DocumentoRepository documentoRepository;
     private final SolicitudRepository solicitudRepository;
@@ -140,6 +144,38 @@ public class DocumentoService {
     @Transactional(readOnly = true)
     public List<Documento> listarPorSolicitud(Long solicitudId) {
         return documentoRepository.findBySolicitudIdAndActivoTrue(solicitudId);
+    }
+
+    /**
+     * Recupera la fotografia del animal para imprimirla en sus documentos.
+     *
+     * <p>Devuelve vacio si no la adjuntaron o si el archivo ya no esta: el
+     * documento se emite igual, con el recuadro sin foto. Negarse a expedir un
+     * certificado por una imagen faltante seria desproporcionado.
+     *
+     * <p>A diferencia de la descarga, esto no pasa por bitacora: no es una
+     * persona accediendo a un dato personal, es el propio sistema armando el
+     * documento que va a entregar.
+     *
+     * @param solicitudId tramite del que se toma la foto
+     * @return contenido de la imagen, si esta disponible
+     */
+    @Transactional(readOnly = true)
+    public Optional<byte[]> obtenerFotografiaAnimal(Long solicitudId) {
+        return documentoRepository.findBySolicitudIdAndActivoTrue(solicitudId).stream()
+                .filter(documento -> CLAVE_FOTOGRAFIA.equals(
+                        documento.getTipoDocumento().getClave()))
+                // Si hay varias, la mas reciente.
+                .max(java.util.Comparator.comparing(Documento::getId))
+                .flatMap(documento -> {
+                    try (InputStream flujo = almacen.abrir(documento.getRutaAlmacenamiento())) {
+                        return Optional.of(flujo.readAllBytes());
+                    } catch (Exception ex) {
+                        log.warn("No se pudo leer la fotografia del tramite {}",
+                                solicitudId, ex);
+                        return Optional.empty();
+                    }
+                });
     }
 
     /**

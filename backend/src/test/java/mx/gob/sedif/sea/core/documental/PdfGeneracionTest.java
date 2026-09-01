@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -81,14 +82,14 @@ class PdfGeneracionTest {
         @Test
         @DisplayName("produce un PDF de una hoja con folio y datos del animal")
         void produceCertificadoCompleto() throws Exception {
-            byte[] pdf = certificadoPdf.generar(certificado(), persona(), animal());
+            byte[] pdf = certificadoPdf.generar(certificado(), persona(), animal(), Optional.empty());
 
             assertThat(pdf).isNotEmpty();
             assertThat(new String(pdf, 0, 5)).startsWith("%PDF-");
 
             String texto = extraerTexto(pdf);
             assertThat(texto)
-                    .contains("CERTIFICADO DE EMPADRONAMIENTO")
+                    .contains("Certificado de Empadronamiento")
                     .contains("SEDIF/IBA/EMP-21114/00001/2026")
                     .contains("Firulais")
                     .contains("Canino")
@@ -96,21 +97,45 @@ class PdfGeneracionTest {
         }
 
         @Test
-        @DisplayName("muestra la CURP enmascarada, nunca completa")
-        void enmascaraLaCurp() throws Exception {
-            byte[] pdf = certificadoPdf.generar(certificado(), persona(), animal());
+        @DisplayName("lleva los datos de contacto del tutor, como el formato oficial")
+        void llevaDatosDelTutor() throws Exception {
+            byte[] pdf = certificadoPdf.generar(
+                    certificado(), persona(), animal(), Optional.empty());
             String texto = extraerTexto(pdf);
 
             assertThat(texto)
-                    .as("el certificado circula y se fotografia: la CURP no va completa")
-                    .doesNotContain("PEGJ850315HPLRRN03");
-            assertThat(texto).contains("PEGJ**********03");
+                    .contains("Juan Perez Gomez")
+                    .contains("Responsable")
+                    .contains("Telefono")
+                    .contains("Correo electronico");
+        }
+
+        @Test
+        @DisplayName("incluye la firma de quien autoriza")
+        void incluyeLaFirma() throws Exception {
+            byte[] pdf = certificadoPdf.generar(
+                    certificado(), persona(), animal(), Optional.empty());
+
+            assertThat(extraerTexto(pdf))
+                    .contains("Michele Eugenia Islas Ganime")
+                    .contains("Directora de Bienestar Animal");
+        }
+
+        @Test
+        @DisplayName("se emite en dos hojas: anverso y reverso")
+        void tieneAnversoYReverso() throws Exception {
+            byte[] pdf = certificadoPdf.generar(
+                    certificado(), persona(), animal(), Optional.empty());
+
+            assertThat(new com.lowagie.text.pdf.PdfReader(pdf).getNumberOfPages())
+                    .as("el formato oficial lleva reverso con marca de agua")
+                    .isEqualTo(2);
         }
 
         @Test
         @DisplayName("incluye la leyenda del sello mientras no haya firma electronica")
         void incluyeLeyendaDelSello() throws Exception {
-            byte[] pdf = certificadoPdf.generar(certificado(), persona(), animal());
+            byte[] pdf = certificadoPdf.generar(certificado(), persona(), animal(), Optional.empty());
 
             assertThat(extraerTexto(pdf)).contains("sello institucional");
         }
@@ -121,7 +146,7 @@ class PdfGeneracionTest {
             Animal animal = animal();
             animal.setEdadMeses(30);
 
-            assertThat(extraerTexto(certificadoPdf.generar(certificado(), persona(), animal)))
+            assertThat(extraerTexto(certificadoPdf.generar(certificado(), persona(), animal, Optional.empty())))
                     .contains("2 anos 6 meses");
         }
     }
@@ -133,13 +158,27 @@ class PdfGeneracionTest {
         @Test
         @DisplayName("genera una credencial con el nombre del animal y su tutor")
         void generaCredencial() throws Exception {
-            byte[] pdf = credencialPdf.generar(certificado(), persona(), animal());
+            byte[] pdf = credencialPdf.generar(certificado(), persona(), animal(), Optional.empty());
 
             assertThat(new PdfReader(pdf).getNumberOfPages()).isEqualTo(1);
             assertThat(extraerTexto(pdf))
                     .contains("Firulais")
                     .contains("Juan Perez Gomez")
-                    .contains("PADRON ESTATAL DE PERROS Y GATOS");
+                    .contains("Credencial Peluda")
+                    .contains("Padron Estatal de Perros y Gatos");
+        }
+
+        @Test
+        @DisplayName("el reverso lleva los datos del tutor y el identificador")
+        void elReversoLlevaDatosDelTutor() throws Exception {
+            byte[] pdf = credencialPdf.generar(
+                    certificado(), persona(), animal(), Optional.empty());
+
+            assertThat(extraerTexto(pdf))
+                    .contains("Responsable")
+                    .contains("Telefono")
+                    .contains("No. de ID oficial")
+                    .contains("PJFIRCM260831");
         }
 
         @Test
@@ -209,7 +248,7 @@ class PdfGeneracionTest {
         List<CredencialPdfService.DatosCredencial> lote = new ArrayList<>();
         for (int i = 0; i < cantidad; i++) {
             lote.add(new CredencialPdfService.DatosCredencial(
-                    certificado(), persona(), animal()));
+                    certificado(), persona(), animal(), Optional.empty()));
         }
         return lote;
     }

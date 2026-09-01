@@ -42,6 +42,73 @@ public class IdentidadGrafica {
         return desdeHex(parametros.obtener("institucion.color_primario", "#801A36"));
     }
 
+    // ---- Colores de los documentos ----
+    //
+    // Van aparte del color institucional porque los formatos oficiales del IBA
+    // usan una paleta que todavia no esta definida al cien por ciento. Al ser
+    // ajustes, cambiarla no exige recompilar. Por omision, el guinda vigente.
+
+    /** Color del titulo del certificado y la credencial. */
+    public Color colorTitulo() {
+        return desdeHex(parametros.obtener("documento.color_titulo", "#801A36"));
+    }
+
+    /** Color de las etiquetas de los campos. */
+    public Color colorEtiquetas() {
+        return desdeHex(parametros.obtener("documento.color_etiquetas", "#801A36"));
+    }
+
+    /** Color de la franja institucional superior. */
+    public Color colorFranja() {
+        return desdeHex(parametros.obtener("documento.color_franja", "#801A36"));
+    }
+
+    /** Color de la cinta con el nombre del padron. */
+    public Color colorCinta() {
+        return desdeHex(parametros.obtener("documento.color_cinta", "#64748B"));
+    }
+
+    /** Color del fondo decorativo de huellas. */
+    public Color colorFondoHuellas() {
+        return desdeHex(parametros.obtener("documento.color_fondo_huellas", "#801A36"));
+    }
+
+    // ---- Firma y area que expide ----
+
+    /** Quien firma los documentos. */
+    public String firmanteNombre() {
+        return parametros.obtener("documento.firmante_nombre",
+                "Abog. Michele Eugenia Islas Ganime");
+    }
+
+    /** Cargo de quien firma. */
+    public String firmanteCargo() {
+        return parametros.obtener("documento.firmante_cargo",
+                "Directora de Bienestar Animal del Sistema Estatal DIF Puebla");
+    }
+
+    /** Siglas del area que aparecen en los documentos. */
+    public String areaSiglas() {
+        return parametros.obtener("documento.area_siglas", "DIBA");
+    }
+
+    /** Nombre del area que expide. */
+    public String areaNombre() {
+        return parametros.obtener("documento.area_nombre",
+                "Direccion de Bienestar Animal");
+    }
+
+    /** Ciudad que acompana la fecha de expedicion. */
+    public String ciudadExpedicion() {
+        return parametros.obtener("documento.ciudad_expedicion", "Puebla, Pue.");
+    }
+
+    /** Texto de la marca de agua del reverso. */
+    public String marcaAguaTexto() {
+        return parametros.obtener("documento.marca_agua_texto",
+                "Certificado de empadronamiento");
+    }
+
     /** Leyenda al pie que explica como verificar el documento. */
     public String leyendaVerificacion() {
         return parametros.obtener("certificado.leyenda_verificacion",
