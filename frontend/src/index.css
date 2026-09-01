@@ -1,0 +1,24 @@
+/* Estilos globales. Lo demas vive en el tema. */
+
+html {
+  /* Al navegar por anclas, que el desplazamiento sea suave... */
+  scroll-behavior: smooth;
+}
+
+/* ...salvo para quien pidio menos movimiento en su sistema. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Las tablas anchas se desplazan dentro de su contenedor y no empujan la pagina. */
+.tabla-desplazable {
+  overflow-x: auto;
+}
