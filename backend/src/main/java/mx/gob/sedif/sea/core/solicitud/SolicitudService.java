@@ -73,6 +73,7 @@ public class SolicitudService {
     private final FolioService folioService;
     private final AuditoriaService auditoria;
     private final EmisorCertificado emisorCertificado;
+    private final NotificadorTramite notificador;
 
     public SolicitudService(SolicitudRepository solicitudRepository,
                             SolicitudHistorialRepository historialRepository,
@@ -91,7 +92,8 @@ public class SolicitudService {
                             UsuarioRepository usuarioRepository,
                             FolioService folioService,
                             AuditoriaService auditoria,
-                            EmisorCertificado emisorCertificado) {
+                            EmisorCertificado emisorCertificado,
+                            NotificadorTramite notificador) {
         this.solicitudRepository = solicitudRepository;
         this.historialRepository = historialRepository;
         this.personaRepository = personaRepository;
@@ -110,6 +112,7 @@ public class SolicitudService {
         this.folioService = folioService;
         this.auditoria = auditoria;
         this.emisorCertificado = emisorCertificado;
+        this.notificador = notificador;
     }
 
     /**
@@ -163,6 +166,9 @@ public class SolicitudService {
         log.info("Tramite {} dado de alta ({}){}",
                 guardada.getFolioSolicitud(), canal,
                 avisos.isEmpty() ? "" : " con revision reforzada");
+
+        // Acuse de recepcion. Si no dejo correo, queda en la bandeja de contacto.
+        notificador.avisar(guardada.getId(), "SOLICITUD_RECIBIDA");
 
         return solicitudRepository.findConDetallePorId(guardada.getId()).orElse(guardada);
     }
@@ -422,20 +428,35 @@ public class SolicitudService {
 
         emisorCertificado.emitir(solicitudId);
 
-        return cambiarEstatus(solicitudId, EstatusSolicitudEnum.CERTIFICADO_EMITIDO,
+        Solicitud conCertificado = cambiarEstatus(
+                solicitudId, EstatusSolicitudEnum.CERTIFICADO_EMITIDO,
                 null, "Certificado emitido");
+
+        notificador.avisar(solicitudId, "SOLICITUD_APROBADA");
+
+        return conCertificado;
     }
 
-    /** Devuelve el tramite para que la persona corrija. */
+    /**
+     * Devuelve el tramite para que la persona corrija.
+     *
+     * <p>El aviso lleva el motivo: sin el, la persona no sabria que corregir.
+     */
     @Transactional
     public Solicitud observar(Long solicitudId, Integer motivoId, String observacion) {
-        return cambiarEstatus(solicitudId, EstatusSolicitudEnum.OBSERVADA, motivoId, observacion);
+        Solicitud observada = cambiarEstatus(
+                solicitudId, EstatusSolicitudEnum.OBSERVADA, motivoId, observacion);
+        notificador.avisar(solicitudId, "SOLICITUD_OBSERVADA");
+        return observada;
     }
 
     /** Rechaza el tramite de forma definitiva. */
     @Transactional
     public Solicitud rechazar(Long solicitudId, Integer motivoId, String observacion) {
-        return cambiarEstatus(solicitudId, EstatusSolicitudEnum.RECHAZADA, motivoId, observacion);
+        Solicitud rechazada = cambiarEstatus(
+                solicitudId, EstatusSolicitudEnum.RECHAZADA, motivoId, observacion);
+        notificador.avisar(solicitudId, "SOLICITUD_RECHAZADA");
+        return rechazada;
     }
 
     /** Cancela el tramite. */

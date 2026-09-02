@@ -239,18 +239,24 @@ public class DocumentoStorageService {
         }
 
         if (archivo.getSize() > tamanoMaximoBytes) {
+            // Se dice cuanto pesa y cuanto se admite: sin esos dos numeros la
+            // persona no sabe cuanto tiene que reducirlo.
             throw new ReglaNegocioException(
-                    "%s (maximo %d MB)".formatted(
-                            MessageConstants.ARCHIVO_MUY_GRANDE,
-                            tamanoMaximoBytes / 1024 / 1024));
+                    "El archivo pesa %.1f MB y el maximo permitido es %d MB. "
+                            .formatted(archivo.getSize() / 1024.0 / 1024.0,
+                                    tamanoMaximoBytes / 1024 / 1024)
+                            + "Reduce su tamano o toma la fotografia con menor resolucion.");
         }
 
         String extension = extensionDe(archivo.getOriginalFilename());
         if (!EXTENSIONES_PERMITIDAS.contains(extension)) {
+            // Se nombra la extension que llego y las que si se aceptan.
             throw new ReglaNegocioException(
-                    "%s. Se aceptan: %s".formatted(
-                            MessageConstants.TIPO_ARCHIVO_NO_PERMITIDO,
-                            String.join(", ", EXTENSIONES_PERMITIDAS)));
+                    extension.isBlank()
+                            ? "El archivo no tiene extension. Solo se aceptan archivos "
+                                    + "PDF, JPG y PNG."
+                            : "No se aceptan archivos .%s. Solo se admiten PDF, JPG y PNG."
+                                    .formatted(extension));
         }
 
         byte[] inicio;
@@ -268,14 +274,15 @@ public class DocumentoStorageService {
             log.warn("Archivo rechazado: se declaro '{}' pero el contenido es '{}'",
                     archivo.getOriginalFilename(), mimeReal);
             throw new ReglaNegocioException(
-                    "%s. El contenido del archivo no corresponde con su extension."
-                            .formatted(MessageConstants.TIPO_ARCHIVO_NO_PERMITIDO));
+                    MessageConstants.ARCHIVO_CONTENIDO_NO_CORRESPONDE);
         }
 
         if (pareceEjecutable(inicio)) {
             log.warn("Archivo con firma de ejecutable rechazado: {}",
                     archivo.getOriginalFilename());
-            throw new ReglaNegocioException(MessageConstants.TIPO_ARCHIVO_NO_PERMITIDO);
+            throw new ReglaNegocioException(
+                    "El archivo contiene un programa ejecutable y no se puede subir. "
+                            + "Adjunta el documento en PDF, JPG o PNG.");
         }
     }
 

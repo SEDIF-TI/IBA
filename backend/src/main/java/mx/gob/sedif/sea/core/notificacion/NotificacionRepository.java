@@ -17,7 +17,18 @@ import mx.gob.sedif.sea.util.enums.EstatusEnvio;
 @Repository
 public interface NotificacionRepository extends JpaRepository<Notificacion, Long> {
 
+    @EntityGraph(attributePaths = {"solicitud", "solicitud.persona", "usuarioContacto"})
     List<Notificacion> findBySolicitudIdOrderByFechaCreacionDesc(Long solicitudId);
+
+    /**
+     * Aviso con lo que hace falta para mostrarlo o registrarlo.
+     *
+     * <p>Se traen las relaciones a proposito: el DTO se arma en el controlador,
+     * fuera de la transaccion.
+     */
+    @Query("SELECT n FROM Notificacion n WHERE n.id = :id")
+    @EntityGraph(attributePaths = {"solicitud", "solicitud.persona", "usuarioContacto"})
+    java.util.Optional<Notificacion> findConDetallePorId(@Param("id") Long id);
 
     /**
      * Bandeja de contacto manual: a quien hay que llamar hoy.
@@ -26,7 +37,7 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Long
      * vista, esos avisos no ocurririan y nadie se enteraria de que hay gente
      * esperando respuesta.
      */
-    @EntityGraph(attributePaths = {"solicitud", "solicitud.persona"})
+    @EntityGraph(attributePaths = {"solicitud", "solicitud.persona", "usuarioContacto"})
     Page<Notificacion> findByCanalAndEstatusEnvioOrderByFechaCreacionAsc(
             CanalNotificacion canal, EstatusEnvio estatus, Pageable pageable);
 
@@ -39,6 +50,7 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Long
               AND n.intentos < :maxIntentos
             ORDER BY n.fechaCreacion
             """)
+    @EntityGraph(attributePaths = {"solicitud", "solicitud.persona"})
     List<Notificacion> findPendientesDeEnvio(@Param("maxIntentos") int maxIntentos);
 
     long countByCanalAndEstatusEnvio(CanalNotificacion canal, EstatusEnvio estatus);

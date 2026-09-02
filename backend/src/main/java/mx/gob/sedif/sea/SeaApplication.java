@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Punto de arranque del Sistema de Empadronamiento Animal (SEA).
@@ -17,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
         dateTimeProviderRef = "auditoriaDateTimeProvider")
 @EnableCaching
 @EnableAsync
+@EnableScheduling
 public class SeaApplication {
 
     public static void main(String[] args) {

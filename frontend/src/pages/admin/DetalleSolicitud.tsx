@@ -125,7 +125,10 @@ export function DetalleSolicitud() {
   async function tomarParaRevision() {
     try {
       await solicitudService.tomarParaRevision(solicitudId);
-      notificacion.exito('El tramite quedo en revision');
+      notificacion.exito(
+        'El tramite quedo en revision. Ya puedes aprobarlo, devolverlo para ' +
+          'correccion o rechazarlo.',
+      );
       await cargar();
     } catch (fallo) {
       notificacion.error(mensajeDeError(fallo));
@@ -151,11 +154,19 @@ export function DetalleSolicitud() {
 
       await acciones[resolucion]();
 
-      notificacion.exito(
-        resolucion === 'aprobar'
-          ? 'Tramite aprobado y certificado emitido'
-          : 'Resolucion registrada',
-      );
+      const avisos: Record<Resolucion, string> = {
+        aprobar:
+          'Tramite aprobado. El certificado quedo emitido y ya se puede ' +
+          'imprimir junto con la credencial.',
+        observar:
+          'Se devolvio para correccion. A la persona se le avisa el motivo ' +
+          'para que corrija y vuelva a enviarlo.',
+        rechazar:
+          'Tramite rechazado. A la persona se le avisa el motivo; el tramite ' +
+          'ya no admite mas cambios.',
+        cancelar: 'Tramite cancelado. Ya no admite mas cambios.',
+      };
+      notificacion.exito(avisos[resolucion]);
 
       cerrarResolucion();
       await cargar();
@@ -183,7 +194,12 @@ export function DetalleSolicitud() {
   async function marcarLegibilidad(documento: Documento, legible: boolean) {
     try {
       await documentoService.revisar(documento.id, legible);
-      notificacion.exito(legible ? 'Documento marcado legible' : 'Documento marcado ilegible');
+      notificacion.exito(
+        legible
+          ? `"${documento.tipoNombre}" quedo marcado como legible`
+          : `"${documento.tipoNombre}" quedo marcado como ilegible. ` +
+              'Devuelve el tramite para correccion indicando ese motivo.',
+      );
       await cargar();
     } catch (fallo) {
       notificacion.error(mensajeDeError(fallo));

@@ -128,10 +128,12 @@ export function AdminCatalogo({ ruta, titulo, singular }: Props) {
     try {
       if (editando) {
         await servicio.actualizar(editando.id, formulario);
-        notificacion.exito(`${singular} actualizado correctamente`);
+        notificacion.exito(`Se guardaron los cambios de "${formulario.nombre}"`);
       } else {
         await servicio.crear(formulario);
-        notificacion.exito(`${singular} creado correctamente`);
+        notificacion.exito(
+          `Se agrego "${formulario.nombre}" y ya aparece en los formularios`,
+        );
       }
       setFormularioAbierto(false);
       await cargar();
@@ -146,7 +148,10 @@ export function AdminCatalogo({ ruta, titulo, singular }: Props) {
     if (!porDesactivar) return;
     try {
       await servicio.desactivar(porDesactivar.id);
-      notificacion.exito(`${singular} dado de baja`);
+      notificacion.exito(
+        `"${porDesactivar.nombre}" dejo de ofrecerse en los formularios. ` +
+          'Los registros que ya lo usan siguen intactos.',
+      );
       await cargar();
     } catch (fallo) {
       notificacion.error(mensajeDeError(fallo));
@@ -158,7 +163,7 @@ export function AdminCatalogo({ ruta, titulo, singular }: Props) {
   async function reactivar(registro: Catalogo) {
     try {
       await servicio.reactivar(registro.id);
-      notificacion.exito(`${singular} reactivado`);
+      notificacion.exito(`"${registro.nombre}" vuelve a estar disponible`);
       await cargar();
     } catch (fallo) {
       notificacion.error(mensajeDeError(fallo));

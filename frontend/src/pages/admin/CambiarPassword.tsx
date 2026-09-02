@@ -53,7 +53,9 @@ export function CambiarPassword() {
     try {
       await authService.cambiarPassword({ passwordActual: actual, passwordNueva: nueva });
       marcarPasswordCambiada();
-      notificacion.exito('Tu contrasena se actualizo correctamente');
+      notificacion.exito(
+        'Tu contrasena quedo actualizada. Usala la proxima vez que entres.',
+      );
       navegar('/admin', { replace: true });
     } catch (fallo) {
       setError(mensajeDeError(fallo));

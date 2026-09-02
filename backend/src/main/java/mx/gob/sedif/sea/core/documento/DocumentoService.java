@@ -94,7 +94,7 @@ public class DocumentoService {
         documento.setTamanoBytes(guardado.tamanoBytes());
         documento.setHashSha256(guardado.hashSha256());
 
-        Documento persistido = documentoRepository.save(documento);
+        Documento persistido = documentoRepository.saveAndFlush(documento);
 
         auditoria.registrar(AccionAuditoria.SUBIR_DOCUMENTO, "documento", persistido.getId(),
                 "Se adjunto %s al tramite %s".formatted(
@@ -103,7 +103,8 @@ public class DocumentoService {
         log.info("Documento {} adjuntado al tramite {}",
                 tipo.getClave(), solicitud.getFolioSolicitud());
 
-        return persistido;
+        return documentoRepository.findConDetallePorId(persistido.getId())
+                .orElse(persistido);
     }
 
     /**
@@ -187,7 +188,7 @@ public class DocumentoService {
      */
     @Transactional
     public Documento revisar(Long documentoId, boolean legible, String observacion) {
-        Documento documento = documentoRepository.findById(documentoId)
+        Documento documento = documentoRepository.findConDetallePorId(documentoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         MessageConstants.DOCUMENTO_NO_ENCONTRADO));
 
@@ -196,12 +197,12 @@ public class DocumentoService {
                 .orElseThrow(() -> new ReglaNegocioException(MessageConstants.NO_AUTORIZADO));
 
         documento.revisar(legible, observacion, revisor);
-        Documento guardado = documentoRepository.save(documento);
+        Documento guardado = documentoRepository.saveAndFlush(documento);
 
         auditoria.registrar(AccionAuditoria.REVISAR_DOCUMENTO, "documento", documentoId,
                 "Documento marcado como %s".formatted(legible ? "legible" : "ilegible"));
 
-        return guardado;
+        return documentoRepository.findConDetallePorId(documentoId).orElse(guardado);
     }
 
     /**
