@@ -102,24 +102,55 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
 
     long countByEstatusClave(String claveEstatus);
 
+    /** Cuantas precargas tiene una jornada. */
+    long countByJornadaId(Long jornadaId);
+
+    /** Cuantas precargas de una jornada llegaron a alguna de las situaciones dadas. */
+    long countByJornadaIdAndEstatusClaveIn(Long jornadaId, java.util.List<String> claves);
+
     /**
      * Precargas de una jornada, para la busqueda del dia del evento.
      *
      * <p>Localiza por CURP o por apellidos, ignorando acentos: el personal
      * teclea rapido y con la gente formada enfrente.
      */
+    /**
+     * Precargas de una jornada que coinciden con el texto buscado.
+     *
+     * <p>El patron llega ya en mayusculas y con comodines, y vacio en lugar de
+     * nulo: PostgreSQL no puede deducir el tipo de un parametro nulo dentro de
+     * UPPER() y rechazaria la consulta.
+     */
     @Query("""
             SELECT s FROM Solicitud s
             WHERE s.jornada.id = :jornadaId
               AND s.activo = TRUE
-              AND (:texto IS NULL
-                   OR s.persona.curp = :texto
+              AND (:patron = ''
+                   OR s.persona.curp = :curp
                    OR sea_unaccent(UPPER(CONCAT(s.persona.apellidoPaterno, ' ',
                           COALESCE(s.persona.apellidoMaterno, ''), ' ', s.persona.nombre)))
-                      LIKE sea_unaccent(UPPER(CONCAT('%', :texto, '%'))))
+                      LIKE sea_unaccent(:patron))
             """)
-    @EntityGraph(attributePaths = {"persona", "animal", "estatus"})
-    Page<Solicitud> buscarEnJornada(@Param("jornadaId") Long jornadaId,
-                                    @Param("texto") String texto,
-                                    Pageable pageable);
+    @EntityGraph(attributePaths = {"persona", "persona.municipio", "animal",
+                                   "animal.especie", "estatus"})
+    Page<Solicitud> buscarEnJornadaPorPatron(@Param("jornadaId") Long jornadaId,
+                                             @Param("patron") String patron,
+                                             @Param("curp") String curp,
+                                             Pageable pageable);
+
+    /**
+     * Busca a una persona entre las precargas de una jornada.
+     *
+     * <p>Es la consulta del dia del evento: admite CURP completa o parte del
+     * nombre, e ignora acentos.
+     *
+     * @param texto CURP, apellidos o nombre; vacio devuelve todas
+     */
+    default Page<Solicitud> buscarEnJornada(Long jornadaId, String texto, Pageable pageable) {
+        if (texto == null || texto.isBlank()) {
+            return buscarEnJornadaPorPatron(jornadaId, "", "", pageable);
+        }
+        String limpio = texto.trim().toUpperCase();
+        return buscarEnJornadaPorPatron(jornadaId, "%" + limpio + "%", limpio, pageable);
+    }
 }

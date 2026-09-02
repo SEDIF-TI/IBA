@@ -13,6 +13,8 @@ import mx.gob.sedif.sea.core.certificado.Certificado;
 import mx.gob.sedif.sea.core.certificado.CertificadoService;
 import mx.gob.sedif.sea.core.certificado.VerificacionRecord;
 import mx.gob.sedif.sea.core.documental.AcusePdfService;
+import mx.gob.sedif.sea.core.jornada.JornadaPublicaRecord;
+import mx.gob.sedif.sea.core.jornada.JornadaService;
 import mx.gob.sedif.sea.core.solicitud.RegistroPublicoRequest;
 import mx.gob.sedif.sea.core.solicitud.SeguimientoRecord;
 import mx.gob.sedif.sea.core.solicitud.Solicitud;
@@ -43,13 +45,16 @@ public class PublicoResource {
     private final SolicitudService solicitudService;
     private final CertificadoService certificadoService;
     private final AcusePdfService acusePdfService;
+    private final JornadaService jornadaService;
 
     public PublicoResource(SolicitudService solicitudService,
                            CertificadoService certificadoService,
-                           AcusePdfService acusePdfService) {
+                           AcusePdfService acusePdfService,
+                           JornadaService jornadaService) {
         this.solicitudService = solicitudService;
         this.certificadoService = certificadoService;
         this.acusePdfService = acusePdfService;
+        this.jornadaService = jornadaService;
     }
 
     /**
@@ -67,17 +72,32 @@ public class PublicoResource {
         // de usuario, es la unica constancia de que la persona acepto.
         String ip = SecurityUtil.obtenerIpCliente(http);
 
+        // Si la persona eligio una jornada, el tramite queda precargado para
+        // ese evento y el canal lo refleja.
+        boolean esPrecarga = peticion.jornadaId() != null;
+
         Solicitud solicitud = solicitudService.registrar(
-                peticion, CanalSolicitud.PUBLICO, ip);
+                peticion,
+                esPrecarga ? CanalSolicitud.JORNADA : CanalSolicitud.PUBLICO,
+                ip);
 
         RegistroRespuesta respuesta = new RegistroRespuesta(
                 solicitud.getFolioSolicitud(),
                 solicitud.getTokenConsulta().toString(),
                 solicitud.getEstatus().getNombre(),
-                "Guarda tu folio: lo necesitaras para consultar el avance de tu tramite.");
+                esPrecarga
+                        ? "Guarda tu folio y presentalo el dia de la jornada. "
+                                + "Lleva tu identificacion original."
+                        : "Guarda tu folio: lo necesitaras para consultar el avance "
+                                + "de tu tramite.");
 
         return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
-                respuesta, "Tramite registrado correctamente"));
+                respuesta,
+                esPrecarga
+                        ? "Tu registro quedo adelantado para la jornada. El dia del "
+                                + "evento solo tendras que presentarte."
+                        : "Tu tramite quedo registrado. Recibiras el resultado por "
+                                + "el medio de contacto que proporcionaste."));
     }
 
     /**
@@ -94,6 +114,29 @@ public class PublicoResource {
         Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
         return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
                 SeguimientoRecord.de(solicitud)));
+    }
+
+    /**
+     * Calendario de jornadas publicadas.
+     *
+     * <p>Es lo que permite a la ciudadania saber cuando toca su municipio y
+     * llegar con el tramite adelantado, en lugar de enterarse el mismo dia.
+     */
+    @GetMapping("/jornadas")
+    public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<
+            java.util.List<JornadaPublicaRecord>>> jornadas() {
+
+        java.util.List<JornadaPublicaRecord> jornadas =
+                jornadaService.publicadasVigentes().stream()
+                        .map(JornadaPublicaRecord::de)
+                        .toList();
+
+        return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
+                jornadas,
+                jornadas.isEmpty()
+                        ? "Por ahora no hay jornadas programadas. Puedes registrar "
+                                + "tu tramite en cualquier momento desde este portal."
+                        : "Hay %d jornada(s) programada(s)".formatted(jornadas.size())));
     }
 
     /**

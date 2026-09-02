@@ -21,6 +21,7 @@ import jakarta.validation.constraints.Size;
  * @param animal           datos del animal
  * @param aceptaAviso      aceptacion del aviso de privacidad
  * @param avisoVersion     version del aviso que se le mostro
+ * @param jornadaId        jornada para la que se adelanta el registro, si aplica
  */
 public record RegistroPublicoRequest(
         @NotNull(message = "Los datos del tutor son obligatorios")
@@ -36,7 +37,14 @@ public record RegistroPublicoRequest(
         Boolean aceptaAviso,
 
         @NotBlank(message = "Falta la version del aviso de privacidad")
-        String avisoVersion) {
+        String avisoVersion,
+
+        /**
+         * Jornada para la que se adelanta el registro.
+         *
+         * <p>Nulo cuando el tramite entra por el portal sin jornada asociada.
+         */
+        Long jornadaId) {
 
     /**
      * Datos del tutor responsable.

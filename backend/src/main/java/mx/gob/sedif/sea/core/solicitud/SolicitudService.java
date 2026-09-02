@@ -74,6 +74,7 @@ public class SolicitudService {
     private final AuditoriaService auditoria;
     private final EmisorCertificado emisorCertificado;
     private final NotificadorTramite notificador;
+    private final mx.gob.sedif.sea.core.jornada.JornadaRepository jornadaRepository;
 
     public SolicitudService(SolicitudRepository solicitudRepository,
                             SolicitudHistorialRepository historialRepository,
@@ -93,7 +94,8 @@ public class SolicitudService {
                             FolioService folioService,
                             AuditoriaService auditoria,
                             EmisorCertificado emisorCertificado,
-                            NotificadorTramite notificador) {
+                            NotificadorTramite notificador,
+                            mx.gob.sedif.sea.core.jornada.JornadaRepository jornadaRepository) {
         this.solicitudRepository = solicitudRepository;
         this.historialRepository = historialRepository;
         this.personaRepository = personaRepository;
@@ -113,6 +115,7 @@ public class SolicitudService {
         this.auditoria = auditoria;
         this.emisorCertificado = emisorCertificado;
         this.notificador = notificador;
+        this.jornadaRepository = jornadaRepository;
     }
 
     /**
@@ -147,6 +150,14 @@ public class SolicitudService {
         solicitud.setEstatus(registrada);
         solicitud.setCanal(canal);
         solicitud.setFechaRegistro(OffsetDateTime.now());
+
+        // La precarga queda ligada a su jornada, para poder localizarla el dia
+        // del evento buscando entre las de esa jornada.
+        if (peticion.jornadaId() != null) {
+            solicitud.setJornada(jornadaRepository.findById(peticion.jornadaId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException(
+                            "Jornada", peticion.jornadaId())));
+        }
         solicitud.setAvisoPrivacidadVersion(peticion.avisoVersion());
         solicitud.setFechaAceptacionAviso(OffsetDateTime.now());
         solicitud.setIpOrigen(ip);
