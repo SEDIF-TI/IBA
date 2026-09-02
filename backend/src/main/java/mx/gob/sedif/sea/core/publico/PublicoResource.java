@@ -2,12 +2,17 @@ package mx.gob.sedif.sea.core.publico;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import mx.gob.sedif.sea.core.certificado.Certificado;
+import mx.gob.sedif.sea.core.certificado.CertificadoService;
+import mx.gob.sedif.sea.core.certificado.VerificacionRecord;
+import mx.gob.sedif.sea.core.documental.AcusePdfService;
 import mx.gob.sedif.sea.core.solicitud.RegistroPublicoRequest;
 import mx.gob.sedif.sea.core.solicitud.SeguimientoRecord;
 import mx.gob.sedif.sea.core.solicitud.Solicitud;
@@ -36,9 +41,15 @@ import jakarta.validation.constraints.NotBlank;
 public class PublicoResource {
 
     private final SolicitudService solicitudService;
+    private final CertificadoService certificadoService;
+    private final AcusePdfService acusePdfService;
 
-    public PublicoResource(SolicitudService solicitudService) {
+    public PublicoResource(SolicitudService solicitudService,
+                           CertificadoService certificadoService,
+                           AcusePdfService acusePdfService) {
         this.solicitudService = solicitudService;
+        this.certificadoService = certificadoService;
+        this.acusePdfService = acusePdfService;
     }
 
     /**
@@ -83,6 +94,82 @@ public class PublicoResource {
         Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
         return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
                 SeguimientoRecord.de(solicitud)));
+    }
+
+    /**
+     * Verifica un certificado a partir del codigo de su QR.
+     *
+     * <p>Es el destino al que llega quien escanea el documento. Confirma que el
+     * certificado es autentico y describe al animal, pero no revela nada del
+     * tutor: quien escanea puede ser cualquiera, y no tiene por que enterarse
+     * del nombre, domicilio o telefono de su responsable.
+     */
+    @GetMapping("/verificar/{codigo}")
+    public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<VerificacionRecord>> verificar(
+            @PathVariable String codigo) {
+
+        VerificacionRecord resultado;
+        try {
+            java.util.UUID identificador = java.util.UUID.fromString(codigo);
+
+            resultado = certificadoService.buscarPorCodigoVerificacion(identificador)
+                    .map(this::evaluarVigencia)
+                    .orElseGet(VerificacionRecord::noEncontrado);
+
+        } catch (IllegalArgumentException ex) {
+            // El codigo ni siquiera tiene la forma de un identificador valido.
+            resultado = VerificacionRecord.noEncontrado();
+        }
+
+        return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(resultado));
+    }
+
+    /** Determina si el certificado sigue surtiendo efecto y por que no. */
+    private VerificacionRecord evaluarVigencia(Certificado certificado) {
+        if (Boolean.FALSE.equals(certificado.getVigente())) {
+            return VerificacionRecord.noVigente(certificado,
+                    "Este certificado fue cancelado: "
+                            + certificado.getMotivoCancelacion());
+        }
+
+        if (certificado.getFechaVigencia() != null
+                && certificado.getFechaVigencia().isBefore(java.time.LocalDate.now())) {
+            return VerificacionRecord.noVigente(certificado,
+                    "Este certificado vencio el "
+                            + certificado.getFechaVigencia()
+                            + ". Acude al Instituto de Bienestar Animal para renovarlo.");
+        }
+
+        return VerificacionRecord.valido(certificado);
+    }
+
+    /**
+     * Descarga el acuse del tramite.
+     *
+     * <p>Exige folio y CURP, igual que la consulta: el acuse lleva datos
+     * personales y no puede quedar al alcance de quien solo conozca el folio.
+     */
+    @GetMapping("/acuse")
+    public ResponseEntity<byte[]> descargarAcuse(
+            @RequestParam @NotBlank String folio,
+            @RequestParam @NotBlank String curp) {
+
+        Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
+        byte[] pdf = acusePdfService.generar(solicitud);
+
+        org.springframework.http.ContentDisposition disposicion =
+                org.springframework.http.ContentDisposition.attachment()
+                        .filename("acuse-%s.pdf".formatted(solicitud.getFolioSolicitud()))
+                        .build();
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        disposicion.toString())
+                .header(org.springframework.http.HttpHeaders.CACHE_CONTROL,
+                        "no-store, no-cache, must-revalidate, private")
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .contentLength(pdf.length)
+                .body(pdf);
     }
 
     /**

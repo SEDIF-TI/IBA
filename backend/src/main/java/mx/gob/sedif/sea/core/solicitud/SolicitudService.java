@@ -72,6 +72,7 @@ public class SolicitudService {
     private final UsuarioRepository usuarioRepository;
     private final FolioService folioService;
     private final AuditoriaService auditoria;
+    private final EmisorCertificado emisorCertificado;
 
     public SolicitudService(SolicitudRepository solicitudRepository,
                             SolicitudHistorialRepository historialRepository,
@@ -89,7 +90,8 @@ public class SolicitudService {
                             MetodoIdentificacionRepository metodoIdentificacionRepository,
                             UsuarioRepository usuarioRepository,
                             FolioService folioService,
-                            AuditoriaService auditoria) {
+                            AuditoriaService auditoria,
+                            EmisorCertificado emisorCertificado) {
         this.solicitudRepository = solicitudRepository;
         this.historialRepository = historialRepository;
         this.personaRepository = personaRepository;
@@ -107,6 +109,7 @@ public class SolicitudService {
         this.usuarioRepository = usuarioRepository;
         this.folioService = folioService;
         this.auditoria = auditoria;
+        this.emisorCertificado = emisorCertificado;
     }
 
     /**
@@ -402,10 +405,25 @@ public class SolicitudService {
                 "Tramite en revision");
     }
 
-    /** Aprueba el tramite. */
+    /**
+     * Aprueba el tramite y emite su certificado.
+     *
+     * <p>La emision va aqui y no como un paso aparte porque aprobar sin emitir
+     * dejaria a la persona con un tramite resuelto y sin documento, esperando
+     * a que alguien se acuerde de generarlo.
+     *
+     * <p>Tras emitir, el tramite avanza solo a CERTIFICADO_EMITIDO: el
+     * documento ya existe y esa es su situacion real.
+     */
     @Transactional
     public Solicitud aprobar(Long solicitudId, String observacion) {
-        return cambiarEstatus(solicitudId, EstatusSolicitudEnum.APROBADA, null, observacion);
+        Solicitud aprobada = cambiarEstatus(
+                solicitudId, EstatusSolicitudEnum.APROBADA, null, observacion);
+
+        emisorCertificado.emitir(solicitudId);
+
+        return cambiarEstatus(solicitudId, EstatusSolicitudEnum.CERTIFICADO_EMITIDO,
+                null, "Certificado emitido");
     }
 
     /** Devuelve el tramite para que la persona corrija. */
