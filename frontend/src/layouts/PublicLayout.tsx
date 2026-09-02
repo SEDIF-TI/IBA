@@ -53,6 +53,9 @@ export function PublicLayout() {
             <Button component={RouterLink} to="/consulta" color="inherit">
               Consultar tramite
             </Button>
+            <Button component={RouterLink} to="/verificar" color="inherit">
+              Verificar certificado
+            </Button>
             <Button
               component={RouterLink}
               to="/registro"

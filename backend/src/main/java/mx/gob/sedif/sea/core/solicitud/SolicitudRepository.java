@@ -53,22 +53,49 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
      *
      * <p>Un parametro nulo significa "no filtrar por esto".
      */
+    /**
+     * Bandeja de trabajo del panel, con los filtros que usa el personal.
+     *
+     * <p>Las fechas se comparan contra un rango completo en lugar de admitir
+     * nulos: PostgreSQL no puede deducir el tipo de un parametro nulo suelto y
+     * rechaza la consulta. Quien llama sustituye el nulo por el extremo del
+     * rango, con lo que el filtro deja de restringir sin necesidad de nulos.
+     */
     @Query("""
             SELECT s FROM Solicitud s
             WHERE s.activo = TRUE
               AND (:estatusId IS NULL OR s.estatus.id = :estatusId)
               AND (:municipioId IS NULL OR s.persona.municipio.id = :municipioId)
               AND (:jornadaId IS NULL OR s.jornada.id = :jornadaId)
-              AND (:desde IS NULL OR s.fechaRegistro >= :desde)
-              AND (:hasta IS NULL OR s.fechaRegistro <= :hasta)
+              AND s.fechaRegistro BETWEEN :desde AND :hasta
             """)
-    @EntityGraph(attributePaths = {"persona", "animal", "estatus"})
-    Page<Solicitud> buscarBandeja(@Param("estatusId") Integer estatusId,
+    @EntityGraph(attributePaths = {"persona", "persona.municipio", "animal",
+                                   "animal.especie", "estatus"})
+    Page<Solicitud> buscarEnRango(@Param("estatusId") Integer estatusId,
                                   @Param("municipioId") Integer municipioId,
                                   @Param("jornadaId") Long jornadaId,
                                   @Param("desde") OffsetDateTime desde,
                                   @Param("hasta") OffsetDateTime hasta,
                                   Pageable pageable);
+
+    /**
+     * Bandeja con filtros opcionales.
+     *
+     * <p>Un filtro sin valor no restringe: las fechas ausentes se sustituyen
+     * por extremos que abarcan cualquier registro.
+     */
+    default Page<Solicitud> buscarBandeja(Integer estatusId, Integer municipioId,
+                                          Long jornadaId, OffsetDateTime desde,
+                                          OffsetDateTime hasta, Pageable pageable) {
+        OffsetDateTime inicio = desde != null
+                ? desde
+                : OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, java.time.ZoneOffset.UTC);
+        OffsetDateTime fin = hasta != null
+                ? hasta
+                : OffsetDateTime.now().plusYears(100);
+
+        return buscarEnRango(estatusId, municipioId, jornadaId, inicio, fin, pageable);
+    }
 
     /** Tramites de una persona, del mas reciente al mas antiguo. */
     Page<Solicitud> findByPersonaIdOrderByFechaRegistroDesc(Long personaId, Pageable pageable);

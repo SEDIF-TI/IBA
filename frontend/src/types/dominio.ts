@@ -119,3 +119,40 @@ export interface Documento {
   observacion?: string;
   fechaCarga: string;
 }
+
+/** Certificado emitido tras aprobar un tramite. */
+export interface Certificado {
+  id: number;
+  folio: string;
+  codigoVerificacion: string;
+  folioSolicitud: string;
+  animalNombre: string;
+  tutorNombre: string;
+  fechaEmision: string;
+  fechaVigencia?: string;
+  vigente: boolean;
+  motivoCancelacion?: string;
+  entregado: boolean;
+  firmado: boolean;
+}
+
+/**
+ * Respuesta del verificador publico, destino del codigo QR.
+ *
+ * <p>Deliberadamente sin datos del tutor: quien escanea el documento puede ser
+ * cualquiera y no tiene por que enterarse de quien responde por el animal.
+ */
+export interface Verificacion {
+  valido: boolean;
+  folio?: string;
+  animalNombre?: string;
+  animalEspecie?: string;
+  animalRaza?: string;
+  animalSexo?: string;
+  animalColor?: string;
+  animalEdad?: string;
+  municipio?: string;
+  fechaEmision?: string;
+  fechaVigencia?: string;
+  mensaje: string;
+}

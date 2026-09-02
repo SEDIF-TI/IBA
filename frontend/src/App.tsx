@@ -5,6 +5,8 @@ import AdminLayout from '@/layouts/AdminLayout';
 import PublicLayout from '@/layouts/PublicLayout';
 
 import AdminCatalogo from '@/pages/admin/AdminCatalogo';
+import BandejaSolicitudes from '@/pages/admin/BandejaSolicitudes';
+import DetalleSolicitud from '@/pages/admin/DetalleSolicitud';
 import CambiarPassword from '@/pages/admin/CambiarPassword';
 import CatalogosIndex from '@/pages/admin/CatalogosIndex';
 import Login from '@/pages/admin/Login';
@@ -13,6 +15,7 @@ import Tablero from '@/pages/admin/Tablero';
 
 import ConsultaTramite from '@/pages/publico/ConsultaTramite';
 import Inicio from '@/pages/publico/Inicio';
+import VerificarCertificado from '@/pages/publico/VerificarCertificado';
 
 /**
  * Rutas del sistema.
@@ -28,6 +31,10 @@ export function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Inicio />} />
         <Route path="/consulta" element={<ConsultaTramite />} />
+        {/* Destino del codigo QR impreso en el certificado. La variante con
+            codigo verifica sola; la otra permite capturarlo a mano. */}
+        <Route path="/verificar" element={<VerificarCertificado />} />
+        <Route path="/verificar/:codigo" element={<VerificarCertificado />} />
       </Route>
 
       {/* ---- Acceso al panel ---- */}
@@ -55,6 +62,23 @@ export function App() {
       >
         <Route index element={<Tablero />} />
         <Route path="sin-permiso" element={<SinPermiso />} />
+
+        <Route
+          path="solicitudes"
+          element={
+            <ProtectedRoute permiso="solicitud:ver">
+              <BandejaSolicitudes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="solicitudes/:id"
+          element={
+            <ProtectedRoute permiso="solicitud:ver">
+              <DetalleSolicitud />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="catalogos"

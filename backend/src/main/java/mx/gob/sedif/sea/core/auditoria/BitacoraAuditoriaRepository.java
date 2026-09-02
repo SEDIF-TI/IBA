@@ -14,23 +14,38 @@ import org.springframework.stereotype.Repository;
 public interface BitacoraAuditoriaRepository extends JpaRepository<BitacoraAuditoria, Long> {
 
     /**
-     * Consulta filtrada de la bitacora. Un parametro nulo no filtra.
+     * Consulta de la bitacora dentro de un rango de fechas.
+     *
+     * <p>Las fechas no admiten nulos: PostgreSQL no puede deducir el tipo de un
+     * parametro nulo suelto y rechaza la consulta. Quien llama sustituye el
+     * nulo por el extremo del rango.
      */
     @Query("""
             SELECT b FROM BitacoraAuditoria b
             WHERE (:usuarioId IS NULL OR b.usuario.id = :usuarioId)
               AND (:entidad IS NULL OR b.entidad = :entidad)
               AND (:accion IS NULL OR b.accion = :accion)
-              AND (:desde IS NULL OR b.fecha >= :desde)
-              AND (:hasta IS NULL OR b.fecha <= :hasta)
+              AND b.fecha BETWEEN :desde AND :hasta
             ORDER BY b.fecha DESC
             """)
-    Page<BitacoraAuditoria> buscar(@Param("usuarioId") Long usuarioId,
-                                   @Param("entidad") String entidad,
-                                   @Param("accion") String accion,
-                                   @Param("desde") OffsetDateTime desde,
-                                   @Param("hasta") OffsetDateTime hasta,
-                                   Pageable pageable);
+    Page<BitacoraAuditoria> buscarEnRango(@Param("usuarioId") Long usuarioId,
+                                          @Param("entidad") String entidad,
+                                          @Param("accion") String accion,
+                                          @Param("desde") OffsetDateTime desde,
+                                          @Param("hasta") OffsetDateTime hasta,
+                                          Pageable pageable);
+
+    /** Consulta filtrada de la bitacora. Un filtro sin valor no restringe. */
+    default Page<BitacoraAuditoria> buscar(Long usuarioId, String entidad, String accion,
+                                           OffsetDateTime desde, OffsetDateTime hasta,
+                                           Pageable pageable) {
+        OffsetDateTime inicio = desde != null
+                ? desde
+                : OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, java.time.ZoneOffset.UTC);
+        OffsetDateTime fin = hasta != null ? hasta : OffsetDateTime.now().plusYears(100);
+
+        return buscarEnRango(usuarioId, entidad, accion, inicio, fin, pageable);
+    }
 
     /** Historial de un registro concreto. */
     Page<BitacoraAuditoria> findByEntidadAndRegistroIdOrderByFechaDesc(
