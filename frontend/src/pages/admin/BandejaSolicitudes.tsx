@@ -20,12 +20,14 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import EstatusChip from '@/components/EstatusChip';
+import { useAuth } from '@/context/AuthContext';
 import { useNotificacion } from '@/context/NotificationContext';
 import { mensajeDeError } from '@/services/api';
 import { catalogos } from '@/services/catalogoService';
@@ -54,6 +56,7 @@ export function BandejaSolicitudes() {
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
 
+  const { tienePermiso } = useAuth();
   const notificacion = useNotificacion();
   const navegar = useNavigate();
 
@@ -118,12 +121,32 @@ export function BandejaSolicitudes() {
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight={600} gutterBottom>
-        Tramites
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Solicitudes recibidas del portal, de ventanilla y de las jornadas.
-      </Typography>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ sm: 'center' }}
+        spacing={2}
+        sx={{ mb: 3 }}
+      >
+        <Box>
+          <Typography variant="h5" fontWeight={600}>
+            Tramites
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Solicitudes recibidas del portal, de ventanilla y de las jornadas.
+          </Typography>
+        </Box>
+
+        {tienePermiso('solicitud:crear') && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navegar('/admin/solicitudes/nueva')}
+          >
+            Capturar en ventanilla
+          </Button>
+        )}
+      </Stack>
 
       <Card sx={{ mb: 2 }}>
         <Stack

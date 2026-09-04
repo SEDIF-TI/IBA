@@ -49,13 +49,14 @@ import type {
 } from '@/types/dominio';
 
 /** Resolucion que el personal puede tomar. */
-type Resolucion = 'aprobar' | 'observar' | 'rechazar' | 'cancelar';
+type Resolucion = 'aprobar' | 'observar' | 'rechazar' | 'cancelar' | 'entregar';
 
 const RESOLUCIONES: Record<Resolucion, { titulo: string; exigeMotivo: boolean; color: 'success' | 'warning' | 'error' | 'inherit' }> = {
   aprobar: { titulo: 'Aprobar tramite', exigeMotivo: false, color: 'success' },
   observar: { titulo: 'Devolver para correccion', exigeMotivo: true, color: 'warning' },
   rechazar: { titulo: 'Rechazar tramite', exigeMotivo: true, color: 'error' },
   cancelar: { titulo: 'Cancelar tramite', exigeMotivo: true, color: 'inherit' },
+  entregar: { titulo: 'Registrar entrega', exigeMotivo: false, color: 'success' },
 };
 
 /** Recorrido del tramite, para ubicar en que punto va. */
@@ -150,6 +151,7 @@ export function DetalleSolicitud() {
         observar: () => solicitudService.observar(solicitudId, peticion),
         rechazar: () => solicitudService.rechazar(solicitudId, peticion),
         cancelar: () => solicitudService.cancelar(solicitudId, peticion),
+        entregar: () => solicitudService.registrarEntrega(solicitudId, peticion),
       };
 
       await acciones[resolucion]();
@@ -165,6 +167,9 @@ export function DetalleSolicitud() {
           'Tramite rechazado. A la persona se le avisa el motivo; el tramite ' +
           'ya no admite mas cambios.',
         cancelar: 'Tramite cancelado. Ya no admite mas cambios.',
+        entregar:
+          'Se registro la entrega. El tramite queda concluido: la persona ya ' +
+          'tiene su certificado y su credencial.',
       };
       notificacion.exito(avisos[resolucion]);
 
@@ -425,6 +430,28 @@ export function DetalleSolicitud() {
         </Card>
       )}
 
+      {solicitud.estatusClave === 'CERTIFICADO_EMITIDO' &&
+        tienePermiso('certificado:emitir') && (
+          <Card sx={{ mt: 2 }}>
+            <CardContent>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                Entrega
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Cuando la persona recoja su certificado y su credencial, registra
+                la entrega para cerrar el tramite.
+              </Typography>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => setResolucion('entregar')}
+              >
+                Registrar entrega
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
       {puedeRevisar && (registrada || enRevision) && (
         <Card sx={{ mt: 2 }}>
           <CardContent>
@@ -521,6 +548,13 @@ export function DetalleSolicitud() {
           {resolucion === 'aprobar' && (
             <Alert severity="info" sx={{ mb: 2 }}>
               Al aprobar se emite el certificado y queda listo para imprimir.
+            </Alert>
+          )}
+
+          {resolucion === 'entregar' && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Confirma que la persona recibio su certificado y su credencial. El
+              tramite queda concluido y no admitira mas cambios.
             </Alert>
           )}
 

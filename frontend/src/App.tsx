@@ -8,6 +8,7 @@ import AdminCatalogo from '@/pages/admin/AdminCatalogo';
 import AdminJornadas from '@/pages/admin/AdminJornadas';
 import BandejaContacto from '@/pages/admin/BandejaContacto';
 import BandejaSolicitudes from '@/pages/admin/BandejaSolicitudes';
+import CapturaVentanilla from '@/pages/admin/CapturaVentanilla';
 import OperarJornada from '@/pages/admin/OperarJornada';
 import DetalleSolicitud from '@/pages/admin/DetalleSolicitud';
 import FichaAnimal from '@/pages/admin/FichaAnimal';
@@ -23,6 +24,7 @@ import Tablero from '@/pages/admin/Tablero';
 import CalendarioJornadas from '@/pages/publico/CalendarioJornadas';
 import ConsultaTramite from '@/pages/publico/ConsultaTramite';
 import Inicio from '@/pages/publico/Inicio';
+import RegistroTramite from '@/pages/publico/RegistroTramite';
 import VerificarCertificado from '@/pages/publico/VerificarCertificado';
 
 /**
@@ -38,6 +40,7 @@ export function App() {
       {/* ---- Portal ciudadano ---- */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Inicio />} />
+        <Route path="/registro" element={<RegistroTramite />} />
         <Route path="/consulta" element={<ConsultaTramite />} />
         {/* Destino del codigo QR impreso en el certificado. La variante con
             codigo verifica sola; la otra permite capturarlo a mano. */}
@@ -77,6 +80,14 @@ export function App() {
           element={
             <ProtectedRoute permiso="solicitud:ver">
               <BandejaSolicitudes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="solicitudes/nueva"
+          element={
+            <ProtectedRoute permiso="solicitud:crear">
+              <CapturaVentanilla />
             </ProtectedRoute>
           }
         />

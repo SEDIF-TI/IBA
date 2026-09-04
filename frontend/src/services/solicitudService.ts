@@ -50,6 +50,8 @@ export interface RegistroPublicoRequest {
   };
   aceptaAviso: boolean;
   avisoVersion: string;
+  /** Jornada para la que se adelanta el registro, si aplica. */
+  jornadaId?: number;
 }
 
 /** Respuesta del alta publica. */
@@ -82,6 +84,19 @@ export const solicitudService = {
       params: { folio, curp },
     });
     return data.data;
+  },
+
+  /**
+   * Captura un tramite en ventanilla.
+   *
+   * <p>Para cuando la persona llega sin haberse registrado: no tiene internet,
+   * o llego a la jornada sin precargar.
+   */
+  async capturarEnVentanilla(
+    peticion: RegistroPublicoRequest,
+  ): Promise<{ solicitud: Solicitud; mensaje: string }> {
+    const { data } = await api.post<ApiResponse<Solicitud>>('/solicitudes', peticion);
+    return { solicitud: data.data, mensaje: data.message };
   },
 
   /** Bandeja de trabajo del panel. */
@@ -132,6 +147,15 @@ export const solicitudService = {
   async rechazar(id: number, peticion: ResolucionRequest): Promise<Solicitud> {
     const { data } = await api.patch<ApiResponse<Solicitud>>(
       `/solicitudes/${id}/rechazar`,
+      peticion,
+    );
+    return data.data;
+  },
+
+  /** Registra que la persona recogio su documentacion. Cierra el tramite. */
+  async registrarEntrega(id: number, peticion: ResolucionRequest): Promise<Solicitud> {
+    const { data } = await api.patch<ApiResponse<Solicitud>>(
+      `/solicitudes/${id}/entregar`,
       peticion,
     );
     return data.data;

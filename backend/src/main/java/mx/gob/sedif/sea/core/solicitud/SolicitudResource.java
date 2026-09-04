@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -64,6 +65,34 @@ public class SolicitudResource {
                 .map(SolicitudRecord::de);
 
         return ResponseEntity.ok(ApiResponse.ok(pagina));
+    }
+
+    /**
+     * Captura un tramite en ventanilla.
+     *
+     * <p>Es para cuando la persona llega sin haberse registrado: no tiene
+     * internet, o llego a la jornada sin precargar. El personal captura por
+     * ella y el tramite queda con canal VENTANILLA.
+     */
+    @PostMapping
+    @PreAuthorize("hasAuthority('solicitud:crear')")
+    public ResponseEntity<ApiResponse<SolicitudRecord>> capturarEnVentanilla(
+            @Valid @RequestBody mx.gob.sedif.sea.core.solicitud.RegistroPublicoRequest peticion,
+            jakarta.servlet.http.HttpServletRequest http) {
+
+        String ip = mx.gob.sedif.sea.security.SecurityUtil.obtenerIpCliente(http);
+
+        mx.gob.sedif.sea.core.solicitud.Solicitud solicitud = solicitudService.registrar(
+                peticion,
+                peticion.jornadaId() != null
+                        ? mx.gob.sedif.sea.util.enums.CanalSolicitud.JORNADA
+                        : mx.gob.sedif.sea.util.enums.CanalSolicitud.VENTANILLA,
+                ip);
+
+        return ResponseEntity.ok(ApiResponse.ok(
+                SolicitudRecord.de(solicitud),
+                "Tramite capturado con folio %s. Ya puedes tomarlo para revision."
+                        .formatted(solicitud.getFolioSolicitud())));
     }
 
     /** Detalle de un tramite. */
@@ -129,6 +158,23 @@ public class SolicitudResource {
                 SolicitudRecord.de(solicitudService.rechazar(
                         id, peticion.motivoId(), peticion.observacion())),
                 "Tramite rechazado"));
+    }
+
+    /**
+     * Registra que la persona recogio su documentacion.
+     *
+     * <p>Cierra el tramite: es el ultimo paso del flujo.
+     */
+    @PatchMapping("/{id}/entregar")
+    @PreAuthorize("hasAuthority('certificado:emitir')")
+    public ResponseEntity<ApiResponse<SolicitudRecord>> registrarEntrega(
+            @PathVariable Long id,
+            @Valid @RequestBody ResolucionRequest peticion) {
+
+        return ResponseEntity.ok(ApiResponse.ok(
+                SolicitudRecord.de(solicitudService.registrarEntrega(
+                        id, peticion.observacion())),
+                "Se registro la entrega. El tramite queda concluido."));
     }
 
     /** Cancela el tramite. */

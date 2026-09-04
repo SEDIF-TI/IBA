@@ -470,6 +470,20 @@ public class SolicitudService {
         return rechazada;
     }
 
+    /**
+     * Registra la entrega de la documentacion.
+     *
+     * <p>Es el ultimo paso del tramite: la persona vino por su certificado y su
+     * credencial, y se los llevo. A partir de aqui el expediente esta cerrado.
+     */
+    @Transactional
+    public Solicitud registrarEntrega(Long solicitudId, String observacion) {
+        return cambiarEstatus(solicitudId, EstatusSolicitudEnum.ENTREGADA, null,
+                observacion == null || observacion.isBlank()
+                        ? "Documentacion entregada a la persona solicitante"
+                        : observacion);
+    }
+
     /** Cancela el tramite. */
     @Transactional
     public Solicitud cancelar(Long solicitudId, Integer motivoId, String observacion) {
