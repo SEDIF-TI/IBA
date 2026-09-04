@@ -58,7 +58,7 @@ public class AcusePdfService {
             PdfWriter escritor = PdfWriter.getInstance(documento, salida);
             escritor.setPageEvent(new FondoHuellas(identidad.colorPrimario()));
 
-            documento.addTitle("Acuse de tramite " + solicitud.getFolioSolicitud());
+            documento.addTitle("Acuse de trámite " + solicitud.getFolioSolicitud());
             documento.addCreator(identidad.nombreArea());
             documento.open();
 
@@ -78,7 +78,7 @@ public class AcusePdfService {
             documento.add(area);
 
             Paragraph titulo = new Paragraph(
-                    "ACUSE DE RECEPCION DE TRAMITE",
+                    "ACUSE DE RECEPCIÓN DE TRÁMITE",
                     FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, color));
             titulo.setAlignment(Element.ALIGN_CENTER);
             titulo.setSpacingAfter(20f);
@@ -123,19 +123,19 @@ public class AcusePdfService {
             agregarFila(datos, "Especie",
                     solicitud.getAnimal().getEspecie() == null
                             ? null : solicitud.getAnimal().getEspecie().getNombre());
-            agregarFila(datos, "Situacion", solicitud.getEstatus().getNombre());
+            agregarFila(datos, "Situación", solicitud.getEstatus().getNombre());
             documento.add(datos);
 
             Paragraph indicaciones = new Paragraph(
                     "Conserva este acuse. Con tu folio y tu CURP puedes consultar en "
-                            + "cualquier momento el avance de tu tramite.",
+                            + "cualquier momento el avance de tu trámite.",
                     FontFactory.getFont(FontFactory.HELVETICA, 9.5f, Color.DARK_GRAY));
             indicaciones.setSpacingBefore(26f);
             indicaciones.setAlignment(Element.ALIGN_JUSTIFIED);
             documento.add(indicaciones);
 
             Paragraph aviso = new Paragraph(
-                    "Este acuse hace constar unicamente la recepcion del tramite. "
+                    "Este acuse hace constar unicamente la recepcion del trámite. "
                             + "No acredita el empadronamiento, que se hace constar en el "
                             + "certificado correspondiente una vez aprobada la solicitud.",
                     FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8.5f, Color.GRAY));
@@ -151,7 +151,7 @@ public class AcusePdfService {
 
         } catch (RuntimeException ex) {
             throw new AlmacenamientoException(
-                    "No se pudo generar el acuse del tramite "
+                    "No se pudo generar el acuse del trámite "
                             + solicitud.getFolioSolicitud(), ex);
         }
     }

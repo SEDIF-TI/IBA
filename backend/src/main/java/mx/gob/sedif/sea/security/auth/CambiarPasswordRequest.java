@@ -11,15 +11,15 @@ import jakarta.validation.constraints.Size;
  * @param passwordNueva  contrasena nueva
  */
 public record CambiarPasswordRequest(
-        @NotBlank(message = "La contrasena actual es obligatoria")
+        @NotBlank(message = "La contraseña actual es obligatoria")
         String passwordActual,
 
-        @NotBlank(message = "La contrasena nueva es obligatoria")
-        @Size(min = 12, message = "La contrasena debe tener al menos 12 caracteres")
+        @NotBlank(message = "La contraseña nueva es obligatoria")
+        @Size(min = 12, message = "La contraseña debe tener al menos 12 caracteres")
         @Size(max = 200)
         // Se exige variedad para que no baste con una palabra del diccionario.
         @Pattern(
                 regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
-                message = "La contrasena debe incluir mayusculas, minusculas y numeros")
+                message = "La contraseña debe incluir mayusculas, minusculas y numeros")
         String passwordNueva) {
 }

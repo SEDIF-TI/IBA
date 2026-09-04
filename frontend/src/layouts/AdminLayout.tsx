@@ -122,7 +122,7 @@ export function AdminLayout() {
       await cerrarSesion();
       navegar('/admin/login', { replace: true });
     } catch {
-      notificacion.error('No se pudo cerrar la sesion');
+      notificacion.error('No se pudo cerrar la sesión');
     }
   }
 

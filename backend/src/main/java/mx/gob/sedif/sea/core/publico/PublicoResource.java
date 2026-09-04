@@ -86,17 +86,17 @@ public class PublicoResource {
                 solicitud.getTokenConsulta().toString(),
                 solicitud.getEstatus().getNombre(),
                 esPrecarga
-                        ? "Guarda tu folio y presentalo el dia de la jornada. "
-                                + "Lleva tu identificacion original."
+                        ? "Guarda tu folio y preséntalo el dia de la jornada. "
+                                + "Lleva tu identificación original."
                         : "Guarda tu folio: lo necesitaras para consultar el avance "
-                                + "de tu tramite.");
+                                + "de tu trámite.");
 
         return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
                 respuesta,
                 esPrecarga
-                        ? "Tu registro quedo adelantado para la jornada. El dia del "
+                        ? "Tu registro quedó adelantado para la jornada. El dia del "
                                 + "evento solo tendras que presentarte."
-                        : "Tu tramite quedo registrado. Recibiras el resultado por "
+                        : "Tu trámite quedó registrado. Recibiras el resultado por "
                                 + "el medio de contacto que proporcionaste."));
     }
 
@@ -135,7 +135,7 @@ public class PublicoResource {
                 jornadas,
                 jornadas.isEmpty()
                         ? "Por ahora no hay jornadas programadas. Puedes registrar "
-                                + "tu tramite en cualquier momento desde este portal."
+                                + "tu trámite en cualquier momento desde este portal."
                         : "Hay %d jornada(s) programada(s)".formatted(jornadas.size())));
     }
 

@@ -208,7 +208,7 @@ export function App() {
           element={
             <AdminCatalogo
               ruta="metodos-identificacion"
-              titulo="Metodos de identificacion"
+              titulo="Metodos de identificación"
               singular="Metodo"
             />
           }
@@ -238,7 +238,7 @@ export function App() {
           element={
             <AdminCatalogo
               ruta="estatus-solicitud"
-              titulo="Estados del tramite"
+              titulo="Estados del trámite"
               singular="Estado"
             />
           }

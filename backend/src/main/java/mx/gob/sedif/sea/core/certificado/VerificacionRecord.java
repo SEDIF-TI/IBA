@@ -88,7 +88,7 @@ public record VerificacionRecord(
     public static VerificacionRecord noEncontrado() {
         return new VerificacionRecord(
                 false, null, null, null, null, null, null, null, null, null, null,
-                "No existe ningun certificado con este codigo de verificacion.");
+                "No existe ningún certificado con este código de verificación.");
     }
 
     private static String nombreDe(mx.gob.sedif.sea.core.catalogo.CatalogoBase catalogo) {

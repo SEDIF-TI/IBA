@@ -44,8 +44,8 @@ public class EnvioCorreoStub implements EnvioCorreoService {
                 destinatario, asunto);
 
         return ResultadoEnvio.fallo(
-                "El envio de correo no esta configurado en el sistema, asi que este "
-                        + "aviso no salio. Comunicate por telefono con la persona.");
+                "El envio de correo no está configurado en el sistema, así que este "
+                        + "aviso no salio. Comunícate por teléfono con la persona.");
     }
 
     @Override

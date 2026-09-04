@@ -188,7 +188,7 @@ public class CredencialPdfService {
         lienzo.fill();
         lienzo.restoreState();
 
-        texto(lienzo, "Padron Estatal de Perros y Gatos", xTexto + anchoCinta / 2f,
+        texto(lienzo, "Padrón Estatal de Perros y Gatos", xTexto + anchoCinta / 2f,
               yTitulo - 13.5f, 6f, Color.WHITE, true, Element.ALIGN_CENTER);
 
         // Nombre y folio, junto a la foto.
@@ -223,7 +223,7 @@ public class CredencialPdfService {
         yRasgos -= 13f;
 
         // Las senas particulares ocupan el ancho completo: es el campo mas largo.
-        campoLinea(lienzo, "Caracteristicas:",
+        campoLinea(lienzo, "Características:",
                    recortar(datos.animal().getCaracteristicas(), 34),
                    col1, yRasgos, colorEtiqueta, 6.5f, 6.5f, 52f);
 
@@ -250,15 +250,15 @@ public class CredencialPdfService {
                    xTexto, yDato, colorEtiqueta, 6.5f, 7.5f, 52f);
         yDato -= 17f;
 
-        campoLinea(lienzo, "Direccion:", recortar(domicilioDe(datos.persona()), 44),
+        campoLinea(lienzo, "Dirección:", recortar(domicilioDe(datos.persona()), 44),
                    xTexto, yDato, colorEtiqueta, 6.5f, 6.5f, 44f);
         yDato -= 17f;
 
-        campoLinea(lienzo, "Telefono:", datos.persona().getTelefono(),
+        campoLinea(lienzo, "Teléfono:", datos.persona().getTelefono(),
                    xTexto, yDato, colorEtiqueta, 6.5f, 7f, 42f);
         yDato -= 17f;
 
-        campoLinea(lienzo, "Correo electronico:", recortar(datos.persona().getCorreo(), 32),
+        campoLinea(lienzo, "Correo electrónico:", recortar(datos.persona().getCorreo(), 32),
                    xTexto, yDato, colorEtiqueta, 6.5f, 6.5f, 68f);
         yDato -= 17f;
 

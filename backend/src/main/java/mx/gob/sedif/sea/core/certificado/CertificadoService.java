@@ -236,7 +236,7 @@ public class CertificadoService
     public Certificado cancelar(Long certificadoId, String motivo) {
         if (motivo == null || motivo.isBlank()) {
             throw new ReglaNegocioException(
-                    "Debes indicar el motivo de la cancelacion");
+                    "Debes indicar el motivo de la cancelación");
         }
 
         Certificado certificado = obtener(certificadoId);

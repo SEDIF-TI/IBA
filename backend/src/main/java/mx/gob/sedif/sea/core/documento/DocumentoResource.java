@@ -105,7 +105,7 @@ public class DocumentoResource {
                 id, peticion.legible(), peticion.observacion());
 
         return ResponseEntity.ok(
-                ApiResponse.ok(DocumentoRecord.de(documento), "Revision registrada"));
+                ApiResponse.ok(DocumentoRecord.de(documento), "Revisión registrada"));
     }
 
     /** Retira un documento del tramite. */

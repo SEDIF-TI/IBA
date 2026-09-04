@@ -35,7 +35,7 @@ public class FirmaServiceStub implements FirmaService {
     @Override
     public ResultadoFirma firmar(byte[] documento, ContextoFirma contexto) {
         log.info("Certificado {} emitido sin firma electronica; se entrega con "
-                        + "codigo de verificacion y leyenda de sello fisico",
+                        + "código de verificación y leyenda de sello fisico",
                 contexto.folioCertificado());
 
         return ResultadoFirma.sinFirmar(documento, leyendaSelloFisico);

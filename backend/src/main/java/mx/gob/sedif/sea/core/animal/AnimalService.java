@@ -98,7 +98,7 @@ public class AnimalService {
     public Titularidad transferir(Long animalId, Long nuevoTutorId, String motivo) {
         if (motivo == null || motivo.isBlank()) {
             throw new ReglaNegocioException(
-                    "Escribe el motivo de la transferencia (adopcion, cambio de "
+                    "Escribe el motivo de la transferencia (adopción, cambio de "
                             + "responsable, fallecimiento del tutor). Queda en el "
                             + "historial del animal.");
         }
@@ -164,7 +164,7 @@ public class AnimalService {
 
         if (fechaDefuncion.isAfter(LocalDate.now())) {
             throw new ReglaNegocioException(
-                    "La fecha de defuncion no puede ser posterior a hoy");
+                    "La fecha de defunción no puede ser posterior a hoy");
         }
 
         animal.setFinado(true);

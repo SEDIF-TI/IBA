@@ -24,11 +24,11 @@ const CATALOGOS = [
   {
     ruta: 'motivos-rechazo',
     titulo: 'Motivos de rechazo',
-    detalle: 'Causas de observacion o rechazo',
+    detalle: 'Causas de observación o rechazo',
   },
   {
     ruta: 'estatus-solicitud',
-    titulo: 'Estados del tramite',
+    titulo: 'Estados del trámite',
     detalle: 'Nombre y color de cada estado',
   },
   { ruta: 'estatus-cita', titulo: 'Estados de la cita', detalle: 'Agendada, atendida' },

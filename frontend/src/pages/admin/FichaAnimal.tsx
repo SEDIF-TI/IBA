@@ -373,7 +373,7 @@ export function FichaAnimal() {
             required
             multiline
             rows={2}
-            helperText="Adopcion, cambio de responsable, fallecimiento del tutor..."
+            helperText="Adopción, cambio de responsable, fallecimiento del tutor..."
             inputProps={{ maxLength: 300 }}
           />
         </DialogContent>

@@ -46,11 +46,11 @@ public class Persona extends Auditable {
 
     /**
      * Unica cuando no es nula, garantizado por un indice unico parcial.
-     * El digito verificador se valida en la capa de servicio: la regla de
+     * El dígito verificador se valida en la capa de servicio: la regla de
      * RENAPO es un algoritmo, no una expresion regular.
      */
     @Pattern(regexp = "^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]$",
-             message = "La CURP no tiene el formato valido")
+             message = "La CURP no tiene el formato válido")
     @Column(name = "s_curp", length = 18)
     private String curp;
 
@@ -109,7 +109,7 @@ public class Persona extends Auditable {
     @Column(name = "s_colonia", length = 150)
     private String colonia;
 
-    @Pattern(regexp = "^[0-9]{5}$", message = "El codigo postal debe tener 5 digitos")
+    @Pattern(regexp = "^[0-9]{5}$", message = "El codigo postal debe tener 5 dígitos")
     @Column(name = "s_codigo_postal", length = 5)
     private String codigoPostal;
 

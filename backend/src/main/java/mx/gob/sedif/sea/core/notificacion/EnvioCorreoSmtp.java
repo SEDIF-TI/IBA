@@ -66,7 +66,7 @@ public class EnvioCorreoSmtp implements EnvioCorreoService {
             return ResultadoEnvio.fallo(
                     "El servidor no acepto la direccion '%s'. Verifica que este bien "
                             .formatted(destinatario)
-                            + "escrita o comunicate por telefono.");
+                            + "escrita o comunícate por teléfono.");
 
         } catch (MailException ex) {
             log.error("Fallo el envio de correo a {}", enmascarar(destinatario), ex);
@@ -84,7 +84,7 @@ public class EnvioCorreoSmtp implements EnvioCorreoService {
     /** Deja la direccion irreconocible en la bitacora del servidor. */
     private String enmascarar(String correo) {
         if (correo == null || !correo.contains("@")) {
-            return "(sin direccion)";
+            return "(sin dirección)";
         }
         String[] partes = correo.split("@", 2);
         String usuario = partes[0];

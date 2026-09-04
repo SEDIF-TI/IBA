@@ -176,7 +176,7 @@ public class SolicitudService {
 
         log.info("Tramite {} dado de alta ({}){}",
                 guardada.getFolioSolicitud(), canal,
-                avisos.isEmpty() ? "" : " con revision reforzada");
+                avisos.isEmpty() ? "" : " con revisión reforzada");
 
         // Acuse de recepcion. Si no dejo correo, queda en la bandeja de contacto.
         notificador.avisar(guardada.getId(), "SOLICITUD_RECIBIDA");
@@ -233,7 +233,7 @@ public class SolicitudService {
             avisos.add("El correo no coincide con el registrado anteriormente");
         }
         if (difiere(persona.getTelefono(), tutor.telefono())) {
-            avisos.add("El telefono no coincide con el registrado anteriormente");
+            avisos.add("El teléfono no coincide con el registrado anteriormente");
         }
     }
 
@@ -327,7 +327,7 @@ public class SolicitudService {
             animal.setMetodoIdentificacion(
                     metodoIdentificacionRepository.findById(datos.metodoIdentificacionId())
                             .orElseThrow(() -> new RecursoNoEncontradoException(
-                                    "Metodo de identificacion",
+                                    "Metodo de identificación",
                                     datos.metodoIdentificacionId())));
         }
         animal.setEdadMeses(datos.edadTotalMeses());
@@ -419,7 +419,7 @@ public class SolicitudService {
     @Transactional
     public Solicitud tomarParaRevision(Long solicitudId) {
         return cambiarEstatus(solicitudId, EstatusSolicitudEnum.EN_REVISION, null,
-                "Tramite en revision");
+                "Trámite en revisión");
     }
 
     /**
@@ -512,7 +512,7 @@ public class SolicitudService {
         if (motivo == null || motivo.isBlank()) {
             throw new ReglaNegocioException(
                     "Escribe por que se da de baja este registro. Queda en la "
-                            + "bitacora por si despues hay que explicarlo.");
+                            + "bitácora por si después hay que explicarlo.");
         }
 
         Solicitud solicitud = obtener(solicitudId);
@@ -521,9 +521,9 @@ public class SolicitudService {
         if (EstatusSolicitudEnum.CERTIFICADO_EMITIDO.name().equals(estatus)
                 || EstatusSolicitudEnum.ENTREGADA.name().equals(estatus)) {
             throw new ReglaNegocioException(
-                    "No se puede dar de baja un tramite con certificado emitido: ese "
+                    "No se puede dar de baja un trámite con certificado emitido: ese "
                             + "documento ya circula. Si el certificado no debe surtir "
-                            + "efecto, cancelalo desde la ficha del tramite.");
+                            + "efecto, cancélalo desde la ficha del trámite.");
         }
 
         solicitud.setActivo(false);
@@ -588,7 +588,7 @@ public class SolicitudService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Solicitud", solicitudId));
 
         if (Boolean.TRUE.equals(solicitud.getActivo())) {
-            throw new ReglaNegocioException("Este tramite no estaba dado de baja");
+            throw new ReglaNegocioException("Este trámite no estaba dado de baja");
         }
 
         solicitud.setActivo(true);

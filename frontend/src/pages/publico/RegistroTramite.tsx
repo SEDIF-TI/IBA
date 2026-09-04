@@ -11,6 +11,7 @@ import {
   FormControl,
   FormControlLabel,
   Grid,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -21,6 +22,8 @@ import {
   Typography,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -33,6 +36,16 @@ import solicitudService, {
   type RegistroRespuesta,
 } from '@/services/solicitudService';
 import { guinda } from '@/theme';
+import {
+  curpCoincideConNombre,
+  soloDigitos,
+  validarCodigoPostal,
+  validarCorreo,
+  validarCurp,
+  validarEdad,
+  validarNombre,
+  validarTelefono,
+} from '@/utils/validaciones';
 import type { Catalogo, JornadaPublica, Municipio, Raza } from '@/types/dominio';
 
 const PASOS = ['Tus datos', 'Tu animal', 'Confirmar'];
@@ -106,6 +119,31 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
 
   const notificacion = useNotificacion();
 
+  // Se comprueba cada campo mientras se escribe, para avisar de inmediato en
+  // lugar de dejar que la persona llene todo y descubra el error al enviar.
+  const vCurp = validarCurp(datos.curp);
+  const vNombre = validarNombre(datos.nombre, 'tu nombre');
+  const vPaterno = validarNombre(datos.apellidoPaterno, 'tu apellido paterno');
+  const vMaterno = datos.apellidoMaterno
+    ? validarNombre(datos.apellidoMaterno, 'tu apellido materno')
+    : { error: null };
+  const vCorreo = validarCorreo(datos.correo);
+  const vTelefono = validarTelefono(datos.telefono);
+  const vCodigoPostal = validarCodigoPostal(datos.codigoPostal);
+  const vAnimal = validarNombre(datos.animalNombre, 'el nombre de tu animal');
+  const vEdad = validarEdad(datos.edadAnios, datos.edadMeses);
+
+  // Aviso, no bloqueo: hay apellidos compuestos que la regla de RENAPO no cubre.
+  const curpNoCuadra =
+    datos.curp.length === 18 &&
+    !vCurp.error &&
+    !curpCoincideConNombre(
+      datos.curp,
+      datos.nombre,
+      datos.apellidoPaterno,
+      datos.apellidoMaterno,
+    );
+
   useEffect(() => {
     async function cargarCatalogos() {
       try {
@@ -160,15 +198,24 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
   function pasoCompleto(indice: number): boolean {
     if (indice === 0) {
       const tieneContacto = datos.correo.trim() !== '' || datos.telefono.trim() !== '';
+      // No basta con que los campos tengan algo: lo que tengan debe ser válido.
+      // Es lo que impide que lleguen datos inservibles a la base.
       return (
-        datos.nombre.trim() !== '' &&
-        datos.apellidoPaterno.trim() !== '' &&
+        !vNombre.error &&
+        !vPaterno.error &&
+        !vMaterno.error &&
+        !vCurp.error &&
+        !vCorreo.error &&
+        !vTelefono.error &&
+        !vCodigoPostal.error &&
         datos.municipioId > 0 &&
         tieneContacto
       );
     }
     if (indice === 1) {
-      return datos.animalNombre.trim() !== '' && datos.especieId > 0 && datos.sexoId > 0;
+      return (
+        !vAnimal.error && !vEdad.error && datos.especieId > 0 && datos.sexoId > 0
+      );
     }
     return aceptaAviso;
   }
@@ -218,7 +265,7 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
           estatus: solicitud.estatusNombre,
           mensaje:
             'Entrega este folio a la persona. Con el y su CURP puede consultar ' +
-            'el avance de su tramite.',
+            'el avance de su trámite.',
         });
       } else {
         setResultado(await solicitudService.registrarPublico(peticion));
@@ -238,7 +285,7 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
           <CardContent sx={{ p: 4, textAlign: 'center' }}>
             <CheckCircleIcon sx={{ fontSize: 56, color: 'success.main' }} aria-hidden />
             <Typography variant="h5" fontWeight={600} sx={{ mt: 1 }} gutterBottom>
-              {ventanilla ? 'Tramite capturado' : 'Tu tramite quedo registrado'}
+              {ventanilla ? 'Trámite capturado' : 'Tu trámite quedó registrado'}
             </Typography>
 
             <Box
@@ -302,12 +349,12 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
   return (
     <Box sx={{ maxWidth: 720, mx: 'auto' }}>
       <Typography variant="h5" fontWeight={600} gutterBottom>
-        {ventanilla ? 'Capturar tramite en ventanilla' : 'Registrar a mi perro o gato'}
+        {ventanilla ? 'Capturar trámite en ventanilla' : 'Registrar a mi perro o gato'}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {ventanilla
           ? 'Captura los datos que te proporciona la persona. Al terminar, '
-            + 'entregale el folio para que pueda dar seguimiento.'
+            + 'entrégale el folio para que pueda dar seguimiento.'
           : 'No necesitas crear una cuenta. Al terminar recibes un folio para '
             + 'dar seguimiento.'}
       </Typography>
@@ -348,12 +395,43 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
               <TextField
                 label="CURP"
                 value={datos.curp}
-                onChange={(e) => actualizar('curp', e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  actualizar(
+                    'curp',
+                    // Solo letras y números: la CURP no lleva otra cosa.
+                    e.target.value.toUpperCase().replace(/[^A-ZÑ0-9]/g, '').slice(0, 18),
+                  )
+                }
                 fullWidth
                 margin="normal"
+                error={Boolean(vCurp.error)}
+                color={!vCurp.error && vCurp.confirmacion ? 'success' : undefined}
                 inputProps={{ maxLength: 18, style: { fontFamily: 'monospace' } }}
-                helperText="Opcional. Si no la tienes a la mano puedes continuar sin ella."
+                InputProps={{
+                  endAdornment: datos.curp.length === 18 && (
+                    <InputAdornment position="end">
+                      {vCurp.error ? (
+                        <ErrorOutlineIcon color="error" />
+                      ) : (
+                        <CheckCircleOutlineIcon color="success" />
+                      )}
+                    </InputAdornment>
+                  ),
+                }}
+                helperText={
+                  vCurp.error ??
+                  vCurp.confirmacion ??
+                  `Opcional. Si no la tienes a la mano puedes continuar sin ella. ${datos.curp.length}/18`
+                }
               />
+
+              {curpNoCuadra && (
+                <Alert severity="warning" sx={{ mt: 1 }}>
+                  Las iniciales de la CURP no corresponden con el nombre que
+                  escribiste. Revisa ambos datos; si estás seguro de que están
+                  bien, puedes continuar y el personal lo verificará.
+                </Alert>
+              )}
 
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={4}>
@@ -364,6 +442,8 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                     fullWidth
                     required
                     margin="normal"
+                    error={Boolean(datos.nombre) && Boolean(vNombre.error)}
+                    helperText={datos.nombre ? vNombre.error : ' '}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -374,6 +454,8 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                     fullWidth
                     required
                     margin="normal"
+                    error={Boolean(datos.apellidoPaterno) && Boolean(vPaterno.error)}
+                    helperText={datos.apellidoPaterno ? vPaterno.error : ' '}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -383,6 +465,8 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                     onChange={(e) => actualizar('apellidoMaterno', e.target.value)}
                     fullWidth
                     margin="normal"
+                    error={Boolean(datos.apellidoMaterno) && Boolean(vMaterno.error)}
+                    helperText={datos.apellidoMaterno ? vMaterno.error : ' '}
                   />
                 </Grid>
               </Grid>
@@ -395,24 +479,52 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={7}>
                   <TextField
-                    label="Correo electronico"
+                    label="Correo electrónico"
                     type="email"
                     value={datos.correo}
-                    onChange={(e) => actualizar('correo', e.target.value)}
+                    onChange={(e) => actualizar('correo', e.target.value.trim())}
                     fullWidth
                     margin="normal"
+                    error={Boolean(vCorreo.error)}
+                    InputProps={{
+                      endAdornment: datos.correo && (
+                        <InputAdornment position="end">
+                          {vCorreo.error ? (
+                            <ErrorOutlineIcon color="error" />
+                          ) : (
+                            <CheckCircleOutlineIcon color="success" />
+                          )}
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText={vCorreo.error ?? vCorreo.confirmacion ?? ' '}
                   />
                 </Grid>
                 <Grid item xs={12} sm={5}>
                   <TextField
-                    label="Telefono"
+                    label="Teléfono"
                     value={datos.telefono}
-                    onChange={(e) =>
-                      actualizar('telefono', e.target.value.replace(/\D/g, '').slice(0, 10))
-                    }
+                    // Se descarta lo que no sea dígito al escribir: así no hay
+                    // forma de teclear una letra en un teléfono.
+                    onChange={(e) => actualizar('telefono', soloDigitos(e.target.value))}
                     fullWidth
                     margin="normal"
-                    helperText="10 digitos"
+                    inputMode="numeric"
+                    error={Boolean(vTelefono.error)}
+                    InputProps={{
+                      endAdornment: datos.telefono && (
+                        <InputAdornment position="end">
+                          {vTelefono.error ? (
+                            <ErrorOutlineIcon color="error" />
+                          ) : (
+                            <CheckCircleOutlineIcon color="success" />
+                          )}
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText={
+                      vTelefono.error ?? vTelefono.confirmacion ?? `10 dígitos (${datos.telefono.length}/10)`
+                    }
                   />
                 </Grid>
               </Grid>
@@ -445,7 +557,7 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                 </Grid>
                 <Grid item xs={4}>
                   <TextField
-                    label="Numero"
+                    label="Número"
                     value={datos.numeroExterior}
                     onChange={(e) => actualizar('numeroExterior', e.target.value)}
                     fullWidth
@@ -463,13 +575,14 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                 </Grid>
                 <Grid item xs={4}>
                   <TextField
-                    label="Codigo postal"
+                    label="Código postal"
                     value={datos.codigoPostal}
-                    onChange={(e) =>
-                      actualizar('codigoPostal', e.target.value.replace(/\D/g, '').slice(0, 5))
-                    }
+                    onChange={(e) => actualizar('codigoPostal', soloDigitos(e.target.value, 5))}
                     fullWidth
                     margin="normal"
+                    inputMode="numeric"
+                    error={Boolean(vCodigoPostal.error)}
+                    helperText={vCodigoPostal.error ?? ' '}
                   />
                 </Grid>
               </Grid>
@@ -483,12 +596,15 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
               </Typography>
 
               <TextField
-                label="Como se llama"
+                label="¿Cómo se llama?"
                 value={datos.animalNombre}
                 onChange={(e) => actualizar('animalNombre', e.target.value)}
                 fullWidth
                 required
+                autoFocus
                 margin="normal"
+                error={Boolean(datos.animalNombre) && Boolean(vAnimal.error)}
+                helperText={datos.animalNombre ? vAnimal.error : ' '}
               />
 
               <Grid container spacing={2}>
@@ -570,10 +686,10 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
 
                 <Grid item xs={12} sm={4}>
                   <FormControl fullWidth margin="normal">
-                    <InputLabel id="etiqueta-tamano">Tamano</InputLabel>
+                    <InputLabel id="etiqueta-tamano">Tamaño</InputLabel>
                     <Select
                       labelId="etiqueta-tamano"
-                      label="Tamano"
+                      label="Tamaño"
                       value={datos.tamanoId || ''}
                       onChange={(e) => actualizar('tamanoId', Number(e.target.value))}
                     >
@@ -588,25 +704,26 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
 
                 <Grid item xs={6}>
                   <TextField
-                    label="Anos"
-                    type="number"
+                    label="Años"
                     value={datos.edadAnios}
-                    onChange={(e) => actualizar('edadAnios', e.target.value)}
+                    onChange={(e) => actualizar('edadAnios', soloDigitos(e.target.value, 2))}
                     fullWidth
                     margin="normal"
-                    inputProps={{ min: 0, max: 50 }}
+                    inputMode="numeric"
+                    error={Boolean(vEdad.error)}
+                    helperText=" "
                   />
                 </Grid>
                 <Grid item xs={6}>
                   <TextField
                     label="Meses"
-                    type="number"
                     value={datos.edadMeses}
-                    onChange={(e) => actualizar('edadMeses', e.target.value)}
+                    onChange={(e) => actualizar('edadMeses', soloDigitos(e.target.value, 2))}
                     fullWidth
                     margin="normal"
-                    inputProps={{ min: 0, max: 11 }}
-                    helperText="De 0 a 11"
+                    inputMode="numeric"
+                    error={Boolean(vEdad.error)}
+                    helperText={vEdad.error ?? 'De 0 a 11 meses'}
                   />
                 </Grid>
               </Grid>
@@ -633,7 +750,7 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
               </Box>
 
               <TextField
-                label="Senas particulares"
+                label="Señas particulares"
                 value={datos.caracteristicas}
                 onChange={(e) => actualizar('caracteristicas', e.target.value)}
                 fullWidth

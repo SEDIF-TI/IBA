@@ -122,7 +122,7 @@ public class SolicitudResource {
     public ResponseEntity<ApiResponse<SolicitudRecord>> tomarParaRevision(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(
                 SolicitudRecord.de(solicitudService.tomarParaRevision(id)),
-                "El tramite quedo en revision"));
+                "El trámite quedó en revisión"));
     }
 
     /** Aprueba el tramite. */
@@ -134,7 +134,7 @@ public class SolicitudResource {
 
         return ResponseEntity.ok(ApiResponse.ok(
                 SolicitudRecord.de(solicitudService.aprobar(id, peticion.observacion())),
-                "Tramite aprobado"));
+                "Trámite aprobado"));
     }
 
     /** Devuelve el tramite para que la persona corrija. */
@@ -160,7 +160,7 @@ public class SolicitudResource {
         return ResponseEntity.ok(ApiResponse.ok(
                 SolicitudRecord.de(solicitudService.rechazar(
                         id, peticion.motivoId(), peticion.observacion())),
-                "Tramite rechazado"));
+                "Trámite rechazado"));
     }
 
     /**
@@ -177,7 +177,7 @@ public class SolicitudResource {
         return ResponseEntity.ok(ApiResponse.ok(
                 SolicitudRecord.de(solicitudService.registrarEntrega(
                         id, peticion.observacion())),
-                "Se registro la entrega. El tramite queda concluido."));
+                "Se registro la entrega. El trámite queda concluido."));
     }
 
     /** Cancela el tramite. */
@@ -190,7 +190,7 @@ public class SolicitudResource {
         return ResponseEntity.ok(ApiResponse.ok(
                 SolicitudRecord.de(solicitudService.cancelar(
                         id, peticion.motivoId(), peticion.observacion())),
-                "Tramite cancelado"));
+                "Trámite cancelado"));
     }
 
     /**
@@ -210,10 +210,10 @@ public class SolicitudResource {
 
         return ResponseEntity.ok(ApiResponse.ok(
                 Boolean.TRUE.equals(peticion.incluirPersona())
-                        ? "El tramite, el animal y el tutor dejaron de aparecer en el "
-                                + "padron. Si fue un error, puedes reactivarlos."
-                        : "El tramite dejo de aparecer en la bandeja. El tutor y su "
-                                + "animal siguen en el padron."));
+                        ? "El trámite, el animal y el tutor dejaron de aparecer en el "
+                                + "padrón. Si fue un error, puedes reactivarlos."
+                        : "El trámite dejo de aparecer en la bandeja. El tutor y su "
+                                + "animal siguen en el padrón."));
     }
 
     /** Registros dados de baja, para revisarlos o reactivarlos. */
@@ -242,7 +242,7 @@ public class SolicitudResource {
         return ResponseEntity.ok(ApiResponse.ok(
                 SolicitudRecord.de(solicitudService.reactivar(
                         id, peticion == null ? null : peticion.motivo())),
-                "El registro vuelve a aparecer en el padron"));
+                "El registro vuelve a aparecer en el padrón"));
     }
 
     /**
@@ -282,7 +282,7 @@ public class SolicitudResource {
                             ? null : renglon.getEstatusAnterior().getNombre(),
                     renglon.getEstatusNuevo().getNombre(),
                     renglon.getUsuario() == null
-                            ? "Portal publico" : renglon.getUsuario().getNombreCompleto(),
+                            ? "Portal público" : renglon.getUsuario().getNombreCompleto(),
                     renglon.getMotivoRechazo() == null
                             ? null : renglon.getMotivoRechazo().getNombre(),
                     renglon.getObservacion(),

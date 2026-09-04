@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
  *   11     sexo (H o M)
  *   12-13  entidad de registro
  *   14-16  consonantes internas
- *   17     homoclave (digito o letra)
- *   18     digito verificador
+ *   17     homoclave (dígito o letra)
+ *   18     dígito verificador
  * </pre>
  */
 public final class CurpUtil {
@@ -35,7 +35,7 @@ public final class CurpUtil {
     private static final Pattern FORMATO = Pattern.compile(
             "^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]$");
 
-    /** Alfabeto con el que se calcula el digito verificador. */
+    /** Alfabeto con el que se calcula el dígito verificador. */
     private static final String ALFABETO = "0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
 
     /** Claves de entidad validas, incluida NE para nacidos en el extranjero. */
@@ -66,7 +66,7 @@ public final class CurpUtil {
             Map.entry("NE", "Nacido en el extranjero"));
 
     /**
-     * Comprueba formato, entidad, fecha y digito verificador.
+     * Comprueba formato, entidad, fecha y dígito verificador.
      *
      * @param curp valor a revisar
      * @return verdadero si la CURP es valida
@@ -90,7 +90,7 @@ public final class CurpUtil {
     }
 
     /**
-     * Comprueba solo la forma, sin el digito verificador.
+     * Comprueba solo la forma, sin el dígito verificador.
      *
      * <p>Sirve para avisar en pantalla mientras la persona escribe, sin
      * rechazar todavia.
@@ -103,7 +103,7 @@ public final class CurpUtil {
      * Fecha de nacimiento contenida en la CURP.
      *
      * <p>El siglo se deduce de la posicion 17: las CURP del siglo XX llevan ahi
-     * un digito, y las del XXI una letra.
+     * un dígito, y las del XXI una letra.
      */
     public static Optional<LocalDate> extraerFechaNacimiento(String curp) {
         if (curp == null || curp.length() < 17) {
@@ -207,7 +207,7 @@ public final class CurpUtil {
     }
 
     /**
-     * Comprueba el digito verificador.
+     * Comprueba el dígito verificador.
      *
      * <p>Se suma el valor posicional de los primeros 17 caracteres y el
      * resultado debe cuadrar con el ultimo.

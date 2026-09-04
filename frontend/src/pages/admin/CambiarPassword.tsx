@@ -54,7 +54,7 @@ export function CambiarPassword() {
       await authService.cambiarPassword({ passwordActual: actual, passwordNueva: nueva });
       marcarPasswordCambiada();
       notificacion.exito(
-        'Tu contrasena quedo actualizada. Usala la proxima vez que entres.',
+        'Tu contraseña quedó actualizada. Úsala la próxima vez que entres.',
       );
       navegar('/admin', { replace: true });
     } catch (fallo) {
@@ -87,7 +87,7 @@ export function CambiarPassword() {
 
             <Box component="form" onSubmit={enviar} noValidate>
               <TextField
-                label="Contrasena actual"
+                label="Contraseña actual"
                 type="password"
                 value={actual}
                 onChange={(e) => setActual(e.target.value)}
@@ -100,7 +100,7 @@ export function CambiarPassword() {
               />
 
               <TextField
-                label="Contrasena nueva"
+                label="Contraseña nueva"
                 type="password"
                 value={nueva}
                 onChange={(e) => setNueva(e.target.value)}
@@ -127,7 +127,7 @@ export function CambiarPassword() {
               </Box>
 
               <TextField
-                label="Confirmar contrasena nueva"
+                label="Confirmar contraseña nueva"
                 type="password"
                 value={confirmacion}
                 onChange={(e) => setConfirmacion(e.target.value)}

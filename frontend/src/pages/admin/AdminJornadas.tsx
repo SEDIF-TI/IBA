@@ -117,7 +117,7 @@ export function AdminJornadas() {
         await jornadaService.crear(formulario);
         notificacion.exito(
           `La jornada "${formulario.nombre}" quedo registrada. Aun no aparece en ` +
-            'el portal: publicala cuando la sede y las fechas esten confirmadas.',
+            'el portal: publícala cuando la sede y las fechas esten confirmadas.',
         );
       }
       setFormularioAbierto(false);
@@ -288,7 +288,7 @@ export function AdminJornadas() {
             </FormControl>
 
             <TextField
-              label="Direccion de la sede"
+              label="Dirección de la sede"
               value={formulario.domicilioSede}
               onChange={(e) =>
                 setFormulario({ ...formulario, domicilioSede: e.target.value })
@@ -296,7 +296,7 @@ export function AdminJornadas() {
               fullWidth
               required
               margin="normal"
-              helperText="Es a donde va a llegar la gente: escribela completa"
+              helperText="Es a donde va a llegar la gente: escríbela completa"
               inputProps={{ maxLength: 400 }}
             />
 
@@ -354,13 +354,13 @@ export function AdminJornadas() {
                   }
                   fullWidth
                   margin="normal"
-                  helperText="Vacio si no hay limite"
+                  helperText="Vacío si no hay limite"
                 />
               </Grid>
             </Grid>
 
             <TextField
-              label="Descripcion"
+              label="Descripción"
               value={formulario.descripcion}
               onChange={(e) => setFormulario({ ...formulario, descripcion: e.target.value })}
               fullWidth
@@ -414,7 +414,7 @@ export function AdminJornadas() {
             multiline
             rows={2}
             autoFocus
-            helperText="Queda registrado en la bitacora"
+            helperText="Queda registrado en la bitácora"
             inputProps={{ maxLength: 500 }}
           />
         </DialogContent>

@@ -91,7 +91,7 @@ public class NotificacionResource {
         return ResponseEntity.ok(ApiResponse.ok(
                 NotificacionRecord.de(aviso),
                 peticion.logrado()
-                        ? "Se registro el contacto. El tramite queda atendido."
+                        ? "Se registro el contacto. El trámite queda atendido."
                         : "Se registro el intento. El contacto sigue pendiente "
                                 + "para volver a intentarlo."));
     }

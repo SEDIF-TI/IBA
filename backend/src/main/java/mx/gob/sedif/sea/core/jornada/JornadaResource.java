@@ -104,7 +104,7 @@ public class JornadaResource {
         String mensaje = resultados.isEmpty()
                 ? (texto == null || texto.isBlank()
                         ? "Esta jornada todavia no tiene registros precargados"
-                        : "No hay ningun registro con \"%s\" en esta jornada. "
+                        : "No hay ningún registro con \"%s\" en está jornada. "
                                 .formatted(texto)
                                 + "Verifica la CURP o el apellido, o registra a la "
                                 + "persona en el momento.")
@@ -122,8 +122,8 @@ public class JornadaResource {
         Jornada jornada = jornadaService.crear(peticion);
         return ResponseEntity.ok(ApiResponse.ok(
                 JornadaRecord.de(jornada),
-                "La jornada quedo registrada. Aun no aparece en el portal: "
-                        + "publicala cuando la sede y las fechas esten confirmadas."));
+                "La jornada quedó registrada. Aun no aparece en el portal: "
+                        + "publícala cuando la sede y las fechas esten confirmadas."));
     }
 
     @PutMapping("/{id}")

@@ -66,7 +66,7 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE,
                         construirCookieRefresco(resultado.tokenRefresco()).toString())
-                .body(ApiResponse.ok(resultado.respuesta(), "Sesion iniciada correctamente"));
+                .body(ApiResponse.ok(resultado.respuesta(), "Sesión iniciada correctamente"));
     }
 
     /**
@@ -80,7 +80,7 @@ public class AuthController {
             @CookieValue(name = COOKIE_REFRESCO, required = false) String tokenRefresco) {
 
         JwtResponse respuesta = authService.refrescar(tokenRefresco);
-        return ResponseEntity.ok(ApiResponse.ok(respuesta, "Sesion renovada"));
+        return ResponseEntity.ok(ApiResponse.ok(respuesta, "Sesión renovada"));
     }
 
     /**
@@ -101,7 +101,7 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieVacia.toString())
-                .body(ApiResponse.ok("Sesion cerrada correctamente"));
+                .body(ApiResponse.ok("Sesión cerrada correctamente"));
     }
 
     /**
@@ -118,7 +118,7 @@ public class AuthController {
                 .orElseThrow(() -> new IllegalStateException(MessageConstants.NO_AUTORIZADO));
 
         authService.cambiarPassword(usuarioId, peticion);
-        return ResponseEntity.ok(ApiResponse.ok("Contrasena actualizada correctamente"));
+        return ResponseEntity.ok(ApiResponse.ok("Contraseña actualizada correctamente"));
     }
 
     /**

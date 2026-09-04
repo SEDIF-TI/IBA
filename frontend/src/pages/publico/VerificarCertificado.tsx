@@ -80,14 +80,14 @@ export function VerificarCertificado() {
         <CardContent sx={{ p: 3 }}>
           <Box component="form" onSubmit={enviar} noValidate>
             <TextField
-              label="Codigo de verificacion"
+              label="Código de verificación"
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
               fullWidth
               required
               margin="normal"
               placeholder="550e8400-e29b-41d4-a716-446655440000"
-              helperText="Lo encuentras al pie del documento, junto al codigo QR"
+              helperText="Lo encuentras al pie del documento, junto al código QR"
               disabled={verificando}
             />
             <Button

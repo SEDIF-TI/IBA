@@ -161,8 +161,8 @@ export function OperarJornada() {
 
     if (conCertificado.length === 0) {
       notificacion.advertencia(
-        'Ninguno de los tramites marcados tiene certificado emitido. ' +
-          'Valida primero los tramites para poder imprimir sus credenciales.',
+        'Ninguno de los trámites marcados tiene certificado emitido. ' +
+          'Válida primero los trámites para poder imprimir sus credenciales.',
       );
       return;
     }
@@ -178,7 +178,7 @@ export function OperarJornada() {
 
       notificacion.exito(
         `Se prepararon ${ids.length} credenciales para imprimir, ` +
-          'tres por hoja. Recortalas por las marcas de las esquinas.',
+          'tres por hoja. Recórtalas por las marcas de las esquinas.',
       );
       setSeleccionados(new Set());
     } catch (fallo) {

@@ -82,16 +82,16 @@ public record RegistroPublicoRequest(
             @Size(max = 120)
             String apellidoMaterno,
 
-            @Email(message = "El correo no es valido")
+            @Email(message = "El correo no es válido")
             @Size(max = 150)
             String correo,
 
             @Pattern(regexp = "^$|^[0-9]{10}$",
-                     message = "El telefono debe tener 10 digitos")
+                     message = "El teléfono debe tener 10 dígitos")
             String telefono,
 
             @Pattern(regexp = "^$|^[0-9]{10}$",
-                     message = "El numero de WhatsApp debe tener 10 digitos")
+                     message = "El número de WhatsApp debe tener 10 dígitos")
             String telefonoWhatsapp,
 
             @NotNull(message = "El municipio es obligatorio")
@@ -103,7 +103,7 @@ public record RegistroPublicoRequest(
             @Size(max = 150) String colonia,
 
             @Pattern(regexp = "^$|^[0-9]{5}$",
-                     message = "El codigo postal debe tener 5 digitos")
+                     message = "El código postal debe tener 5 dígitos")
             String codigoPostal) {
 
         /**
@@ -112,7 +112,7 @@ public record RegistroPublicoRequest(
          * <p>Sin correo ni telefono no hay forma de avisar el resultado, y el
          * tramite se convierte en un callejon sin salida.
          */
-        @AssertTrue(message = "Debes proporcionar al menos un correo o un telefono")
+        @AssertTrue(message = "Debes proporcionar al menos un correo o un teléfono")
         public boolean isContactoPresente() {
             return (correo != null && !correo.isBlank())
                     || (telefono != null && !telefono.isBlank())
@@ -153,7 +153,7 @@ public record RegistroPublicoRequest(
 
             Integer tamanoId,
 
-            @Min(value = 0, message = "Los anos no pueden ser negativos")
+            @Min(value = 0, message = "Los años no pueden ser negativos")
             @Max(value = 50, message = "Revisa la edad capturada")
             Integer edadAnios,
 

@@ -256,7 +256,7 @@ export function BandejaContacto() {
               setPagina(0);
             }}
             rowsPerPageOptions={[10, 20, 50]}
-            labelRowsPerPage="Contactos por pagina"
+            labelRowsPerPage="Contactos por página"
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
           />
         </>
@@ -294,7 +294,7 @@ export function BandejaContacto() {
                 multiline
                 rows={3}
                 autoFocus
-                helperText="Queda en el expediente del tramite, para quien lo revise despues"
+                helperText="Queda en el expediente del trámite, para quien lo revise después"
                 inputProps={{ maxLength: 1000 }}
               />
             </>

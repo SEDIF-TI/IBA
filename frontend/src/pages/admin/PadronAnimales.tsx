@@ -88,8 +88,8 @@ export function PadronAnimales() {
             }}
             fullWidth
             autoFocus
-            placeholder="Busca por nombre, identificador o numero de chip"
-            helperText="Si aparece un animal perdido, busca por el numero de su chip o placa"
+            placeholder="Busca por nombre, identificador o número de chip"
+            helperText="Si aparece un animal perdido, busca por el número de su chip o placa"
             sx={{ maxWidth: 520 }}
             InputProps={{
               startAdornment: (
@@ -98,7 +98,7 @@ export function PadronAnimales() {
                 </InputAdornment>
               ),
             }}
-            inputProps={{ 'aria-label': 'Buscar en el padron de animales' }}
+            inputProps={{ 'aria-label': 'Buscar en el padrón de animales' }}
           />
         </Box>
       </Card>
@@ -112,7 +112,7 @@ export function PadronAnimales() {
                 <TableCell>Especie y raza</TableCell>
                 <TableCell>Rasgos</TableCell>
                 <TableCell>Identificador</TableCell>
-                <TableCell>Situacion</TableCell>
+                <TableCell>Situación</TableCell>
               </TableRow>
             </TableHead>
 
@@ -209,7 +209,7 @@ export function PadronAnimales() {
             setPagina(0);
           }}
           rowsPerPageOptions={[10, 20, 50, 100]}
-          labelRowsPerPage="Animales por pagina"
+          labelRowsPerPage="Animales por página"
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
         />
       </Card>

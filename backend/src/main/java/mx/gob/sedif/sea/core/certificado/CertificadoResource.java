@@ -57,7 +57,7 @@ public class CertificadoResource {
                 .map(certificado -> ResponseEntity.ok(
                         ApiResponse.ok(CertificadoRecord.de(certificado))))
                 .orElseGet(() -> ResponseEntity.ok(
-                        ApiResponse.ok(null, "El tramite aun no tiene certificado")));
+                        ApiResponse.ok(null, "El trámite aún no tiene certificado")));
     }
 
     /**
@@ -162,7 +162,7 @@ public class CertificadoResource {
      */
     public record ImpresionLoteRequest(
             @NotEmpty(message = "Indica al menos una credencial")
-            @Size(max = 200, message = "No se pueden imprimir mas de 200 credenciales de una vez")
+            @Size(max = 200, message = "No se pueden imprimir más de 200 credenciales de una vez")
             List<Long> certificadoIds) {
     }
 
@@ -172,7 +172,7 @@ public class CertificadoResource {
      * @param motivo razon por la que el certificado deja de surtir efecto
      */
     public record CancelacionRequest(
-            @NotBlank(message = "Indica el motivo de la cancelacion")
+            @NotBlank(message = "Indica el motivo de la cancelación")
             @Size(max = 500)
             String motivo) {
     }

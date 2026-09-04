@@ -23,7 +23,7 @@ import jakarta.validation.constraints.NotNull;
  *
  * <p>Deliberadamente no es una llave foranea de animal a persona. Un animal se
  * transfiere, se adopta, el tutor fallece o el animal muere; con llave directa
- * se pierde la historia y el conteo "cuantos animales tiene esta persona" se
+ * se pierde la historia y el conteo "cuantos animales tiene está persona" se
  * vuelve ambiguo.
  *
  * <p>Aqui ese conteo son las titularidades vigentes, y el historico se

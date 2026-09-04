@@ -31,7 +31,7 @@ public record JornadaRequest(
         @NotNull(message = "Elige el municipio donde se realizara la jornada")
         Integer municipioId,
 
-        @NotBlank(message = "Escribe la direccion exacta de la sede: es a donde "
+        @NotBlank(message = "Escribe la dirección exacta de la sede: es a donde "
                 + "va a llegar la gente")
         @Size(max = 400)
         String domicilioSede,
@@ -45,7 +45,7 @@ public record JornadaRequest(
         @Size(max = 120)
         String horario,
 
-        @Positive(message = "El cupo debe ser mayor que cero. Dejalo vacio si no hay limite.")
+        @Positive(message = "El cupo debe ser mayor que cero. Dejalo vacío si no hay limite.")
         Integer cupo,
 
         Long usuarioResponsableId) {

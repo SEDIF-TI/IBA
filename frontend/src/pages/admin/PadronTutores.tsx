@@ -196,7 +196,7 @@ export function PadronTutores() {
             setPagina(0);
           }}
           rowsPerPageOptions={[10, 20, 50, 100]}
-          labelRowsPerPage="Tutores por pagina"
+          labelRowsPerPage="Tutores por página"
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
         />
       </Card>

@@ -153,7 +153,7 @@ public class SecurityConfig {
         respuesta.setCharacterEncoding("UTF-8");
         respuesta.getWriter().write(
                 """
-                {"success":false,"message":"La sesion expiro. Inicia sesion nuevamente."}""");
+                {"success":false,"message":"La sesión expiro. Inicia sesión nuevamente."}""");
     }
 
     /** Sesion valida pero sin permisos: 403. */
@@ -163,6 +163,6 @@ public class SecurityConfig {
         respuesta.setCharacterEncoding("UTF-8");
         respuesta.getWriter().write(
                 """
-                {"success":false,"message":"No tienes autorizacion para realizar esta accion"}""");
+                {"success":false,"message":"No tienes autorizacion para realizar está accion"}""");
     }
 }

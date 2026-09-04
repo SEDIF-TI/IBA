@@ -54,10 +54,10 @@ import type {
 type Resolucion = 'aprobar' | 'observar' | 'rechazar' | 'cancelar' | 'entregar';
 
 const RESOLUCIONES: Record<Resolucion, { titulo: string; exigeMotivo: boolean; color: 'success' | 'warning' | 'error' | 'inherit' }> = {
-  aprobar: { titulo: 'Aprobar tramite', exigeMotivo: false, color: 'success' },
-  observar: { titulo: 'Devolver para correccion', exigeMotivo: true, color: 'warning' },
-  rechazar: { titulo: 'Rechazar tramite', exigeMotivo: true, color: 'error' },
-  cancelar: { titulo: 'Cancelar tramite', exigeMotivo: true, color: 'inherit' },
+  aprobar: { titulo: 'Aprobar trámite', exigeMotivo: false, color: 'success' },
+  observar: { titulo: 'Devolver para corrección', exigeMotivo: true, color: 'warning' },
+  rechazar: { titulo: 'Rechazar trámite', exigeMotivo: true, color: 'error' },
+  cancelar: { titulo: 'Cancelar trámite', exigeMotivo: true, color: 'inherit' },
   entregar: { titulo: 'Registrar entrega', exigeMotivo: false, color: 'success' },
 };
 
@@ -134,8 +134,8 @@ export function DetalleSolicitud() {
     try {
       await solicitudService.tomarParaRevision(solicitudId);
       notificacion.exito(
-        'El tramite quedo en revision. Ya puedes aprobarlo, devolverlo para ' +
-          'correccion o rechazarlo.',
+        'El trámite quedó en revisión. Ya puedes aprobarlo, devolverlo para ' +
+          'corrección o rechazarlo.',
       );
       await cargar();
     } catch (fallo) {
@@ -165,17 +165,17 @@ export function DetalleSolicitud() {
 
       const avisos: Record<Resolucion, string> = {
         aprobar:
-          'Tramite aprobado. El certificado quedo emitido y ya se puede ' +
+          'Trámite aprobado. El certificado quedó emitido y ya se puede ' +
           'imprimir junto con la credencial.',
         observar:
-          'Se devolvio para correccion. A la persona se le avisa el motivo ' +
+          'Se devolvio para corrección. A la persona se le avisa el motivo ' +
           'para que corrija y vuelva a enviarlo.',
         rechazar:
-          'Tramite rechazado. A la persona se le avisa el motivo; el tramite ' +
-          'ya no admite mas cambios.',
-        cancelar: 'Tramite cancelado. Ya no admite mas cambios.',
+          'Trámite rechazado. A la persona se le avisa el motivo; el trámite ' +
+          'ya no admite más cambios.',
+        cancelar: 'Trámite cancelado. Ya no admite más cambios.',
         entregar:
-          'Se registro la entrega. El tramite queda concluido: la persona ya ' +
+          'Se registro la entrega. El trámite queda concluido: la persona ya ' +
           'tiene su certificado y su credencial.',
       };
       notificacion.exito(avisos[resolucion]);
@@ -227,7 +227,7 @@ export function DetalleSolicitud() {
         legible
           ? `"${documento.tipoNombre}" quedo marcado como legible`
           : `"${documento.tipoNombre}" quedo marcado como ilegible. ` +
-              'Devuelve el tramite para correccion indicando ese motivo.',
+              'Devuelve el trámite para corrección indicando ese motivo.',
       );
       await cargar();
     } catch (fallo) {
@@ -238,7 +238,7 @@ export function DetalleSolicitud() {
   if (cargando) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress aria-label="Cargando tramite" />
+        <CircularProgress aria-label="Cargando trámite" />
       </Box>
     );
   }
@@ -246,7 +246,7 @@ export function DetalleSolicitud() {
   if (!solicitud) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
-        <Typography color="text.secondary">No se encontro el tramite</Typography>
+        <Typography color="text.secondary">No se encontro el trámite</Typography>
         <Button onClick={() => navegar('/admin/solicitudes')} sx={{ mt: 2 }}>
           Volver a la bandeja
         </Button>
@@ -284,7 +284,7 @@ export function DetalleSolicitud() {
 
       {solicitud.revisionReforzada && (
         <Alert severity="warning" sx={{ mb: 2 }}>
-          <Typography variant="subtitle2">Este tramite requiere revision reforzada</Typography>
+          <Typography variant="subtitle2">Este trámite requiere revisión reforzada</Typography>
           <Typography variant="body2">{solicitud.motivoRevisionReforzada}</Typography>
         </Alert>
       )}
@@ -293,7 +293,7 @@ export function DetalleSolicitud() {
         <Card sx={{ mb: 2 }}>
           <CardContent>
             <Stepper activeStep={pasoActual} alternativeLabel>
-              {['Registrada', 'En revision', 'Aprobada', 'Certificado', 'Entregada'].map(
+              {['Registrada', 'En revisión', 'Aprobada', 'Certificado', 'Entregada'].map(
                 (paso) => (
                   <Step key={paso}>
                     <StepLabel>{paso}</StepLabel>
@@ -597,7 +597,7 @@ export function DetalleSolicitud() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Dar de baja del padron</DialogTitle>
+        <DialogTitle>Dar de baja del padrón</DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
             El registro deja de aparecer en el padron y en las busquedas, pero no
@@ -614,7 +614,7 @@ export function DetalleSolicitud() {
             multiline
             rows={2}
             autoFocus
-            helperText="Por ejemplo: datos de prueba, registro duplicado, informacion falsa"
+            helperText="Por ejemplo: datos de prueba, registro duplicado, información falsa"
             inputProps={{ maxLength: 500 }}
           />
 
@@ -626,15 +626,15 @@ export function DetalleSolicitud() {
                 onChange={(e) => setIncluirPersona(e.target.checked)}
               />
             }
-            label="Dar de baja tambien al tutor y su animal"
+            label="Dar de baja también al tutor y su animal"
           />
 
           <Typography variant="caption" color="text.secondary" display="block">
             {incluirPersona
-              ? 'El tutor solo se da de baja si este era su unico tramite vigente. ' +
-                'Marcalo cuando el registro completo sea basura.'
-              : 'Solo se da de baja el tramite. El tutor y su animal siguen en el ' +
-                'padron, por si la persona vuelve a registrarse.'}
+              ? 'El tutor solo se da de baja si este era su único trámite vigente. ' +
+                'Márcalo cuando el registro completo sea basura.'
+              : 'Solo se da de baja el trámite. El tutor y su animal siguen en el ' +
+                'padrón, por si la persona vuelve a registrarse.'}
           </Typography>
         </DialogContent>
 
@@ -688,7 +688,7 @@ export function DetalleSolicitud() {
           )}
 
           <TextField
-            label="Observacion"
+            label="Observación"
             value={observacion}
             onChange={(e) => setObservacion(e.target.value)}
             fullWidth

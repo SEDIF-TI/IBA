@@ -33,7 +33,7 @@ export function ProtectedRoute({ children, permiso }: Props) {
           minHeight: '100vh',
         }}
       >
-        <CircularProgress aria-label="Verificando sesion" />
+        <CircularProgress aria-label="Verificando sesión" />
       </Box>
     );
   }

@@ -15,11 +15,11 @@ public class Municipio extends CatalogoBase {
 
     /**
      * Clave geoestadistica del INEGI: entidad (21 = Puebla) mas los tres
-     * digitos del municipio. Se usa para construir el folio oficial del
+     * dígitos del municipio. Se usa para construir el folio oficial del
      * certificado.
      */
     @NotBlank
-    @Pattern(regexp = "^[0-9]{5}$", message = "La clave INEGI debe tener 5 digitos")
+    @Pattern(regexp = "^[0-9]{5}$", message = "La clave INEGI debe tener 5 dígitos")
     @Column(name = "s_cve_inegi", nullable = false, length = 5)
     private String claveInegi;
 

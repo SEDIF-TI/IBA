@@ -134,7 +134,7 @@ public class Animal extends Auditable {
         if (anios == 0) {
             return meses + (meses == 1 ? " mes" : " meses");
         }
-        String textoAnios = anios + (anios == 1 ? " ano" : " anos");
+        String textoAnios = anios + (anios == 1 ? " año" : " años");
         if (meses == 0) {
             return textoAnios;
         }

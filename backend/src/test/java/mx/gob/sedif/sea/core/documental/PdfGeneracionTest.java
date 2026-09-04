@@ -106,8 +106,8 @@ class PdfGeneracionTest {
             assertThat(texto)
                     .contains("Juan Perez Gomez")
                     .contains("Responsable")
-                    .contains("Telefono")
-                    .contains("Correo electronico");
+                    .contains("Teléfono")
+                    .contains("Correo electrónico");
         }
 
         @Test
@@ -147,7 +147,7 @@ class PdfGeneracionTest {
             animal.setEdadMeses(30);
 
             assertThat(extraerTexto(certificadoPdf.generar(certificado(), persona(), animal, Optional.empty())))
-                    .contains("2 anos 6 meses");
+                    .contains("2 años 6 meses");
         }
     }
 
@@ -165,7 +165,7 @@ class PdfGeneracionTest {
                     .contains("Firulais")
                     .contains("Juan Perez Gomez")
                     .contains("Credencial Peluda")
-                    .contains("Padron Estatal de Perros y Gatos");
+                    .contains("Padrón Estatal de Perros y Gatos");
         }
 
         @Test
@@ -176,7 +176,7 @@ class PdfGeneracionTest {
 
             assertThat(extraerTexto(pdf))
                     .contains("Responsable")
-                    .contains("Telefono")
+                    .contains("Teléfono")
                     .contains("No. de ID oficial")
                     .contains("PJFIRCM260831");
         }
@@ -226,7 +226,7 @@ class PdfGeneracionTest {
 
             String texto = extraerTexto(pdf);
             assertThat(texto)
-                    .contains("ACUSE DE RECEPCION DE TRAMITE")
+                    .contains("ACUSE DE RECEPCIÓN DE TRÁMITE")
                     .contains("FOLIO DE SEGUIMIENTO")
                     .contains("SOL-20260901-00001");
         }

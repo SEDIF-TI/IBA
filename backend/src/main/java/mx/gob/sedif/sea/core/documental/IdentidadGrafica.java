@@ -95,7 +95,7 @@ public class IdentidadGrafica {
     /** Nombre del area que expide. */
     public String areaNombre() {
         return parametros.obtener("documento.area_nombre",
-                "Direccion de Bienestar Animal");
+                "Dirección de Bienestar Animal");
     }
 
     /** Ciudad que acompana la fecha de expedicion. */
@@ -112,7 +112,7 @@ public class IdentidadGrafica {
     /** Leyenda al pie que explica como verificar el documento. */
     public String leyendaVerificacion() {
         return parametros.obtener("certificado.leyenda_verificacion",
-                "Verifica la autenticidad de este documento escaneando el codigo QR.");
+                "Verifica la autenticidad de este documento escaneando el código QR.");
     }
 
     /** Leyenda mientras la firma electronica avanzada no este disponible. */

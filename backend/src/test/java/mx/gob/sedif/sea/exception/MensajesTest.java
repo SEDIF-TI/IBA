@@ -129,7 +129,7 @@ class MensajesTest {
                     .doesNotContain("no existe")
                     .doesNotContain("no se encontro el usuario")
                     .doesNotContain("contrasena incorrecta para");
-            assertThat(mensaje).contains("usuario o contrasena");
+            assertThat(mensaje).contains("usuario o contraseña");
         }
 
         /** Constantes de texto del catalogo de mensajes. */
@@ -157,8 +157,8 @@ class MensajesTest {
 
             assertThat(error.getMessage())
                     .contains("aprobar")
-                    .contains("recien registrado")
-                    .contains("Tomalo primero para revision");
+                    .contains("recién registrado")
+                    .contains("Tómalo primero para revisión");
         }
 
         @Test
@@ -170,7 +170,7 @@ class MensajesTest {
             assertThat(error.getMessage())
                     .contains("rechazar")
                     .contains("entregado")
-                    .contains("ya concluyo");
+                    .contains("ya concluyó");
         }
 
         @Test

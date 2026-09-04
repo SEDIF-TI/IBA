@@ -135,7 +135,7 @@ public class AuthService {
         }
 
         if (passwordEncoder.matches(peticion.passwordNueva(), usuario.getPasswordHash())) {
-            throw new ReglaNegocioException("La contrasena nueva debe ser distinta de la actual");
+            throw new ReglaNegocioException("La contraseña nueva debe ser distinta de la actual");
         }
 
         usuario.setPasswordHash(passwordEncoder.encode(peticion.passwordNueva()));

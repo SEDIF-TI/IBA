@@ -219,9 +219,9 @@ export function AdminCatalogo({ ruta, titulo, singular }: Props) {
               <TableRow>
                 <TableCell>Clave</TableCell>
                 <TableCell>Nombre</TableCell>
-                <TableCell>Descripcion</TableCell>
+                <TableCell>Descripción</TableCell>
                 <TableCell align="center">Orden</TableCell>
-                <TableCell align="center">Situacion</TableCell>
+                <TableCell align="center">Situación</TableCell>
                 {puedeAdministrar && <TableCell align="right">Acciones</TableCell>}
               </TableRow>
             </TableHead>
@@ -324,7 +324,7 @@ export function AdminCatalogo({ ruta, titulo, singular }: Props) {
             setPagina(0);
           }}
           rowsPerPageOptions={[10, 20, 50, 100]}
-          labelRowsPerPage="Registros por pagina"
+          labelRowsPerPage="Registros por página"
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
         />
       </Card>
@@ -372,7 +372,7 @@ export function AdminCatalogo({ ruta, titulo, singular }: Props) {
             />
 
             <TextField
-              label="Descripcion"
+              label="Descripción"
               value={formulario.descripcion}
               onChange={(e) =>
                 setFormulario({ ...formulario, descripcion: e.target.value })

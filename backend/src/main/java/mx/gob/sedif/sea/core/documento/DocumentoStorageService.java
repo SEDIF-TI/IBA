@@ -174,7 +174,7 @@ public class DocumentoStorageService {
         try {
             if (!Files.exists(archivo)) {
                 throw new AlmacenamientoException(
-                        "El archivo ya no esta en el almacen: " + rutaRelativa);
+                        "El archivo ya no está en el almacen: " + rutaRelativa);
             }
             return Files.newInputStream(archivo);
         } catch (IOException ex) {
@@ -222,7 +222,7 @@ public class DocumentoStorageService {
      */
     private Path resolverRuta(String rutaRelativa) {
         if (rutaRelativa == null || rutaRelativa.isBlank()) {
-            throw new AlmacenamientoException("Ruta de archivo vacia");
+            throw new AlmacenamientoException("Ruta de archivo vacía");
         }
         Path resuelta = raizAlmacenamiento.resolve(rutaRelativa).normalize();
         if (!resuelta.startsWith(raizAlmacenamiento)) {
@@ -245,7 +245,7 @@ public class DocumentoStorageService {
                     "El archivo pesa %.1f MB y el maximo permitido es %d MB. "
                             .formatted(archivo.getSize() / 1024.0 / 1024.0,
                                     tamanoMaximoBytes / 1024 / 1024)
-                            + "Reduce su tamano o toma la fotografia con menor resolucion.");
+                            + "Reduce su tamaño o toma la fotografia con menor resolución.");
         }
 
         String extension = extensionDe(archivo.getOriginalFilename());

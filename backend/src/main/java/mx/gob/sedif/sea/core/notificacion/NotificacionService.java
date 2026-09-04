@@ -261,7 +261,7 @@ public class NotificacionService
         if (observacion == null || observacion.isBlank()) {
             throw new ReglaNegocioException(
                     "Escribe que le dijiste a la persona o por que no se logro el "
-                            + "contacto. Queda en el expediente del tramite.");
+                            + "contacto. Queda en el expediente del trámite.");
         }
 
         Usuario responsable = SecurityUtil.obtenerUsuarioId()

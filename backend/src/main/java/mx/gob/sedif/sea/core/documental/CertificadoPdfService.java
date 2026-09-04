@@ -232,7 +232,7 @@ public class CertificadoPdfService {
         lienzo.fill();
         lienzo.restoreState();
 
-        texto(lienzo, "Padron Estatal de Perros y Gatos", centro, yCinta + 8f, 10f,
+        texto(lienzo, "Padrón Estatal de Perros y Gatos", centro, yCinta + 8f, 10f,
               Color.WHITE, true, Element.ALIGN_CENTER);
     }
 
@@ -267,7 +267,7 @@ public class CertificadoPdfService {
                         log.warn("No se pudo insertar la fotografia del animal", ex);
                     }
                 },
-                () -> texto(lienzo, "Sin fotografia",
+                () -> texto(lienzo, "Sin fotografía",
                             x + FOTO_ANCHO / 2f, y + FOTO_ALTO / 2f, 8f,
                             Color.GRAY, false, Element.ALIGN_CENTER));
     }
@@ -298,20 +298,20 @@ public class CertificadoPdfService {
               xIzquierda + 330f, y, 9f);
 
         y -= 46f;
-        campo(lienzo, "Caracteristicas fisicas:", animal.getCaracteristicas(),
+        campo(lienzo, "Características físicas:", animal.getCaracteristicas(),
               xIzquierda, y, 9f);
 
         y -= 46f;
         campo(lienzo, "Responsable:", persona.getNombreCompleto(), xIzquierda, y, 9f);
 
         y -= 34f;
-        campo(lienzo, "Direccion:", domicilioDe(persona), xIzquierda, y, 9f);
+        campo(lienzo, "Dirección:", domicilioDe(persona), xIzquierda, y, 9f);
 
         y -= 34f;
-        campo(lienzo, "Telefono:", persona.getTelefono(), xIzquierda, y, 9f);
+        campo(lienzo, "Teléfono:", persona.getTelefono(), xIzquierda, y, 9f);
 
         y -= 34f;
-        campo(lienzo, "Correo electronico:", persona.getCorreo(), xIzquierda, y, 9f);
+        campo(lienzo, "Correo electrónico:", persona.getCorreo(), xIzquierda, y, 9f);
     }
 
     /**
@@ -364,7 +364,7 @@ public class CertificadoPdfService {
         // Leyendas al pie.
         texto(lienzo, identidad.leyendaVerificacion(), centro, 68f, 7f,
               Color.GRAY, false, Element.ALIGN_CENTER);
-        texto(lienzo, "Codigo: " + certificado.getCodigoVerificacion(), centro, 58f, 6.5f,
+        texto(lienzo, "Código: " + certificado.getCodigoVerificacion(), centro, 58f, 6.5f,
               Color.GRAY, false, Element.ALIGN_CENTER);
 
         if (certificado.getFechaVigencia() != null) {

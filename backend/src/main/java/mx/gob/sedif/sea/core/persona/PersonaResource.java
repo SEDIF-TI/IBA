@@ -59,7 +59,7 @@ public class PersonaResource {
         String mensaje = resultados.isEmpty()
                 ? (texto == null || texto.isBlank()
                         ? "Todavia no hay tutores registrados"
-                        : "No se encontro ningun tutor con \"%s\". Verifica el apellido "
+                        : "No se encontro ningún tutor con \"%s\". Verifica el apellido "
                                 .formatted(texto) + "o la CURP.")
                 : "Se encontraron %d tutor(es)".formatted(resultados.getTotalElements());
 
@@ -123,7 +123,7 @@ public class PersonaResource {
 
         return ResponseEntity.ok(ApiResponse.ok(
                 PersonaDetalleRecord.de(persona, personaService.contarAnimales(id)),
-                "Se registro la CURP y la identidad quedo validada"));
+                "Se registro la CURP y la identidad quedó validada"));
     }
 
     /** Actualiza contacto y domicilio del tutor. */

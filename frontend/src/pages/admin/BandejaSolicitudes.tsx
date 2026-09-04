@@ -168,10 +168,10 @@ export function BandejaSolicitudes() {
           alignItems={{ md: 'center' }}
         >
           <FormControl size="small" sx={{ minWidth: 190 }}>
-            <InputLabel id="etiqueta-situacion">Situacion</InputLabel>
+            <InputLabel id="etiqueta-situacion">Situación</InputLabel>
             <Select
               labelId="etiqueta-situacion"
-              label="Situacion"
+              label="Situación"
               value={filtroEstatus}
               onChange={(e) => {
                 setFiltroEstatus(e.target.value === '' ? '' : Number(e.target.value));
@@ -249,7 +249,7 @@ export function BandejaSolicitudes() {
                 <TableCell>Animal</TableCell>
                 <TableCell>Municipio</TableCell>
                 <TableCell>Canal</TableCell>
-                <TableCell>Situacion</TableCell>
+                <TableCell>Situación</TableCell>
                 <TableCell>Recibido</TableCell>
                 <TableCell align="right">Acciones</TableCell>
               </TableRow>
@@ -259,7 +259,7 @@ export function BandejaSolicitudes() {
               {cargando ? (
                 <TableRow>
                   <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
-                    <CircularProgress size={28} aria-label="Cargando tramites" />
+                    <CircularProgress size={28} aria-label="Cargando trámites" />
                   </TableCell>
                 </TableRow>
               ) : solicitudes.length === 0 ? (
@@ -267,8 +267,8 @@ export function BandejaSolicitudes() {
                   <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
                     <Typography color="text.secondary">
                       {hayFiltros
-                        ? 'Ningun tramite coincide con los filtros'
-                        : 'Todavia no hay tramites'}
+                        ? 'Ningún trámite coincide con los filtros'
+                        : 'Todavia no hay trámites'}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -285,7 +285,7 @@ export function BandejaSolicitudes() {
                         {/* Lo marcado para revision reforzada se distingue sin
                             tener que abrirlo. */}
                         {solicitud.revisionReforzada && (
-                          <Tooltip title={solicitud.motivoRevisionReforzada ?? 'Revision reforzada'}>
+                          <Tooltip title={solicitud.motivoRevisionReforzada ?? 'Revisión reforzada'}>
                             <PriorityHighIcon color="warning" fontSize="small" />
                           </Tooltip>
                         )}
@@ -363,7 +363,7 @@ export function BandejaSolicitudes() {
             setPagina(0);
           }}
           rowsPerPageOptions={[10, 20, 50, 100]}
-          labelRowsPerPage="Tramites por pagina"
+          labelRowsPerPage="Trámites por página"
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
         />
       </Card>

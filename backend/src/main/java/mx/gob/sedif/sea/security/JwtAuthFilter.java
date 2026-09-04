@@ -62,7 +62,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 // mientras la sesion seguia abierta.
                 log.debug("Token de una cuenta inexistente");
             } catch (Exception ex) {
-                log.warn("No se pudo establecer la sesion a partir del token", ex);
+                log.warn("No se pudo establecer la sesión a partir del token", ex);
             }
         }
 

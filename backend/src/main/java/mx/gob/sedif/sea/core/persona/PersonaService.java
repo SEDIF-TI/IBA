@@ -141,8 +141,8 @@ public class PersonaService {
 
         if (persona.getCurp() != null && !persona.getCurp().isBlank()) {
             throw new ReglaNegocioException(
-                    "Este tutor ya tiene CURP registrada. Si esta equivocada, "
-                            + "corrigela desde la edicion de sus datos.");
+                    "Este tutor ya tiene CURP registrada. Si está equivocada, "
+                            + "corrígela desde la edicion de sus datos.");
         }
 
         String normalizada = CurpUtil.normalizar(curp);

@@ -59,9 +59,9 @@ public class AnimalResource {
         String mensaje = resultados.isEmpty()
                 ? (texto == null || texto.isBlank()
                         ? "Todavia no hay animales empadronados"
-                        : "No se encontro ningun animal con \"%s\". Puedes buscar por "
+                        : "No se encontro ningún animal con \"%s\". Puedes buscar por "
                                 .formatted(texto)
-                                + "nombre, por su identificador o por numero de chip.")
+                                + "nombre, por su identificador o por número de chip.")
                 : "Se encontraron %d animal(es)".formatted(resultados.getTotalElements());
 
         return ResponseEntity.ok(ApiResponse.ok(resultados, mensaje));
@@ -127,7 +127,7 @@ public class AnimalResource {
 
         return ResponseEntity.ok(ApiResponse.ok(
                 AnimalRecord.de(animal),
-                "Se registro la defuncion. El animal permanece en el padron con su "
+                "Se registro la defunción. El animal permanece en el padrón con su "
                         + "historial completo."));
     }
 
@@ -141,7 +141,7 @@ public class AnimalResource {
             @NotNull(message = "Elige al tutor que recibe la responsabilidad")
             Long nuevoTutorId,
 
-            @NotBlank(message = "Escribe el motivo de la transferencia: adopcion, "
+            @NotBlank(message = "Escribe el motivo de la transferencia: adopción, "
                     + "cambio de responsable o fallecimiento del tutor")
             @Size(max = 300)
             String motivo) {

@@ -148,7 +148,7 @@ export function RegistrosDadosDeBaja() {
               setPagina(0);
             }}
             rowsPerPageOptions={[10, 20, 50]}
-            labelRowsPerPage="Registros por pagina"
+            labelRowsPerPage="Registros por página"
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
           />
         </>

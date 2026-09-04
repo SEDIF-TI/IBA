@@ -105,7 +105,7 @@ export function Login() {
               />
 
               <TextField
-                label="Contrasena"
+                label="Contraseña"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

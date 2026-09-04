@@ -77,7 +77,7 @@ public class QrService {
      */
     public byte[] generar(String contenido, int tamano) {
         if (contenido == null || contenido.isBlank()) {
-            throw new IllegalArgumentException("El contenido del codigo no puede ir vacio");
+            throw new IllegalArgumentException("El contenido del código no puede ir vacío");
         }
 
         try {
@@ -96,7 +96,7 @@ public class QrService {
             return salida.toByteArray();
 
         } catch (WriterException | IOException ex) {
-            throw new AlmacenamientoException("No se pudo generar el codigo QR", ex);
+            throw new AlmacenamientoException("No se pudo generar el código QR", ex);
         }
     }
 }

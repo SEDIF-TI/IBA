@@ -128,7 +128,7 @@ public class ParametroService {
     /** Comprueba que el valor corresponda con el tipo declarado. */
     private void validarSegunTipo(Parametro parametro, String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new ReglaNegocioException("El valor no puede quedar vacio");
+            throw new ReglaNegocioException("El valor no puede quedar vacío");
         }
 
         switch (parametro.getTipoDato()) {
