@@ -62,6 +62,21 @@ export function Inicio() {
         </Grid>
       </Grid>
 
+      <Card sx={{ mb: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Jornadas en tu municipio
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            El Instituto visita los municipios para empadronar en sitio. Consulta
+            cuando toca el tuyo y adelanta tu registro.
+          </Typography>
+          <Button component={RouterLink} to="/jornadas" variant="outlined">
+            Ver jornadas programadas
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>

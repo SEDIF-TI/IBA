@@ -53,8 +53,11 @@ export function PublicLayout() {
             <Button component={RouterLink} to="/consulta" color="inherit">
               Consultar tramite
             </Button>
+            <Button component={RouterLink} to="/jornadas" color="inherit">
+              Jornadas
+            </Button>
             <Button component={RouterLink} to="/verificar" color="inherit">
-              Verificar certificado
+              Verificar
             </Button>
             <Button
               component={RouterLink}

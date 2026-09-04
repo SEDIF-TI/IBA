@@ -2,6 +2,7 @@ import {
   AppBar,
   Avatar,
   Box,
+  Chip,
   Divider,
   Drawer,
   IconButton,
@@ -17,16 +18,19 @@ import {
 } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import CategoryIcon from '@mui/icons-material/Category';
+import EventIcon from '@mui/icons-material/Event';
+import PhoneIcon from '@mui/icons-material/Phone';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
 import PetsIcon from '@mui/icons-material/Pets';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '@/context/AuthContext';
 import { useNotificacion } from '@/context/NotificationContext';
+import notificacionService from '@/services/notificacionService';
 import { guinda, neutro } from '@/theme';
 
 const ANCHO_MENU = 260;
@@ -47,6 +51,18 @@ const ENTRADAS: EntradaMenu[] = [
     ruta: '/admin/solicitudes',
     icono: <AssignmentIcon />,
     permiso: 'solicitud:ver',
+  },
+  {
+    texto: 'Jornadas',
+    ruta: '/admin/jornadas',
+    icono: <EventIcon />,
+    permiso: 'jornada:ver',
+  },
+  {
+    texto: 'Bandeja de contacto',
+    ruta: '/admin/contacto',
+    icono: <PhoneIcon />,
+    permiso: 'notificacion:contactar',
   },
   {
     texto: 'Padron de personas',
@@ -78,6 +94,7 @@ const ENTRADAS: EntradaMenu[] = [
 export function AdminLayout() {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [anclaUsuario, setAnclaUsuario] = useState<null | HTMLElement>(null);
+  const [contactosPendientes, setContactosPendientes] = useState(0);
 
   const { sesion, cerrarSesion, tienePermiso } = useAuth();
   const notificacion = useNotificacion();
@@ -87,6 +104,18 @@ export function AdminLayout() {
   const entradasVisibles = ENTRADAS.filter(
     (entrada) => !entrada.permiso || tienePermiso(entrada.permiso),
   );
+
+  // El contador de contactos pendientes va en el menu para que nadie quede
+  // esperando una llamada que nadie recuerda que debe hacer.
+  useEffect(() => {
+    if (!tienePermiso('notificacion:ver')) {
+      return;
+    }
+    notificacionService
+      .pendientes()
+      .then((resumen) => setContactosPendientes(resumen.pendientes))
+      .catch(() => setContactosPendientes(0));
+  }, [tienePermiso, ubicacion.pathname]);
 
   async function salir() {
     try {
@@ -138,6 +167,14 @@ export function AdminLayout() {
             >
               <ListItemIcon sx={{ minWidth: 40 }}>{entrada.icono}</ListItemIcon>
               <ListItemText primary={entrada.texto} />
+              {entrada.ruta === '/admin/contacto' && contactosPendientes > 0 && (
+                <Chip
+                  label={contactosPendientes}
+                  size="small"
+                  color="warning"
+                  sx={{ height: 20, minWidth: 20 }}
+                />
+              )}
             </ListItemButton>
           );
         })}

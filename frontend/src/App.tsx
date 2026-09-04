@@ -5,7 +5,10 @@ import AdminLayout from '@/layouts/AdminLayout';
 import PublicLayout from '@/layouts/PublicLayout';
 
 import AdminCatalogo from '@/pages/admin/AdminCatalogo';
+import AdminJornadas from '@/pages/admin/AdminJornadas';
+import BandejaContacto from '@/pages/admin/BandejaContacto';
 import BandejaSolicitudes from '@/pages/admin/BandejaSolicitudes';
+import OperarJornada from '@/pages/admin/OperarJornada';
 import DetalleSolicitud from '@/pages/admin/DetalleSolicitud';
 import CambiarPassword from '@/pages/admin/CambiarPassword';
 import CatalogosIndex from '@/pages/admin/CatalogosIndex';
@@ -13,6 +16,7 @@ import Login from '@/pages/admin/Login';
 import SinPermiso from '@/pages/admin/SinPermiso';
 import Tablero from '@/pages/admin/Tablero';
 
+import CalendarioJornadas from '@/pages/publico/CalendarioJornadas';
 import ConsultaTramite from '@/pages/publico/ConsultaTramite';
 import Inicio from '@/pages/publico/Inicio';
 import VerificarCertificado from '@/pages/publico/VerificarCertificado';
@@ -35,6 +39,7 @@ export function App() {
             codigo verifica sola; la otra permite capturarlo a mano. */}
         <Route path="/verificar" element={<VerificarCertificado />} />
         <Route path="/verificar/:codigo" element={<VerificarCertificado />} />
+        <Route path="/jornadas" element={<CalendarioJornadas />} />
       </Route>
 
       {/* ---- Acceso al panel ---- */}
@@ -76,6 +81,32 @@ export function App() {
           element={
             <ProtectedRoute permiso="solicitud:ver">
               <DetalleSolicitud />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="jornadas"
+          element={
+            <ProtectedRoute permiso="jornada:ver">
+              <AdminJornadas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="jornadas/:id/operar"
+          element={
+            <ProtectedRoute permiso="jornada:operar">
+              <OperarJornada />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="contacto"
+          element={
+            <ProtectedRoute permiso="notificacion:contactar">
+              <BandejaContacto />
             </ProtectedRoute>
           }
         />

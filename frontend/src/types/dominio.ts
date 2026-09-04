@@ -156,3 +156,82 @@ export interface Verificacion {
   fechaVigencia?: string;
   mensaje: string;
 }
+
+/** Jornada municipal de empadronamiento. */
+export interface Jornada {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  municipioId?: number;
+  municipio?: string;
+  domicilioSede: string;
+  fechaInicio: string;
+  fechaFin: string;
+  horario?: string;
+  cupo?: number;
+  publicada: boolean;
+  fechaPublicacion?: string;
+  responsable?: string;
+  enCurso: boolean;
+}
+
+/** Jornada tal como la ve la ciudadania en el portal. */
+export interface JornadaPublica {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  municipio?: string;
+  domicilioSede: string;
+  fechaInicio: string;
+  fechaFin: string;
+  horario?: string;
+}
+
+/** Datos para dar de alta o editar una jornada. */
+export interface JornadaRequest {
+  nombre: string;
+  descripcion?: string;
+  municipioId: number;
+  domicilioSede: string;
+  fechaInicio: string;
+  fechaFin: string;
+  horario?: string;
+  cupo?: number;
+  usuarioResponsableId?: number;
+}
+
+/** Avance de una jornada durante el evento. */
+export interface ResumenJornada {
+  jornadaId: number;
+  nombre: string;
+  municipio: string;
+  precargadas: number;
+  atendidas: number;
+  pendientes: number;
+  cupo?: number;
+  lugaresLibres?: number;
+}
+
+/** Aviso del tramite, tal como se ve en la bandeja de contacto. */
+export interface Notificacion {
+  id: number;
+  folioSolicitud: string;
+  tutorNombre: string;
+  destinatario: string;
+  canal: 'AUTOMATICO' | 'MANUAL';
+  asunto?: string;
+  cuerpo?: string;
+  estatus: 'PENDIENTE' | 'ENVIADA' | 'FALLIDA' | 'CONTACTADA' | 'NO_CONTACTADA';
+  intentos: number;
+  error?: string;
+  observacion?: string;
+  atendioUsuario?: string;
+  fechaCreacion: string;
+  fechaContacto?: string;
+}
+
+/** Situacion de la bandeja de contacto. */
+export interface ResumenBandeja {
+  pendientes: number;
+  envioHabilitado: boolean;
+}
