@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,7 +22,17 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
      *
      * <p>Toda invocacion desde el panel debe quedar registrada en bitacora.
      */
+    @EntityGraph(attributePaths = {"municipio", "medioContactoPreferido"})
     Optional<Persona> findByCurp(String curp);
+
+    /**
+     * Tutor con su municipio ya cargado.
+     *
+     * <p>El DTO lo lee fuera de la transaccion.
+     */
+    @Query("SELECT p FROM Persona p WHERE p.id = :id")
+    @EntityGraph(attributePaths = {"municipio", "medioContactoPreferido"})
+    Optional<Persona> findConDetallePorId(@Param("id") Long id);
 
     boolean existsByCurp(String curp);
 
@@ -38,7 +49,9 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
               AND sea_unaccent(UPPER(CONCAT(p.apellidoPaterno, ' ',
                       COALESCE(p.apellidoMaterno, ''), ' ', p.nombre)))
                   LIKE sea_unaccent(:patron)
+            ORDER BY p.apellidoPaterno, p.apellidoMaterno, p.nombre
             """)
+    @EntityGraph(attributePaths = {"municipio"})
     Page<Persona> buscarPorPatron(@Param("patron") String patron, Pageable pageable);
 
     /**

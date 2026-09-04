@@ -10,6 +10,10 @@ import BandejaContacto from '@/pages/admin/BandejaContacto';
 import BandejaSolicitudes from '@/pages/admin/BandejaSolicitudes';
 import OperarJornada from '@/pages/admin/OperarJornada';
 import DetalleSolicitud from '@/pages/admin/DetalleSolicitud';
+import FichaAnimal from '@/pages/admin/FichaAnimal';
+import FichaTutor from '@/pages/admin/FichaTutor';
+import PadronAnimales from '@/pages/admin/PadronAnimales';
+import PadronTutores from '@/pages/admin/PadronTutores';
 import CambiarPassword from '@/pages/admin/CambiarPassword';
 import CatalogosIndex from '@/pages/admin/CatalogosIndex';
 import Login from '@/pages/admin/Login';
@@ -81,6 +85,40 @@ export function App() {
           element={
             <ProtectedRoute permiso="solicitud:ver">
               <DetalleSolicitud />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="padron"
+          element={
+            <ProtectedRoute permiso="animal:ver">
+              <PadronAnimales />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="padron/:id"
+          element={
+            <ProtectedRoute permiso="animal:ver">
+              <FichaAnimal />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="tutores"
+          element={
+            <ProtectedRoute permiso="persona:ver">
+              <PadronTutores />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="tutores/:id"
+          element={
+            <ProtectedRoute permiso="persona:ver">
+              <FichaTutor />
             </ProtectedRoute>
           }
         />

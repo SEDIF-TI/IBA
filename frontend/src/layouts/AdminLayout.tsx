@@ -65,16 +65,16 @@ const ENTRADAS: EntradaMenu[] = [
     permiso: 'notificacion:contactar',
   },
   {
-    texto: 'Padron de personas',
-    ruta: '/admin/personas',
-    icono: <PeopleIcon />,
-    permiso: 'persona:ver',
-  },
-  {
-    texto: 'Padron de animales',
-    ruta: '/admin/animales',
+    texto: 'Padron',
+    ruta: '/admin/padron',
     icono: <PetsIcon />,
     permiso: 'animal:ver',
+  },
+  {
+    texto: 'Tutores',
+    ruta: '/admin/tutores',
+    icono: <PeopleIcon />,
+    permiso: 'persona:ver',
   },
   {
     texto: 'Catalogos',

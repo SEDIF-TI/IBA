@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +18,16 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
     Optional<Animal> findByClaveAnimal(String claveAnimal);
 
     /**
+     * Animal con sus catalogos ya cargados.
+     *
+     * <p>El DTO los lee fuera de la transaccion.
+     */
+    @Query("SELECT a FROM Animal a WHERE a.id = :id")
+    @EntityGraph(attributePaths = {"especie", "raza", "sexo", "color", "tamano",
+                                   "metodoIdentificacion"})
+    Optional<Animal> findConDetallePorId(@Param("id") Long id);
+
+    /**
      * Busca por numero de microchip o placa. Sirve para detectar que un animal
      * ya esta empadronado antes de crear un duplicado.
      */
@@ -26,12 +37,16 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
     @Query("""
             SELECT a FROM Animal a
             WHERE a.activo = TRUE
-              AND sea_unaccent(UPPER(a.nombre)) LIKE sea_unaccent(:patron)
+              AND (sea_unaccent(UPPER(a.nombre)) LIKE sea_unaccent(:patron)
+                   OR UPPER(COALESCE(a.claveAnimal, '')) LIKE :patron
+                   OR UPPER(COALESCE(a.identificador, '')) LIKE :patron)
+            ORDER BY a.nombre
             """)
+    @EntityGraph(attributePaths = {"especie", "raza", "sexo", "color"})
     Page<Animal> buscarPorPatron(@Param("patron") String patron, Pageable pageable);
 
     /**
-     * Buscador por nombre del animal.
+     * Buscador de animales por nombre, clave interna o numero de chip.
      *
      * @param texto texto a buscar, sin comodines
      */
@@ -55,5 +70,6 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
               AND t.animal.activo = TRUE
             ORDER BY t.animal.nombre
             """)
+    @EntityGraph(attributePaths = {"especie", "raza", "sexo", "color"})
     List<Animal> findVigentesPorPersona(@Param("personaId") Long personaId);
 }

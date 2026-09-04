@@ -235,3 +235,93 @@ export interface ResumenBandeja {
   pendientes: number;
   envioHabilitado: boolean;
 }
+
+/** Tutor responsable, en el listado. */
+export interface Tutor {
+  id: number;
+  nombreCompleto: string;
+  curpEnmascarada?: string;
+  identidadValidada: boolean;
+  correo?: string;
+  telefono?: string;
+  municipio?: string;
+  animalesACargo: number;
+}
+
+/**
+ * Ficha completa del tutor.
+ *
+ * <p>Aqui la CURP va completa, para cotejarla contra el documento. Por eso
+ * abrir la ficha queda registrado en bitacora.
+ */
+export interface TutorDetalle {
+  id: number;
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno?: string;
+  nombreCompleto: string;
+  curp?: string;
+  identidadValidada: boolean;
+  fechaNacimiento?: string;
+  sexoCurp?: string;
+  entidadNacimiento?: string;
+  entidadNacimientoNombre?: string;
+  correo?: string;
+  telefono?: string;
+  telefonoWhatsapp?: string;
+  municipioId?: number;
+  municipio?: string;
+  calle?: string;
+  numeroExterior?: string;
+  numeroInterior?: string;
+  colonia?: string;
+  codigoPostal?: string;
+  animalesACargo: number;
+}
+
+/** Animal empadronado. */
+export interface Animal {
+  id: number;
+  nombre: string;
+  claveAnimal?: string;
+  especie?: string;
+  raza?: string;
+  sexo?: string;
+  color?: string;
+  tamano?: string;
+  edadMeses?: number;
+  edadDescriptiva?: string;
+  vacunado?: boolean;
+  esterilizado?: boolean;
+  caracteristicas?: string;
+  metodoIdentificacion?: string;
+  identificador?: string;
+  finado?: boolean;
+  fechaDefuncion?: string;
+  tutorNombre?: string;
+  tutorId?: number;
+}
+
+/** Un tramo del historial de tutores de un animal. */
+export interface Titularidad {
+  id: number;
+  tutorId: number;
+  tutorNombre: string;
+  fechaInicio: string;
+  fechaFin?: string;
+  motivoBaja?: string;
+  vigente: boolean;
+}
+
+/** Datos editables del tutor. */
+export interface ActualizarTutorRequest {
+  correo?: string;
+  telefono?: string;
+  telefonoWhatsapp?: string;
+  municipioId?: number;
+  calle?: string;
+  numeroExterior?: string;
+  numeroInterior?: string;
+  colonia?: string;
+  codigoPostal?: string;
+}
