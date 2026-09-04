@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   CircularProgress,
   Dialog,
@@ -12,6 +13,7 @@ import {
   DialogTitle,
   Divider,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   InputLabel,
@@ -84,6 +86,11 @@ export function DetalleSolicitud() {
   const [motivoId, setMotivoId] = useState<number | ''>('');
   const [observacion, setObservacion] = useState('');
   const [resolviendo, setResolviendo] = useState(false);
+
+  const [bajaAbierta, setBajaAbierta] = useState(false);
+  const [motivoBaja, setMotivoBaja] = useState('');
+  const [incluirPersona, setIncluirPersona] = useState(false);
+  const [dandoDeBaja, setDandoDeBaja] = useState(false);
 
   const { tienePermiso } = useAuth();
   const notificacion = useNotificacion();
@@ -186,6 +193,23 @@ export function DetalleSolicitud() {
     setResolucion(null);
     setMotivoId('');
     setObservacion('');
+  }
+
+  async function darDeBaja() {
+    setDandoDeBaja(true);
+    try {
+      const mensaje = await solicitudService.darDeBaja(
+        solicitudId,
+        motivoBaja,
+        incluirPersona,
+      );
+      notificacion.exito(mensaje);
+      navegar('/admin/solicitudes');
+    } catch (fallo) {
+      notificacion.error(mensajeDeError(fallo));
+    } finally {
+      setDandoDeBaja(false);
+    }
   }
 
   async function descargar(documento: Documento) {
@@ -503,6 +527,31 @@ export function DetalleSolicitud() {
         </Card>
       )}
 
+      {tienePermiso('solicitud:depurar') &&
+        solicitud.estatusClave !== 'CERTIFICADO_EMITIDO' &&
+        solicitud.estatusClave !== 'ENTREGADA' && (
+          <Card sx={{ mt: 2, borderColor: 'error.light' }}>
+            <CardContent>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                Depurar del padron
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Usa esto solo si el registro nunca fue real: alguien probando el
+                sistema, o datos evidentemente falsos. Si es una persona que
+                simplemente no concluyo su tramite, cancelalo en lugar de darlo
+                de baja.
+              </Typography>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => setBajaAbierta(true)}
+              >
+                Dar de baja
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
       <Card sx={{ mt: 2 }}>
         <CardContent>
           <Typography variant="subtitle1" fontWeight={600} gutterBottom>
@@ -541,6 +590,68 @@ export function DetalleSolicitud() {
           </Stack>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={bajaAbierta}
+        onClose={() => setBajaAbierta(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Dar de baja del padron</DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            El registro deja de aparecer en el padron y en las busquedas, pero no
+            se borra: queda con tu nombre y el motivo por si despues hay que
+            explicarlo. Se puede reactivar.
+          </Alert>
+
+          <TextField
+            label="Por que se da de baja"
+            value={motivoBaja}
+            onChange={(e) => setMotivoBaja(e.target.value)}
+            fullWidth
+            required
+            multiline
+            rows={2}
+            autoFocus
+            helperText="Por ejemplo: datos de prueba, registro duplicado, informacion falsa"
+            inputProps={{ maxLength: 500 }}
+          />
+
+          <FormControlLabel
+            sx={{ mt: 2 }}
+            control={
+              <Checkbox
+                checked={incluirPersona}
+                onChange={(e) => setIncluirPersona(e.target.checked)}
+              />
+            }
+            label="Dar de baja tambien al tutor y su animal"
+          />
+
+          <Typography variant="caption" color="text.secondary" display="block">
+            {incluirPersona
+              ? 'El tutor solo se da de baja si este era su unico tramite vigente. ' +
+                'Marcalo cuando el registro completo sea basura.'
+              : 'Solo se da de baja el tramite. El tutor y su animal siguen en el ' +
+                'padron, por si la persona vuelve a registrarse.'}
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setBajaAbierta(false)} color="inherit">
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={darDeBaja}
+            disabled={dandoDeBaja || !motivoBaja.trim()}
+          >
+            {dandoDeBaja ? 'Dando de baja...' : 'Dar de baja'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={resolucion !== null} onClose={cerrarResolucion} maxWidth="sm" fullWidth>
         <DialogTitle>{resolucion ? RESOLUCIONES[resolucion].titulo : ''}</DialogTitle>

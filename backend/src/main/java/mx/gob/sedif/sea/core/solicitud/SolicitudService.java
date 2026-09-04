@@ -490,6 +490,127 @@ public class SolicitudService {
         return cambiarEstatus(solicitudId, EstatusSolicitudEnum.CANCELADA, motivoId, observacion);
     }
 
+    /**
+     * Da de baja un tramite y, si procede, a la persona y el animal.
+     *
+     * <p>Es para depurar el padron: gente que registro por probar el sistema, o
+     * registros con datos evidentemente falsos. La baja es logica, nunca
+     * fisica: el registro se conserva con quien lo dio de baja y por que, para
+     * poder responder si alguien reclama.
+     *
+     * <p>No procede sobre un tramite que llego a certificado. Ese documento
+     * circula: se fotografia, se presenta en la veterinaria. Desaparecer a su
+     * titular dejaria un certificado sin respaldo. Para esos casos se cancela
+     * el certificado, que es una operacion distinta y deja constancia.
+     *
+     * @param solicitudId     tramite a dar de baja
+     * @param motivo          por que se depura
+     * @param incluirPersona  tambien da de baja al tutor y su animal
+     */
+    @Transactional
+    public void darDeBaja(Long solicitudId, String motivo, boolean incluirPersona) {
+        if (motivo == null || motivo.isBlank()) {
+            throw new ReglaNegocioException(
+                    "Escribe por que se da de baja este registro. Queda en la "
+                            + "bitacora por si despues hay que explicarlo.");
+        }
+
+        Solicitud solicitud = obtener(solicitudId);
+        String estatus = solicitud.getEstatus().getClave();
+
+        if (EstatusSolicitudEnum.CERTIFICADO_EMITIDO.name().equals(estatus)
+                || EstatusSolicitudEnum.ENTREGADA.name().equals(estatus)) {
+            throw new ReglaNegocioException(
+                    "No se puede dar de baja un tramite con certificado emitido: ese "
+                            + "documento ya circula. Si el certificado no debe surtir "
+                            + "efecto, cancelalo desde la ficha del tramite.");
+        }
+
+        solicitud.setActivo(false);
+        solicitudRepository.save(solicitud);
+
+        auditoria.registrar(AccionAuditoria.ELIMINAR, "solicitud", solicitudId,
+                "Baja del tramite %s: %s".formatted(
+                        solicitud.getFolioSolicitud(), motivo));
+
+        if (!incluirPersona) {
+            log.info("Tramite {} dado de baja; se conservan la persona y el animal",
+                    solicitud.getFolioSolicitud());
+            return;
+        }
+
+        // Solo se da de baja al animal de este tramite.
+        var animal = solicitud.getAnimal();
+        animal.setActivo(false);
+        animalRepository.save(animal);
+
+        auditoria.registrar(AccionAuditoria.ELIMINAR, "animal", animal.getId(),
+                "Baja de %s junto con el tramite %s: %s".formatted(
+                        animal.getNombre(), solicitud.getFolioSolicitud(), motivo));
+
+        // La titularidad se cierra: ya no hay quien responda por el animal.
+        titularidadRepository.findByAnimalIdAndVigenteTrue(animal.getId())
+                .ifPresent(titularidad -> {
+                    titularidad.cerrar("Baja del registro: " + motivo);
+                    titularidadRepository.save(titularidad);
+                });
+
+        // La persona solo se da de baja si este era su unico tramite vigente.
+        // Alguien puede haber registrado un animal por probar y otro en serio.
+        var persona = solicitud.getPersona();
+        long otrosTramites = solicitudRepository.countByPersonaIdAndActivoTrue(persona.getId());
+
+        if (otrosTramites == 0) {
+            persona.setActivo(false);
+            personaRepository.save(persona);
+
+            auditoria.registrar(AccionAuditoria.ELIMINAR, "persona", persona.getId(),
+                    "Baja de %s al no quedarle tramites vigentes: %s".formatted(
+                            persona.getNombreCompleto(), motivo));
+
+            log.info("Tramite {}, su animal y la persona dados de baja",
+                    solicitud.getFolioSolicitud());
+        } else {
+            log.info("Tramite {} y su animal dados de baja; la persona conserva "
+                            + "{} tramite(s) vigente(s)",
+                    solicitud.getFolioSolicitud(), otrosTramites);
+        }
+    }
+
+    /**
+     * Reactiva un registro dado de baja por error.
+     *
+     * <p>La baja es logica precisamente para que se pueda deshacer.
+     */
+    @Transactional
+    public Solicitud reactivar(Long solicitudId, String motivo) {
+        Solicitud solicitud = solicitudRepository.findConDetallePorId(solicitudId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Solicitud", solicitudId));
+
+        if (Boolean.TRUE.equals(solicitud.getActivo())) {
+            throw new ReglaNegocioException("Este tramite no estaba dado de baja");
+        }
+
+        solicitud.setActivo(true);
+        solicitudRepository.save(solicitud);
+
+        var animal = solicitud.getAnimal();
+        animal.setActivo(true);
+        animalRepository.save(animal);
+
+        var persona = solicitud.getPersona();
+        persona.setActivo(true);
+        personaRepository.save(persona);
+
+        auditoria.registrar(AccionAuditoria.MODIFICAR, "solicitud", solicitudId,
+                "Reactivacion del tramite %s: %s".formatted(
+                        solicitud.getFolioSolicitud(),
+                        motivo == null || motivo.isBlank() ? "sin motivo indicado" : motivo));
+
+        log.info("Tramite {} reactivado", solicitud.getFolioSolicitud());
+        return solicitudRepository.findConDetallePorId(solicitudId).orElse(solicitud);
+    }
+
     // ------------------------------------------------------------------
     // Consultas
     // ------------------------------------------------------------------

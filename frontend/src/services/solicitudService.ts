@@ -99,6 +99,45 @@ export const solicitudService = {
     return { solicitud: data.data, mensaje: data.message };
   },
 
+  /**
+   * Da de baja un registro que nunca fue real.
+   *
+   * <p>Para depurar el padron: gente que registro por probar, o datos
+   * evidentemente falsos. La baja es logica y se puede deshacer.
+   *
+   * @param incluirPersona tambien da de baja al tutor y su animal
+   */
+  async darDeBaja(
+    id: number,
+    motivo: string,
+    incluirPersona: boolean,
+  ): Promise<string> {
+    const { data } = await api.delete<ApiResponse<void>>(`/solicitudes/${id}`, {
+      data: { motivo, incluirPersona },
+    });
+    return data.message;
+  },
+
+  /** Registros dados de baja, para revisarlos o reactivarlos. */
+  async dadosDeBaja(
+    parametros: ParametrosPagina = {},
+  ): Promise<{ resultados: Pagina<Solicitud>; mensaje: string }> {
+    const { data } = await api.get<ApiResponse<Pagina<Solicitud>>>(
+      '/solicitudes/dados-de-baja',
+      { params: parametros },
+    );
+    return { resultados: data.data, mensaje: data.message };
+  },
+
+  /** Reactiva un registro dado de baja por error. */
+  async reactivar(id: number, motivo?: string): Promise<string> {
+    const { data } = await api.patch<ApiResponse<Solicitud>>(
+      `/solicitudes/${id}/reactivar`,
+      { motivo: motivo ?? 'Reactivado desde el panel' },
+    );
+    return data.message;
+  },
+
   /** Bandeja de trabajo del panel. */
   async listar(filtros: FiltrosBandeja = {}): Promise<Pagina<Solicitud>> {
     const { data } = await api.get<ApiResponse<Pagina<Solicitud>>>('/solicitudes', {

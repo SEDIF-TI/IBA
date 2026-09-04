@@ -102,6 +102,20 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
 
     long countByEstatusClave(String claveEstatus);
 
+    /** Cuantos tramites vigentes tiene una persona. */
+    long countByPersonaIdAndActivoTrue(Long personaId);
+
+    /**
+     * Tramites dados de baja, para poder revisarlos y reactivarlos.
+     *
+     * <p>La baja es logica: el registro sigue ahi, solo deja de aparecer en la
+     * bandeja de trabajo.
+     */
+    @Query("SELECT s FROM Solicitud s WHERE s.activo = FALSE ORDER BY s.fechaRegistro DESC")
+    @EntityGraph(attributePaths = {"persona", "persona.municipio", "animal",
+                                   "animal.especie", "estatus"})
+    Page<Solicitud> findDadosDeBaja(Pageable pageable);
+
     /** Cuantas precargas tiene una jornada. */
     long countByJornadaId(Long jornadaId);
 

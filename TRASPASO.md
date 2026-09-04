@@ -49,6 +49,8 @@ se publica. Nunca se ha ejecutado `git push` ni se ha configurado un remoto.
 - Generación de certificado, credencial (3 por hoja) y acuse en PDF, con QR.
 - Notificaciones con bandeja de contacto manual.
 - Jornadas municipales con búsqueda en sitio e impresión por lote.
+- Depuración del padrón: baja lógica de registros que nunca fueron reales, con
+  motivo obligatorio, papelera y reactivación.
 
 ### Frontend
 - Portal ciudadano: portada, registro, consulta, verificador de QR, calendario
@@ -122,7 +124,13 @@ resolución, solicitudes por municipio.
 El parámetro `portal.captcha_habilitado` existe pero nadie lo lee. El límite
 por IP sí funciona (20 registros/minuto).
 
-### 8. Citas de entrega — **modelo sin uso**
+### 8. Baja lógica de tutores y animales desde su propia ficha — **parcial**
+
+Hoy la depuración se hace desde el trámite, que es el caso frecuente. Falta
+poder dar de baja a un tutor o a un animal directamente desde su ficha, para
+depurar registros que ya no tienen trámite asociado.
+
+### 9. Citas de entrega — **modelo sin uso**
 
 Las tablas `cita` y `cat_estatus_cita` existen y están sembradas, pero nada las
 usa. El alcance dice que al aprobar se asigna cita; hoy no ocurre.
@@ -266,6 +274,18 @@ opalina de 125 g/m². Cambiarlo desperdiciaría material en cada tirada.
 
 **Por qué la búsqueda ignora acentos.** El día de una jornada se busca con la
 gente formada enfrente. Nadie escribe la ñ de "Muñoz" con prisa.
+
+**Por qué la baja del padrón es lógica y con motivo.** Hay dos casos que el
+sistema no puede distinguir solo: una persona real que no concluyó su trámite
+(su registro vale: si vuelve, se le reconoce por su CURP) y basura de alguien
+probando. Confundirlos tiene costos opuestos, así que la decisión la toma el
+personal y queda registrada. Nunca se borra: si alguien reclama, hay que poder
+explicar qué pasó con su registro.
+
+**Por qué no se puede dar de baja un trámite con certificado.** Ese documento
+ya circula: se fotografió, se presentó en la veterinaria. Desaparecer a su
+titular dejaría un certificado sin respaldo. Para esos casos se cancela el
+certificado, que es una operación distinta y deja constancia.
 
 **Por qué el stub de correo no finge éxito.** Si marcara los avisos como
 enviados, el sistema daría por avisadas a personas que nunca recibieron nada, y

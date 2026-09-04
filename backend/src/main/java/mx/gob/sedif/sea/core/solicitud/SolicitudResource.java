@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import mx.gob.sedif.sea.exception.ApiResponse;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * Bandeja de tramites del panel administrativo.
@@ -188,6 +191,72 @@ public class SolicitudResource {
                 SolicitudRecord.de(solicitudService.cancelar(
                         id, peticion.motivoId(), peticion.observacion())),
                 "Tramite cancelado"));
+    }
+
+    /**
+     * Da de baja un registro que nunca fue real.
+     *
+     * <p>Es para depurar el padron: gente que registro por probar, o datos
+     * evidentemente falsos. La baja es logica y se puede deshacer.
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('solicitud:depurar')")
+    public ResponseEntity<ApiResponse<Void>> darDeBaja(
+            @PathVariable Long id,
+            @Valid @RequestBody BajaRequest peticion) {
+
+        solicitudService.darDeBaja(id, peticion.motivo(),
+                Boolean.TRUE.equals(peticion.incluirPersona()));
+
+        return ResponseEntity.ok(ApiResponse.ok(
+                Boolean.TRUE.equals(peticion.incluirPersona())
+                        ? "El tramite, el animal y el tutor dejaron de aparecer en el "
+                                + "padron. Si fue un error, puedes reactivarlos."
+                        : "El tramite dejo de aparecer en la bandeja. El tutor y su "
+                                + "animal siguen en el padron."));
+    }
+
+    /** Registros dados de baja, para revisarlos o reactivarlos. */
+    @GetMapping("/dados-de-baja")
+    @PreAuthorize("hasAuthority('solicitud:depurar')")
+    public ResponseEntity<ApiResponse<Page<SolicitudRecord>>> dadosDeBaja(
+            @PageableDefault(size = 20) Pageable pageable) {
+
+        Page<SolicitudRecord> pagina = solicitudRepository.findDadosDeBaja(pageable)
+                .map(SolicitudRecord::de);
+
+        return ResponseEntity.ok(ApiResponse.ok(
+                pagina,
+                pagina.isEmpty()
+                        ? "No hay registros dados de baja"
+                        : "%d registro(s) dados de baja".formatted(pagina.getTotalElements())));
+    }
+
+    /** Reactiva un registro dado de baja por error. */
+    @PatchMapping("/{id}/reactivar")
+    @PreAuthorize("hasAuthority('solicitud:depurar')")
+    public ResponseEntity<ApiResponse<SolicitudRecord>> reactivar(
+            @PathVariable Long id,
+            @RequestBody(required = false) BajaRequest peticion) {
+
+        return ResponseEntity.ok(ApiResponse.ok(
+                SolicitudRecord.de(solicitudService.reactivar(
+                        id, peticion == null ? null : peticion.motivo())),
+                "El registro vuelve a aparecer en el padron"));
+    }
+
+    /**
+     * Motivo de la baja.
+     *
+     * @param motivo         por que se depura este registro
+     * @param incluirPersona si tambien se da de baja al tutor y su animal
+     */
+    public record BajaRequest(
+            @NotBlank(message = "Escribe por que se da de baja este registro")
+            @Size(max = 500)
+            String motivo,
+
+            Boolean incluirPersona) {
     }
 
     /**

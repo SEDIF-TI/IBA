@@ -15,6 +15,7 @@ import FichaAnimal from '@/pages/admin/FichaAnimal';
 import FichaTutor from '@/pages/admin/FichaTutor';
 import PadronAnimales from '@/pages/admin/PadronAnimales';
 import PadronTutores from '@/pages/admin/PadronTutores';
+import RegistrosDadosDeBaja from '@/pages/admin/RegistrosDadosDeBaja';
 import CambiarPassword from '@/pages/admin/CambiarPassword';
 import CatalogosIndex from '@/pages/admin/CatalogosIndex';
 import Login from '@/pages/admin/Login';
@@ -88,6 +89,14 @@ export function App() {
           element={
             <ProtectedRoute permiso="solicitud:crear">
               <CapturaVentanilla />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="solicitudes/dados-de-baja"
+          element={
+            <ProtectedRoute permiso="solicitud:depurar">
+              <RegistrosDadosDeBaja />
             </ProtectedRoute>
           }
         />

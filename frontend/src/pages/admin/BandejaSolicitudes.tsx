@@ -21,6 +21,7 @@ import {
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useCallback, useEffect, useState } from 'react';
@@ -137,15 +138,26 @@ export function BandejaSolicitudes() {
           </Typography>
         </Box>
 
-        {tienePermiso('solicitud:crear') && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navegar('/admin/solicitudes/nueva')}
-          >
-            Capturar en ventanilla
-          </Button>
-        )}
+        <Stack direction="row" spacing={1}>
+          {tienePermiso('solicitud:depurar') && (
+            <Button
+              color="inherit"
+              startIcon={<DeleteOutlineIcon />}
+              onClick={() => navegar('/admin/solicitudes/dados-de-baja')}
+            >
+              Dados de baja
+            </Button>
+          )}
+          {tienePermiso('solicitud:crear') && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navegar('/admin/solicitudes/nueva')}
+            >
+              Capturar en ventanilla
+            </Button>
+          )}
+        </Stack>
       </Stack>
 
       <Card sx={{ mb: 2 }}>
