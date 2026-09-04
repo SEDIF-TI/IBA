@@ -54,12 +54,85 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 > El puerto **5433** es intencional: evita chocar con un PostgreSQL instalado
 > directamente en la máquina, que ocupa el 5432.
 
-### 4. Primer acceso
+### 4. Recorrer el sistema
+
+Con todo levantado:
+
+| Que | Donde |
+|---|---|
+| Portal ciudadano | http://localhost |
+| Registrar un tramite | http://localhost/registro |
+| Consultar por folio y CURP | http://localhost/consulta |
+| Verificar un certificado | http://localhost/verificar |
+| Jornadas programadas | http://localhost/jornadas |
+| Panel administrativo | http://localhost/admin/login |
+
+**Flujo completo para probarlo de punta a punta:**
+
+1. Entra al portal y registra un tramite. Anota el folio que devuelve.
+2. Entra al panel, abre **Tramites**, y busca el folio.
+3. Toma el tramite para revision y apruebalo. El certificado se emite solo.
+4. Descarga el certificado y la credencial desde el detalle del tramite.
+5. Abre el PDF del certificado y escanea su codigo QR: te lleva al verificador
+   publico, que confirma la autenticidad sin mostrar datos del tutor.
+6. Si registraste sin correo, revisa **Bandeja de contacto**: ahi esta la
+   persona a la que hay que llamar.
+
+**Para probar una jornada:**
+
+1. En **Jornadas**, crea una con la fecha de hoy y publicala.
+2. Desde el portal, entra a **Jornadas** y adelanta un registro.
+3. Vuelve al panel, abre la jornada con **Operar**, y busca a la persona por
+   apellido (puedes escribirlo sin acentos).
+4. Valida el tramite en sitio, marca la casilla e imprime la credencial:
+   salen tres por hoja con sus marcas de corte.
+
+### 5. Primer acceso
 
 El usuario inicial se crea desde `APP_ADMIN_USUARIO` / `APP_ADMIN_PASSWORD` con
 la marca `b_cambio_password_requerido = true`: el sistema **obliga a cambiar la
 contraseña en el primer login**. No existe ningún usuario con contraseña por
 defecto conocida.
+
+### Que hace el sistema
+
+**Portal ciudadano, sin cuenta de usuario**
+- Registro de tramite en un solo envio, con folio de seguimiento.
+- Consulta del avance con folio y CURP.
+- Verificacion publica de certificados por codigo QR, sin datos del tutor.
+- Calendario de jornadas municipales.
+
+**Panel administrativo**
+- Bandeja de tramites con filtros por situacion, municipio y fechas.
+- Detalle a dos columnas para cotejar lo capturado contra lo adjuntado.
+- Resolucion con motivo de catalogo: aprobar, devolver para correccion,
+  rechazar o cancelar. Toda transicion queda en el expediente.
+- Emision automatica del certificado al aprobar.
+- CRUD de los trece catalogos administrables.
+- Jornadas municipales con vista de operacion en sitio e impresion por lote.
+- Bandeja de contacto para las personas que solo dejaron telefono.
+
+**Documentos**
+- Certificado de empadronamiento en tamano carta, con foto del animal, codigo
+  QR de verificacion y firma de quien autoriza.
+- Credencial Peluda de dos caras, tres por hoja con marcas de corte.
+- Acuse de recepcion del tramite.
+
+Los colores, textos, leyendas, patrones de folio y datos de quien firma se
+editan desde la tabla de parametros, sin recompilar.
+
+### Configuracion pendiente
+
+Estas cosas quedan listas pero requieren una decision o un dato del area:
+
+| Que | Como se resuelve |
+|---|---|
+| Envio real de correo | Configurar `APP_MAIL_*` en `.env` y poner `APP_MAIL_ENABLED=true`. Mientras tanto, todos los avisos caen en la bandeja de contacto. |
+| Firma electronica avanzada | `FirmaService` es enchufable. Hoy opera la implementacion que no firma y lo hace constar en el documento. |
+| Colores de los documentos | Parametros del grupo `documento`. Por omision usan el guinda institucional. |
+| Aviso de privacidad | El sembrado es un texto minimo marcado como pendiente. Debe sustituirlo el area juridica. |
+| Logotipos institucionales | Los documentos rotulan los nombres. Para incrustar las imagenes hacen falta los archivos originales. |
+| Costo del tramite y tiempo de respuesta | Sembrados en el contenido del portal pero sin publicar, a la espera de que el IBA los defina. |
 
 ### Despliegue en servidor
 
