@@ -49,6 +49,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     /** Alta de tramites desde el portal. */
     private static final String RUTA_PUBLICA = "/publico/solicitud";
 
+    /** Carga de documentos desde el portal: abierta y con archivos. */
+    private static final String RUTA_DOCUMENTO = "/publico/documento";
+
     /** Consultas de seguimiento y verificacion del certificado. */
     private static final String RUTA_CONSULTA = "/publico/consulta";
     private static final String RUTA_VERIFICACION = "/publico/verificar";
@@ -58,14 +61,17 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final int limiteLogin;
     private final int limitePublico;
     private final int limiteConsulta;
+    private final int limiteDocumento;
 
     public RateLimitingFilter(
             @Value("${app.rate-limit.login:5}") int limiteLogin,
             @Value("${app.rate-limit.publico:20}") int limitePublico,
-            @Value("${app.rate-limit.consulta:30}") int limiteConsulta) {
+            @Value("${app.rate-limit.consulta:30}") int limiteConsulta,
+            @Value("${app.rate-limit.documento:10}") int limiteDocumento) {
         this.limiteLogin = limiteLogin;
         this.limitePublico = limitePublico;
         this.limiteConsulta = limiteConsulta;
+        this.limiteDocumento = limiteDocumento;
     }
 
     @Override
@@ -101,6 +107,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         if (ruta.contains(RUTA_LOGIN) || ruta.contains(RUTA_REFRESCO)) {
             return limiteLogin;
         }
+        if (ruta.contains(RUTA_DOCUMENTO)) {
+            return limiteDocumento;
+        }
         if (ruta.contains(RUTA_PUBLICA)) {
             return limitePublico;
         }
@@ -114,6 +123,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private String rutaNormalizada(String ruta) {
         if (ruta.contains(RUTA_LOGIN) || ruta.contains(RUTA_REFRESCO)) {
             return "auth";
+        }
+        if (ruta.contains(RUTA_DOCUMENTO)) {
+            return "documento";
         }
         if (ruta.contains(RUTA_PUBLICA)) {
             return "publico";

@@ -358,7 +358,7 @@ export function FichaAnimal() {
                 {busquedaTutor.trim().length >= 3 && candidatos.length === 0 && (
                   <Typography variant="caption" color="text.secondary">
                     Ningun tutor coincide. Verifica el apellido o registra primero a
-                    la persona con un tramite.
+                    la persona con un trámite.
                   </Typography>
                 )}
               </Stack>

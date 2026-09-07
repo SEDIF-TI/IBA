@@ -66,6 +66,68 @@ public class DocumentoService {
      * @param archivo          archivo recibido
      * @return metadatos del documento guardado
      */
+    /**
+     * Tipos que la ciudadania puede adjuntar desde el portal.
+     *
+     * <p>Se limita a proposito: el resto del expediente lo integra el personal
+     * al cotejar contra el documento fisico. Aqui solo va lo que la persona
+     * tiene en la mano y sirve para armar su certificado.
+     */
+    private static final java.util.Set<String> TIPOS_CIUDADANO = java.util.Set.of(
+            "FOTOGRAFIA_ANIMAL", "INE", "CURP", "COMPROBANTE_DOMICILIO",
+            "CARTILLA_VACUNACION", "COMPROBANTE_ANTIRRABICO");
+
+    /** Tipos vigentes que la ciudadania puede adjuntar desde el portal. */
+    @Transactional(readOnly = true)
+    public List<TipoDocumento> tiposParaCiudadania() {
+        return tipoDocumentoRepository.findByActivoTrueOrderByOrdenAscNombreAsc().stream()
+                .filter(t -> TIPOS_CIUDADANO.contains(t.getClave()))
+                .toList();
+    }
+
+    /**
+     * Adjunta un archivo desde el portal ciudadano, identificado por el token
+     * del tramite.
+     *
+     * <p>El token es la credencial de la persona sobre su propio tramite: no
+     * hay cuenta, asi que quien lo tiene demuestra que hizo ese registro. Por
+     * eso nunca se acepta el id de la solicitud desde fuera: seria adivinable.
+     *
+     * <p>Solo se aceptan documentos mientras el tramite sigue vivo. Cerrado el
+     * expediente, un archivo nuevo ya no cambiaria la resolucion y solo
+     * confundiria a quien lo revisa.
+     */
+    @Transactional
+    public Documento adjuntarPorToken(java.util.UUID token, Integer tipoDocumentoId,
+                                      MultipartFile archivo) {
+
+        Solicitud solicitud = solicitudRepository.findByTokenConsulta(token)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No encontramos tu tramite. Verifica la liga; si la copiaste, "
+                        + "asegurate de haberla copiado completa."));
+
+        String estatus = solicitud.getEstatus().getClave();
+        if (mx.gob.sedif.sea.util.enums.EstatusSolicitudEnum.valueOf(estatus).esTerminal()) {
+            throw new ReglaNegocioException(
+                    "Tu tramite ya esta cerrado (%s), por lo que ya no admite documentos nuevos. "
+                    .formatted(solicitud.getEstatus().getNombre())
+                    + "Si necesitas corregir algo, comunicate con el IBA.");
+        }
+
+        TipoDocumento tipo = tipoDocumentoRepository.findById(tipoDocumentoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Tipo de documento", tipoDocumentoId));
+
+        if (!TIPOS_CIUDADANO.contains(tipo.getClave())) {
+            throw new ReglaNegocioException(
+                    "El documento '%s' no se carga desde el portal: lo integra el personal "
+                    .formatted(tipo.getNombre())
+                    + "al revisar tu tramite.");
+        }
+
+        return adjuntar(solicitud.getId(), tipoDocumentoId, archivo);
+    }
+
     @Transactional
     public Documento adjuntar(Long solicitudId, Integer tipoDocumentoId, MultipartFile archivo) {
         Solicitud solicitud = solicitudRepository.findById(solicitudId)

@@ -9,7 +9,7 @@ export function SinPermiso() {
         No tienes acceso a esta seccion
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Si necesitas entrar aqui, pidele a informatica que revise tus permisos.
+        Si necesitas entrar aquí, pidele a informatica que revise tus permisos.
       </Typography>
       <Button component={RouterLink} to="/admin" variant="contained">
         Volver al inicio

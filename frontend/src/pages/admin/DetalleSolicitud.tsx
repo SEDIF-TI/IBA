@@ -37,6 +37,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import EstatusChip from '@/components/EstatusChip';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificacion } from '@/context/NotificationContext';
+import { CargaDocumento } from '@/components/CargaDocumento';
 import { mensajeDeError } from '@/services/api';
 import { catalogos } from '@/services/catalogoService';
 import certificadoService from '@/services/certificadoService';
@@ -77,6 +78,7 @@ export function DetalleSolicitud() {
 
   const [solicitud, setSolicitud] = useState<Solicitud | null>(null);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
+  const [tiposDocumento, setTiposDocumento] = useState<Catalogo[]>([]);
   const [historial, setHistorial] = useState<MovimientoHistorial[]>([]);
   const [certificado, setCertificado] = useState<Certificado | null>(null);
   const [motivos, setMotivos] = useState<Catalogo[]>([]);
@@ -99,14 +101,16 @@ export function DetalleSolicitud() {
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
-      const [detalle, adjuntos, movimientos] = await Promise.all([
+      const [detalle, adjuntos, movimientos, tipos] = await Promise.all([
         solicitudService.obtener(solicitudId),
         documentoService.listarPorSolicitud(solicitudId),
         solicitudService.historial(solicitudId),
+        catalogos.tiposDocumento.opciones(),
       ]);
       setSolicitud(detalle);
       setDocumentos(adjuntos);
       setHistorial(movimientos);
+      setTiposDocumento(tipos);
 
       // El certificado solo existe si el tramite ya se aprobo.
       try {
@@ -212,6 +216,24 @@ export function DetalleSolicitud() {
     }
   }
 
+  /** Adjunta un documento al expediente y refresca la lista. */
+  async function adjuntar(tipoDocumentoId: number, archivo: File) {
+    try {
+      const documento = await documentoService.adjuntar(
+        solicitudId,
+        tipoDocumentoId,
+        archivo,
+      );
+      setDocumentos((previos) => [...previos, documento]);
+      notificacion.exito(
+        `Se adjuntó "${documento.nombreOriginal}" como ${documento.tipoNombre}.`,
+      );
+    } catch (fallo) {
+      notificacion.error(mensajeDeError(fallo));
+      throw fallo;
+    }
+  }
+
   async function descargar(documento: Documento) {
     try {
       await documentoService.descargar(documento.id, documento.nombreOriginal);
@@ -255,6 +277,9 @@ export function DetalleSolicitud() {
   }
 
   const puedeRevisar = tienePermiso('solicitud:editar');
+  const tramiteCerrado = ['ENTREGADA', 'RECHAZADA', 'CANCELADA'].includes(
+    solicitud.estatusClave,
+  );
   const enRevision = solicitud.estatusClave === 'EN_REVISION';
   const registrada = solicitud.estatusClave === 'REGISTRADA';
   const pasoActual = RECORRIDO.indexOf(solicitud.estatusClave);
@@ -341,7 +366,7 @@ export function DetalleSolicitud() {
 
               {documentos.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">
-                  No se adjunto ningun documento
+                  No se adjuntó ningún documento
                 </Typography>
               ) : (
                 <Stack spacing={1}>
@@ -401,6 +426,26 @@ export function DetalleSolicitud() {
                     </Box>
                   ))}
                 </Stack>
+              )}
+
+              {tienePermiso('documento:ver') && !tramiteCerrado && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                    Adjuntar documento
+                  </Typography>
+                  <CargaDocumento
+                    tipos={tiposDocumento}
+                    alSubir={adjuntar}
+                    ayuda="Escanea o fotografía el documento cotejado contra el original."
+                  />
+                </>
+              )}
+
+              {tramiteCerrado && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                  El trámite ya está cerrado: el expediente no admite documentos nuevos.
+                </Typography>
               )}
             </CardContent>
           </Card>
@@ -463,7 +508,7 @@ export function DetalleSolicitud() {
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Cuando la persona recoja su certificado y su credencial, registra
-                la entrega para cerrar el tramite.
+                la entrega para cerrar el trámite.
               </Typography>
               <Button
                 variant="contained"
@@ -486,7 +531,7 @@ export function DetalleSolicitud() {
             {registrada ? (
               <>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Toma el tramite para revisarlo antes de resolverlo.
+                  Toma el trámite para revisarlo antes de resolverlo.
                 </Typography>
                 <Button variant="contained" onClick={tomarParaRevision}>
                   Tomar para revision
@@ -509,7 +554,7 @@ export function DetalleSolicitud() {
                     color="warning"
                     onClick={() => setResolucion('observar')}
                   >
-                    Devolver para correccion
+                    Devolver para corrección
                   </Button>
                 )}
                 {tienePermiso('solicitud:rechazar') && (
@@ -538,7 +583,7 @@ export function DetalleSolicitud() {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Usa esto solo si el registro nunca fue real: alguien probando el
                 sistema, o datos evidentemente falsos. Si es una persona que
-                simplemente no concluyo su tramite, cancelalo en lugar de darlo
+                simplemente no concluyo su trámite, cancelalo en lugar de darlo
                 de baja.
               </Typography>
               <Button
@@ -665,7 +710,7 @@ export function DetalleSolicitud() {
           {resolucion === 'entregar' && (
             <Alert severity="info" sx={{ mb: 2 }}>
               Confirma que la persona recibio su certificado y su credencial. El
-              tramite queda concluido y no admitira mas cambios.
+              trámite queda concluido y no admitira mas cambios.
             </Alert>
           )}
 

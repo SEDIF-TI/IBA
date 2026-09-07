@@ -20,7 +20,7 @@ export function Inicio() {
           Empadrona a tu perro o gato
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 620, mx: 'auto' }}>
-          Registra a tu compañero en el Padron Estatal y obten su certificado de
+          Registra a tu compañero en el Padrón Estatal y obten su certificado de
           empadronamiento y su credencial. No necesitas crear una cuenta.
         </Typography>
       </Box>
@@ -52,10 +52,10 @@ export function Inicio() {
                 Consultar
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Revisa en que va tu tramite con el folio que recibiste y tu CURP.
+                Revisa en qué va tu trámite con el folio que recibiste y tu CURP.
               </Typography>
               <Button component={RouterLink} to="/consulta" variant="outlined" size="large">
-                Consultar tramite
+                Consultar trámite
               </Button>
             </CardContent>
           </Card>
@@ -90,7 +90,7 @@ export function Inicio() {
               Comprobante de domicilio con no mas de tres meses
             </Typography>
             <Typography component="li" variant="body2">
-              Fotografia clara de tu animal, de cuerpo completo
+              Fotografía clara de tu animal, de cuerpo completo
             </Typography>
             <Typography component="li" variant="body2">
               Tu CURP, si la tienes a la mano. Si no, puedes continuar sin ella.

@@ -72,17 +72,22 @@ Con desvíos a OBSERVADA (corrección), RECHAZADA y CANCELADA.
 
 Ordenado por lo que más bloquea el uso real.
 
-### 1. Administración de usuarios, roles y permisos — **falta completo**
+### 1. Administración de usuarios — **HECHO** (7 sep 2026)
 
-Es lo más urgente: **hoy solo existe la cuenta inicial y no hay forma de crear
-más.** El IBA no puede dar de alta a su personal.
+El IBA ya puede dar de alta a su personal desde *Personal* en el menú.
 
-Falta backend y frontend:
-- `UsuarioService` y `UsuarioResource` (alta, edición, baja lógica, reseteo de
-  contraseña, asignación de roles).
-- Pantalla `AdminUsuarios.tsx` y `AdminRoles.tsx`.
-- Los permisos ya existen sembrados: `usuario:ver`, `usuario:administrar`,
-  `rol:administrar`.
+- `UsuarioAdminService` + `UsuarioResource` (`/usuarios`): alta, edición,
+  baja lógica, reactivación, reinicio de contraseña, desbloqueo.
+- Pantalla `AdminUsuarios.tsx`, ruta `/admin/usuarios`.
+- **La contraseña la genera el sistema**, se muestra una sola vez y obliga a
+  cambiarla al entrar. Nadie elige la contraseña de otra persona.
+- Dos protecciones: no puedes darte de baja a ti mismo, ni dar de baja al
+  último superadministrador activo (dejaría el sistema sin quien administre).
+- `usuario:ver` lo tiene el IBA; `usuario:administrar` solo informática.
+- 9 pruebas en `UsuarioAdminServiceTest`.
+
+**Pendiente relacionado**: administrar los *roles* en sí (qué permisos lleva
+cada rol) sigue siendo por base de datos. Con dos roles fijos no urge.
 
 ### 2. Corrección de documentos por liga con token — **falta completo**
 
@@ -94,13 +99,20 @@ pero la pantalla no existe.
 - Endpoint que permita adjuntar documentos con el token, sin sesión.
 - Al reenviar, el trámite vuelve a EN_REVISION.
 
-### 3. Carga de documentos en el registro público — **falta**
+### 3. Carga de documentos — **HECHO** (7 sep 2026)
 
-El formulario de registro no permite adjuntar INE, comprobante ni fotografía.
-El backend ya tiene el endpoint (`POST /documentos/solicitud/{id}`), y el
-almacén está probado; falta el paso 4 del formulario.
+Se carga desde dos lugares:
 
-Sin esto, la fotografía del animal no llega al certificado.
+- **Portal ciudadano**: al terminar el registro, con el token del trámite
+  (`POST /publico/documento?token=...`). Sin cuenta, como todo el portal.
+- **Ventanilla**: en la ficha del trámite, para el personal.
+
+Componente común `CargaDocumento.tsx`. La fotografía **ya llega al
+certificado** (verificado: 2 imágenes en el PDF con foto contra 1 sin ella).
+
+Restricciones del destino público: solo tipos que la persona tiene en la mano
+(no `CERTIFICADO_ADOPCION`), solo mientras el trámite no esté cerrado, y
+10 cargas por minuto por dirección.
 
 ### 4. Reportes exportables — **falta completo**
 

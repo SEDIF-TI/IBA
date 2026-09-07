@@ -1,6 +1,6 @@
 import api from './api';
 import type { ApiResponse } from '@/types/api';
-import type { Documento } from '@/types/dominio';
+import type { Catalogo, Documento } from '@/types/dominio';
 
 /**
  * Documentos adjuntos a un tramite.
@@ -71,6 +71,38 @@ export const documentoService = {
   async eliminar(id: number): Promise<void> {
     await api.delete(`/documentos/${id}`);
   },
+
+  /**
+   * Adjunta un documento desde el portal ciudadano, con el token del tramite.
+   *
+   * <p>No se manda el id de la solicitud: la persona no tiene sesion, y el
+   * token es lo que demuestra que ese tramite es suyo.
+   */
+  async adjuntarPublico(
+    token: string,
+    tipoDocumentoId: number,
+    archivo: File,
+  ): Promise<Documento> {
+    const formulario = new FormData();
+    formulario.append('archivo', archivo);
+
+    const { data } = await api.post<ApiResponse<Documento>>(
+      '/publico/documento',
+      formulario,
+      {
+        params: { token, tipoDocumentoId },
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    );
+    return data.data;
+  },
+
+  /** Tipos que la ciudadania puede adjuntar, sin sesion. */
+  async tiposPublicos(): Promise<Catalogo[]> {
+    const { data } = await api.get<ApiResponse<Catalogo[]>>('/publico/tipos-documento');
+    return data.data;
+  },
+
 };
 
 export default documentoService;

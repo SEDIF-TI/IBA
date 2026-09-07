@@ -131,7 +131,7 @@ export function BandejaSolicitudes() {
       >
         <Box>
           <Typography variant="h5" fontWeight={600}>
-            Tramites
+            Trámites
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Solicitudes recibidas del portal, de ventanilla y de las jornadas.

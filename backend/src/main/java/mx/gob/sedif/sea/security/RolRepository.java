@@ -14,4 +14,7 @@ public interface RolRepository extends CatalogoRepository<Rol> {
     /** Carga el rol junto con sus permisos, para la pantalla de administracion. */
     @EntityGraph(attributePaths = {"permisos"})
     Optional<Rol> findWithPermisosByClave(String clave);
+
+    /** Roles que se pueden asignar a una cuenta. */
+    java.util.List<Rol> findByActivoTrueOrderByNombreAsc();
 }

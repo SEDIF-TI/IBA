@@ -14,7 +14,7 @@ export function CapturaVentanilla() {
     <Box>
       <Alert severity="info" sx={{ mb: 2 }}>
         Usa esta pantalla cuando la persona llega sin haberse registrado. El
-        tramite queda marcado como capturado en ventanilla.
+        trámite queda marcado como capturado en ventanilla.
       </Alert>
 
       <RegistroTramite ventanilla />

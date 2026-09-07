@@ -152,7 +152,7 @@ export function FichaTutor() {
             )
           }
         >
-          Este tutor se registro sin CURP. Cuando presente su identificacion,
+          Este tutor se registro sin CURP. Cuando presente su identificación,
           captura la CURP para completar su identidad.
         </Alert>
       )}
@@ -245,13 +245,13 @@ export function FichaTutor() {
       <Card sx={{ mt: 2 }}>
         <CardContent>
           <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-            Sus tramites
+            Sus trámites
           </Typography>
           <Divider sx={{ mb: 2 }} />
 
           {tramites.length === 0 ? (
             <Typography variant="body2" color="text.secondary">
-              No tiene tramites registrados
+              No tiene trámites registrados
             </Typography>
           ) : (
             <Stack spacing={1}>

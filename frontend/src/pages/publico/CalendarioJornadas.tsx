@@ -100,7 +100,7 @@ export function CalendarioJornadas() {
               Por ahora no hay jornadas programadas
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Puedes registrar tu tramite en cualquier momento desde este portal,
+              Puedes registrar tu trámite en cualquier momento desde este portal,
               sin esperar a una jornada.
             </Typography>
             <Button component={RouterLink} to="/registro" variant="contained">
@@ -169,7 +169,7 @@ export function CalendarioJornadas() {
 
       {jornadas.length > 0 && (
         <Alert severity="info" sx={{ mt: 3 }}>
-          El dia de la jornada lleva tu identificacion oficial original y el folio
+          El dia de la jornada lleva tu identificación oficial original y el folio
           que recibas al registrarte.
         </Alert>
       )}

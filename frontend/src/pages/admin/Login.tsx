@@ -72,7 +72,7 @@ export function Login() {
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <PetsIcon sx={{ fontSize: 48, color: guinda[500] }} aria-hidden />
           <Typography variant="h5" fontWeight={700} sx={{ mt: 1 }}>
-            Padron Estatal de Perros y Gatos
+            Padrón Estatal de Perros y Gatos
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Instituto de Bienestar Animal

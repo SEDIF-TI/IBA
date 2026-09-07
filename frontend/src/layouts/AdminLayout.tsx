@@ -17,6 +17,7 @@ import {
   Typography,
 } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import BadgeIcon from '@mui/icons-material/Badge';
 import CategoryIcon from '@mui/icons-material/Category';
 import EventIcon from '@mui/icons-material/Event';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -81,6 +82,12 @@ const ENTRADAS: EntradaMenu[] = [
     ruta: '/admin/catalogos',
     icono: <CategoryIcon />,
     permiso: 'catalogo:ver',
+  },
+  {
+    texto: 'Personal',
+    ruta: '/admin/usuarios',
+    icono: <BadgeIcon />,
+    permiso: 'usuario:ver',
   },
 ];
 

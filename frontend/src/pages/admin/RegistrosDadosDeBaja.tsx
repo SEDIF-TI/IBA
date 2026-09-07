@@ -74,7 +74,7 @@ export function RegistrosDadosDeBaja() {
         Registros dados de baja
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Tramites depurados del padron. No se borraron: siguen aqui por si hubo
+        Trámites depurados del padron. No se borraron: siguen aquí por si hubo
         un error.
       </Typography>
 

@@ -30,6 +30,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useNotificacion } from '@/context/NotificationContext';
 import { mensajeDeError } from '@/services/api';
 import { catalogos, catalogosPublicos } from '@/services/catalogoService';
+import documentoService from '@/services/documentoService';
+import { CargaDocumento } from '@/components/CargaDocumento';
 import jornadaService from '@/services/jornadaService';
 import solicitudService, {
   type RegistroPublicoRequest,
@@ -108,6 +110,8 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
   const [enviando, setEnviando] = useState(false);
   const [aceptaAviso, setAceptaAviso] = useState(false);
   const [resultado, setResultado] = useState<RegistroRespuesta | null>(null);
+  const [tiposDocumento, setTiposDocumento] = useState<Catalogo[]>([]);
+  const [documentosSubidos, setDocumentosSubidos] = useState<string[]>([]);
 
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
   const [especies, setEspecies] = useState<Catalogo[]>([]);
@@ -170,6 +174,9 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
           setColores(listas.colores);
           setSexos(listas.sexos);
           setTamanos(listas.tamanos);
+
+          // Tipos que la persona puede adjuntar al terminar su registro.
+          setTiposDocumento(await documentoService.tiposPublicos());
         }
       } catch (fallo) {
         notificacion.error(mensajeDeError(fallo));
@@ -290,6 +297,23 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
   }
 
   // ---- Comprobante del registro ----
+  /** Adjunta un documento con el token que devolvio el registro. */
+  async function adjuntarPublico(tipoDocumentoId: number, archivo: File) {
+    if (!resultado?.token) return;
+    try {
+      const documento = await documentoService.adjuntarPublico(
+        resultado.token,
+        tipoDocumentoId,
+        archivo,
+      );
+      setDocumentosSubidos((previos) => [...previos, documento.tipoNombre]);
+      notificacion.exito(`Se adjuntó "${documento.nombreOriginal}" correctamente.`);
+    } catch (fallo) {
+      notificacion.error(mensajeDeError(fallo));
+      throw fallo;
+    }
+  }
+
   if (resultado) {
     return (
       <Box sx={{ maxWidth: 620, mx: 'auto' }}>
@@ -326,9 +350,46 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
             </Alert>
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Con tu folio y tu CURP puedes consultar en cualquier momento en que
-              va tu tramite.
+              Con tu folio y tu CURP puedes consultar en cualquier momento en qué
+              va tu trámite.
             </Typography>
+
+            {resultado.token && tiposDocumento.length > 0 && (
+              <Box
+                sx={{
+                  textAlign: 'left',
+                  mb: 3,
+                  p: 2.5,
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                }}
+              >
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Adjunta tus documentos
+                </Typography>
+
+                {documentosSubidos.length > 0 && (
+                  <Alert severity="success" sx={{ mb: 2 }}>
+                    {documentosSubidos.length === 1
+                      ? 'Ya subiste 1 documento: '
+                      : `Ya subiste ${documentosSubidos.length} documentos: `}
+                    {documentosSubidos.join(', ')}
+                  </Alert>
+                )}
+
+                <CargaDocumento
+                  tipos={tiposDocumento}
+                  alSubir={adjuntarPublico}
+                  ayuda={
+                    'Es opcional, pero adelantas tu trámite: la fotografía de tu ' +
+                    'animal aparece en el certificado, y con tu identificación y ' +
+                    'comprobante el personal puede revisarlo sin pedirte que regreses. ' +
+                    'También puedes llevarlos el día de tu cita.'
+                  }
+                />
+              </Box>
+            )}
 
             {ventanilla ? (
               <Button
@@ -340,12 +401,12 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                   setPaso(0);
                 }}
               >
-                Capturar otro tramite
+                Capturar otro trámite
               </Button>
             ) : (
               <>
                 <Button href="/consulta" variant="contained" sx={{ mr: 1 }}>
-                  Consultar mi tramite
+                  Consultar mi trámite
                 </Button>
                 <Button href="/" color="inherit">
                   Volver al inicio
@@ -484,8 +545,8 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
               </Grid>
 
               <Alert severity="info" sx={{ my: 2 }}>
-                Deja al menos un correo o un telefono: es por donde te avisamos el
-                resultado de tu tramite.
+                Deja al menos un correo o un teléfono: es por donde te avisamos el
+                resultado de tu trámite.
               </Alert>
 
               <Grid container spacing={2}>
@@ -831,9 +892,9 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                 <Typography variant="body2">
                   El Sistema Estatal DIF Puebla, a traves del Instituto de Bienestar
                   Animal, es responsable del tratamiento de tus datos personales.
-                  Se usaran para integrar el Padron Estatal de Perros y Gatos,
+                  Se usaran para integrar el Padrón Estatal de Perros y Gatos,
                   emitir tu certificado y credencial, y comunicarte el resultado de
-                  tu tramite.
+                  tu trámite.
                 </Typography>
               </Alert>
 

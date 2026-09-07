@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import mx.gob.sedif.sea.core.catalogo.CatalogoRecord;
 import mx.gob.sedif.sea.core.catalogo.ColorService;
@@ -17,6 +18,9 @@ import mx.gob.sedif.sea.core.catalogo.MunicipioService;
 import mx.gob.sedif.sea.core.catalogo.SexoService;
 import mx.gob.sedif.sea.core.catalogo.TamanoService;
 import mx.gob.sedif.sea.core.certificado.Certificado;
+import mx.gob.sedif.sea.core.documento.Documento;
+import mx.gob.sedif.sea.core.documento.DocumentoRecord;
+import mx.gob.sedif.sea.core.documento.DocumentoService;
 import mx.gob.sedif.sea.core.certificado.CertificadoService;
 import mx.gob.sedif.sea.core.certificado.VerificacionRecord;
 import mx.gob.sedif.sea.core.documental.AcusePdfService;
@@ -60,6 +64,7 @@ public class PublicoResource {
     private final ColorService colorService;
     private final SexoService sexoService;
     private final TamanoService tamanoService;
+    private final DocumentoService documentoService;
 
     public PublicoResource(SolicitudService solicitudService,
                            CertificadoService certificadoService,
@@ -69,7 +74,8 @@ public class PublicoResource {
                            EspecieService especieService,
                            ColorService colorService,
                            SexoService sexoService,
-                           TamanoService tamanoService) {
+                           TamanoService tamanoService,
+                           DocumentoService documentoService) {
         this.solicitudService = solicitudService;
         this.certificadoService = certificadoService;
         this.acusePdfService = acusePdfService;
@@ -79,6 +85,7 @@ public class PublicoResource {
         this.colorService = colorService;
         this.sexoService = sexoService;
         this.tamanoService = tamanoService;
+        this.documentoService = documentoService;
     }
 
     /**
@@ -172,6 +179,50 @@ public class PublicoResource {
         Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
         return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
                 SeguimientoRecord.de(solicitud)));
+    }
+
+    /**
+     * Carga de un documento desde el portal, identificado por el token.
+     *
+     * <p>Se pide el token y no el folio: el folio va impreso en el acuse y
+     * podria verlo cualquiera, mientras que el token solo lo tiene quien hizo
+     * el registro.
+     */
+    @PostMapping("/documento")
+    public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<DocumentoRecord>> adjuntar(
+            @RequestParam @NotBlank(message = "Falta la liga de tu tramite. "
+                    + "Usa la que aparece al terminar tu registro.") String token,
+            @RequestParam Integer tipoDocumentoId,
+            @RequestParam("archivo") MultipartFile archivo) {
+
+        java.util.UUID identificador;
+        try {
+            identificador = java.util.UUID.fromString(token);
+        } catch (IllegalArgumentException ex) {
+            throw new mx.gob.sedif.sea.exception.ReglaNegocioException(
+                    "La liga de tu tramite no es valida. Copiala completa desde tu acuse.");
+        }
+
+        Documento documento = documentoService.adjuntarPorToken(
+                identificador, tipoDocumentoId, archivo);
+
+        return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
+                DocumentoRecord.de(documento),
+                "Se adjunto %s correctamente.".formatted(documento.getNombreOriginal())));
+    }
+
+    /**
+     * Tipos de documento que la ciudadania puede adjuntar.
+     */
+    @GetMapping("/tipos-documento")
+    public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<List<CatalogoRecord>>>
+            tiposDocumento() {
+
+        List<CatalogoRecord> tipos = documentoService.tiposParaCiudadania().stream()
+                .map(CatalogoRecord::de)
+                .toList();
+
+        return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(tipos));
     }
 
     /**

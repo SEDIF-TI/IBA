@@ -43,10 +43,10 @@ export function CatalogosIndex() {
   return (
     <Box>
       <Typography variant="h5" fontWeight={600} gutterBottom>
-        Catalogos
+        Catálogos
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Valores que alimentan los formularios del sistema. Editarlos aqui evita
+        Valores que alimentan los formularios del sistema. Editarlos aquí evita
         que se capturen variantes del mismo concepto.
       </Typography>
 

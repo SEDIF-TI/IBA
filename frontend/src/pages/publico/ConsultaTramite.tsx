@@ -50,11 +50,11 @@ export function ConsultaTramite() {
   return (
     <Box sx={{ maxWidth: 640, mx: 'auto' }}>
       <Typography variant="h5" fontWeight={600} gutterBottom>
-        Consultar mi tramite
+        Consultar mi trámite
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Necesitas el folio que recibiste al registrar y la CURP con la que se
-        hizo el tramite.
+        hizo el trámite.
       </Typography>
 
       <Card sx={{ mb: 3 }}>
@@ -138,7 +138,7 @@ export function ConsultaTramite() {
             {resultado.requiereCorreccion && (
               <Alert severity="warning" sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                  Tu tramite necesita una correccion
+                  Tu trámite necesita una corrección
                 </Typography>
                 {resultado.motivo && <Typography variant="body2">{resultado.motivo}</Typography>}
                 {resultado.observacion && (

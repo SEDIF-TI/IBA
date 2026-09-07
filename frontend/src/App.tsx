@@ -17,6 +17,7 @@ import PadronAnimales from '@/pages/admin/PadronAnimales';
 import PadronTutores from '@/pages/admin/PadronTutores';
 import RegistrosDadosDeBaja from '@/pages/admin/RegistrosDadosDeBaja';
 import CambiarPassword from '@/pages/admin/CambiarPassword';
+import AdminUsuarios from '@/pages/admin/AdminUsuarios';
 import CatalogosIndex from '@/pages/admin/CatalogosIndex';
 import Login from '@/pages/admin/Login';
 import SinPermiso from '@/pages/admin/SinPermiso';
@@ -174,6 +175,15 @@ export function App() {
           element={
             <ProtectedRoute permiso="catalogo:ver">
               <CatalogosIndex />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="usuarios"
+          element={
+            <ProtectedRoute permiso="usuario:ver">
+              <AdminUsuarios />
             </ProtectedRoute>
           }
         />

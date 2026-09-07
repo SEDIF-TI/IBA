@@ -43,7 +43,7 @@ export function PublicLayout() {
                 variant="h6"
                 sx={{ color: 'inherit', textDecoration: 'none', display: 'block' }}
               >
-                Padron Estatal de Perros y Gatos
+                Padrón Estatal de Perros y Gatos
               </Typography>
               <Typography variant="caption" sx={{ opacity: 0.85 }}>
                 Instituto de Bienestar Animal
@@ -51,7 +51,7 @@ export function PublicLayout() {
             </Box>
 
             <Button component={RouterLink} to="/consulta" color="inherit">
-              Consultar tramite
+              Consultar trámite
             </Button>
             <Button component={RouterLink} to="/jornadas" color="inherit">
               Jornadas

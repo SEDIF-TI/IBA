@@ -123,7 +123,7 @@ export function BandejaContacto() {
             Bandeja de contacto
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Personas que solo dejaron telefono: hay que avisarles por llamada o
+            Personas que solo dejaron teléfono: hay que avisarles por llamada o
             mensaje.
           </Typography>
         </Box>
@@ -140,7 +140,7 @@ export function BandejaContacto() {
           </Typography>
           <Typography variant="body2">
             Ningun aviso sale por correo, ni siquiera a quienes lo dejaron. Todos
-            quedan aqui para atenderlos por telefono. Pide a informatica que
+            quedan aquí para atenderlos por teléfono. Pide a informatica que
             configure el servidor de correo.
           </Typography>
         </Alert>
@@ -157,7 +157,7 @@ export function BandejaContacto() {
               No hay contactos pendientes
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Todas las personas que requerian aviso por telefono ya fueron
+              Todas las personas que requerian aviso por teléfono ya fueron
               atendidas.
             </Typography>
           </CardContent>
@@ -235,7 +235,7 @@ export function BandejaContacto() {
                             navegar(`/admin/solicitudes?folio=${contacto.folioSolicitud}`)
                           }
                         >
-                          Ver tramite
+                          Ver trámite
                         </Button>
                       </Stack>
                     </Stack>

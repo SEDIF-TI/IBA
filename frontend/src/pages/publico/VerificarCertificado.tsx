@@ -188,7 +188,7 @@ export function VerificarCertificado() {
 
                 <Alert severity="info" sx={{ mt: 3 }}>
                   Por proteccion de datos personales, esta consulta no muestra la
-                  informacion del tutor responsable.
+                  información del tutor responsable.
                 </Alert>
               </>
             )}

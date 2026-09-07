@@ -18,7 +18,7 @@ export function Tablero() {
         Bienvenida, {sesion?.nombreCompleto}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Padron Estatal de Perros y Gatos
+        Padrón Estatal de Perros y Gatos
       </Typography>
 
       <Grid container spacing={2}>
@@ -26,7 +26,7 @@ export function Tablero() {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={600} color={guinda[700]}>
-                Tramites
+                Trámites
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Revisa y resuelve las solicitudes que llegan del portal, de
@@ -40,7 +40,7 @@ export function Tablero() {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={600} color={guinda[700]}>
-                Catalogos
+                Catálogos
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Ajusta los valores que alimentan los formularios sin depender de

@@ -72,7 +72,7 @@ export function PadronAnimales() {
   return (
     <Box>
       <Typography variant="h5" fontWeight={600} gutterBottom>
-        Padron de animales
+        Padrón de animales
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Perros y gatos empadronados en el estado.

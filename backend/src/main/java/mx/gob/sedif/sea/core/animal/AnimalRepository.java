@@ -42,7 +42,7 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
                    OR UPPER(COALESCE(a.identificador, '')) LIKE :patron)
             ORDER BY a.nombre
             """)
-    @EntityGraph(attributePaths = {"especie", "raza", "sexo", "color"})
+    @EntityGraph(attributePaths = {"especie", "raza", "sexo", "color", "tamano", "metodoIdentificacion"})
     Page<Animal> buscarPorPatron(@Param("patron") String patron, Pageable pageable);
 
     /**
@@ -70,6 +70,6 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
               AND t.animal.activo = TRUE
             ORDER BY t.animal.nombre
             """)
-    @EntityGraph(attributePaths = {"especie", "raza", "sexo", "color"})
+    @EntityGraph(attributePaths = {"especie", "raza", "sexo", "color", "tamano", "metodoIdentificacion"})
     List<Animal> findVigentesPorPersona(@Param("personaId") Long personaId);
 }
