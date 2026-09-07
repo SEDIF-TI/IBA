@@ -137,7 +137,7 @@ public class ParametroService {
                     Integer.parseInt(valor.trim());
                 } catch (NumberFormatException ex) {
                     throw new ReglaNegocioException(
-                            "El parametro '%s' espera un numero entero"
+                            "El parametro '%s' espera un número entero"
                                     .formatted(parametro.getClave()));
                 }
             }
@@ -146,7 +146,7 @@ public class ParametroService {
                     Double.parseDouble(valor.trim());
                 } catch (NumberFormatException ex) {
                     throw new ReglaNegocioException(
-                            "El parametro '%s' espera un numero"
+                            "El parametro '%s' espera un número"
                                     .formatted(parametro.getClave()));
                 }
             }

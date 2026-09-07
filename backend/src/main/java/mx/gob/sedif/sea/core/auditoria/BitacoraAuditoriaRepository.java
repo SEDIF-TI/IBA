@@ -30,7 +30,7 @@ public interface BitacoraAuditoriaRepository extends JpaRepository<BitacoraAudit
             """)
     Page<BitacoraAuditoria> buscarEnRango(@Param("usuarioId") Long usuarioId,
                                           @Param("entidad") String entidad,
-                                          @Param("accion") String accion,
+                                          @Param("acción") String accion,
                                           @Param("desde") OffsetDateTime desde,
                                           @Param("hasta") OffsetDateTime hasta,
                                           Pageable pageable);

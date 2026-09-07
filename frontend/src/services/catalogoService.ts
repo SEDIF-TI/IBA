@@ -1,6 +1,6 @@
 import api from './api';
 import type { ApiResponse, Pagina, ParametrosPagina } from '@/types/api';
-import type { Catalogo, CatalogoRequest } from '@/types/dominio';
+import type { Catalogo, CatalogoRequest, Municipio } from '@/types/dominio';
 
 /**
  * Acceso a los catalogos administrables.
@@ -72,3 +72,23 @@ export const catalogos = {
 };
 
 export default catalogos;
+
+/**
+ * Catalogos para el formulario publico, en una sola llamada y sin sesion.
+ *
+ * <p>El portal ciudadano no tiene usuario: si pidiera /catalogos, cada
+ * desplegable respondaria 401 y la persona terminaria en la pantalla de acceso
+ * del personal sin haber hecho nada malo.
+ */
+export async function catalogosPublicos(): Promise<CatalogosPublicos> {
+  const { data } = await api.get<ApiResponse<CatalogosPublicos>>('/publico/catalogos');
+  return data.data;
+}
+
+export interface CatalogosPublicos {
+  municipios: Municipio[];
+  especies: Catalogo[];
+  colores: Catalogo[];
+  sexos: Catalogo[];
+  tamanos: Catalogo[];
+}

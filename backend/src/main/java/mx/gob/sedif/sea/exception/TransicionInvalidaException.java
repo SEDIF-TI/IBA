@@ -18,7 +18,7 @@ public class TransicionInvalidaException extends ReglaNegocioException {
     public TransicionInvalidaException(EstatusSolicitudEnum origen, EstatusSolicitudEnum destino) {
         // Se explica en terminos del tramite, no con las claves internas, y se
         // dice que si se puede hacer desde donde esta.
-        super("No se puede %s un tramite que esta %s. %s"
+        super("No se puede %s un trámite que esta %s. %s"
                 .formatted(accion(destino), legible(origen), sugerencia(origen)));
     }
 

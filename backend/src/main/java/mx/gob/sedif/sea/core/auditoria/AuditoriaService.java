@@ -125,7 +125,7 @@ public class AuditoriaService {
         registrar(AccionAuditoria.DESCARGAR_DOCUMENTO,
                 "documento",
                 documentoId,
-                "Descarga de %s del tramite %d".formatted(tipoDocumento, solicitudId));
+                "Descarga de %s del trámite %d".formatted(tipoDocumento, solicitudId));
     }
 
     /** Deja ver solo el inicio y el final de la CURP. */

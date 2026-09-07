@@ -57,14 +57,14 @@ public class EnvioCorreoSmtp implements EnvioCorreoService {
             log.error("El servidor de correo rechazo las credenciales", ex);
             return ResultadoEnvio.fallo(
                     "El servidor de correo rechazo las credenciales del sistema. "
-                            + "Revisa la configuracion con informatica.");
+                            + "Revisa la configuración con informática.");
 
         } catch (MailSendException ex) {
             // Suele ser una direccion inexistente o un buzon lleno.
             log.warn("No se pudo entregar el correo a {}: {}",
                     enmascarar(destinatario), ex.getMessage());
             return ResultadoEnvio.fallo(
-                    "El servidor no acepto la direccion '%s'. Verifica que este bien "
+                    "El servidor no aceptó la dirección '%s'. Verifica que esté bien "
                             .formatted(destinatario)
                             + "escrita o comunícate por teléfono.");
 

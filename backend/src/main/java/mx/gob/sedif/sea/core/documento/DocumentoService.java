@@ -97,7 +97,7 @@ public class DocumentoService {
         Documento persistido = documentoRepository.saveAndFlush(documento);
 
         auditoria.registrar(AccionAuditoria.SUBIR_DOCUMENTO, "documento", persistido.getId(),
-                "Se adjunto %s al tramite %s".formatted(
+                "Se adjunto %s al trámite %s".formatted(
                         tipo.getNombre(), solicitud.getFolioSolicitud()));
 
         log.info("Documento {} adjuntado al tramite {}",
@@ -225,7 +225,7 @@ public class DocumentoService {
         }
 
         auditoria.registrar(AccionAuditoria.ELIMINAR_DOCUMENTO, "documento", documentoId,
-                "Se retiro %s del tramite %s".formatted(
+                "Se retiro %s del trámite %s".formatted(
                         documento.getTipoDocumento().getNombre(),
                         documento.getSolicitud().getFolioSolicitud()));
     }

@@ -109,7 +109,7 @@ public class Persona extends Auditable {
     @Column(name = "s_colonia", length = 150)
     private String colonia;
 
-    @Pattern(regexp = "^[0-9]{5}$", message = "El codigo postal debe tener 5 dígitos")
+    @Pattern(regexp = "^[0-9]{5}$", message = "El código postal debe tener 5 dígitos")
     @Column(name = "s_codigo_postal", length = 5)
     private String codigoPostal;
 

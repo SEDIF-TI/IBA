@@ -121,7 +121,7 @@ public class PlantillaResolver {
             datos.put("motivo", solicitud.getMotivoRechazo().getNombre());
         }
         if (solicitud.getObservacionResolucion() != null) {
-            datos.put("observacion", solicitud.getObservacionResolucion());
+            datos.put("observación", solicitud.getObservacionResolucion());
         }
 
         if (certificado != null) {

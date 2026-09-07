@@ -172,7 +172,7 @@ public class SolicitudService {
         registrarHistorial(guardada, null, registrada, null, "Alta desde " + canal, null);
 
         auditoria.registrar(AccionAuditoria.CREAR, "solicitud", guardada.getId(),
-                "Alta del tramite %s por %s".formatted(guardada.getFolioSolicitud(), canal));
+                "Alta del trámite %s por %s".formatted(guardada.getFolioSolicitud(), canal));
 
         log.info("Tramite {} dado de alta ({}){}",
                 guardada.getFolioSolicitud(), canal,
@@ -405,7 +405,7 @@ public class SolicitudService {
         registrarHistorial(guardada, estatusActual, estatusNuevo, motivo, observacion, responsable);
 
         auditoria.registrar(accionDe(destino), "solicitud", solicitudId,
-                "El tramite %s pasa de %s a %s".formatted(
+                "El trámite %s pasa de %s a %s".formatted(
                         guardada.getFolioSolicitud(), origen, destino));
 
         log.info("Tramite {}: {} -> {}", guardada.getFolioSolicitud(), origen, destino);
@@ -530,7 +530,7 @@ public class SolicitudService {
         solicitudRepository.save(solicitud);
 
         auditoria.registrar(AccionAuditoria.ELIMINAR, "solicitud", solicitudId,
-                "Baja del tramite %s: %s".formatted(
+                "Baja del trámite %s: %s".formatted(
                         solicitud.getFolioSolicitud(), motivo));
 
         if (!incluirPersona) {
@@ -545,7 +545,7 @@ public class SolicitudService {
         animalRepository.save(animal);
 
         auditoria.registrar(AccionAuditoria.ELIMINAR, "animal", animal.getId(),
-                "Baja de %s junto con el tramite %s: %s".formatted(
+                "Baja de %s junto con el trámite %s: %s".formatted(
                         animal.getNombre(), solicitud.getFolioSolicitud(), motivo));
 
         // La titularidad se cierra: ya no hay quien responda por el animal.
@@ -565,14 +565,14 @@ public class SolicitudService {
             personaRepository.save(persona);
 
             auditoria.registrar(AccionAuditoria.ELIMINAR, "persona", persona.getId(),
-                    "Baja de %s al no quedarle tramites vigentes: %s".formatted(
+                    "Baja de %s al no quedarle trámites vigentes: %s".formatted(
                             persona.getNombreCompleto(), motivo));
 
             log.info("Tramite {}, su animal y la persona dados de baja",
                     solicitud.getFolioSolicitud());
         } else {
             log.info("Tramite {} y su animal dados de baja; la persona conserva "
-                            + "{} tramite(s) vigente(s)",
+                            + "{} trámite(s) vigente(s)",
                     solicitud.getFolioSolicitud(), otrosTramites);
         }
     }
@@ -603,7 +603,7 @@ public class SolicitudService {
         personaRepository.save(persona);
 
         auditoria.registrar(AccionAuditoria.MODIFICAR, "solicitud", solicitudId,
-                "Reactivacion del tramite %s: %s".formatted(
+                "Reactivacion del trámite %s: %s".formatted(
                         solicitud.getFolioSolicitud(),
                         motivo == null || motivo.isBlank() ? "sin motivo indicado" : motivo));
 

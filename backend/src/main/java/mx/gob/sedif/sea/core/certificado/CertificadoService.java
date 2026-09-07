@@ -102,13 +102,13 @@ public class CertificadoService
         String estatus = solicitud.getEstatus().getClave();
         if (!EstatusSolicitudEnum.APROBADA.name().equals(estatus)) {
             throw new ReglaNegocioException(
-                    "Solo se emite certificado de un tramite aprobado; este esta %s"
+                    "Solo se emite certificado de un trámite aprobado; este esta %s"
                             .formatted(solicitud.getEstatus().getNombre().toLowerCase()));
         }
 
         if (certificadoRepository.existsBySolicitudId(solicitudId)) {
             throw new ReglaNegocioException(
-                    "El tramite %s ya tiene certificado emitido"
+                    "El trámite %s ya tiene certificado emitido"
                             .formatted(solicitud.getFolioSolicitud()));
         }
 
@@ -144,7 +144,7 @@ public class CertificadoService
 
         auditoria.registrar(AccionAuditoria.EMITIR_CERTIFICADO, "certificado",
                 guardado.getId(),
-                "Certificado %s emitido para el tramite %s".formatted(
+                "Certificado %s emitido para el trámite %s".formatted(
                         guardado.getFolio(), solicitud.getFolioSolicitud()));
 
         log.info("Certificado {} emitido para el tramite {}",

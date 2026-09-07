@@ -97,7 +97,14 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
         return buscarEnRango(estatusId, municipioId, jornadaId, inicio, fin, pageable);
     }
 
-    /** Tramites de una persona, del mas reciente al mas antiguo. */
+    /**
+     * Tramites de una persona, del mas reciente al mas antiguo.
+     *
+     * <p>Trae estatus y animal en la misma consulta: la ficha del tutor arma el
+     * DTO fuera de la transaccion y sin esto falla al leer el estatus.
+     */
+    @EntityGraph(attributePaths = {"persona", "persona.municipio", "animal",
+                                   "animal.especie", "estatus"})
     Page<Solicitud> findByPersonaIdOrderByFechaRegistroDesc(Long personaId, Pageable pageable);
 
     long countByEstatusClave(String claveEstatus);

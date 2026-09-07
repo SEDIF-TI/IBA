@@ -9,6 +9,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import mx.gob.sedif.sea.core.catalogo.CatalogoRecord;
+import mx.gob.sedif.sea.core.catalogo.ColorService;
+import mx.gob.sedif.sea.core.catalogo.EspecieService;
+import mx.gob.sedif.sea.core.catalogo.MunicipioRecord;
+import mx.gob.sedif.sea.core.catalogo.MunicipioService;
+import mx.gob.sedif.sea.core.catalogo.SexoService;
+import mx.gob.sedif.sea.core.catalogo.TamanoService;
 import mx.gob.sedif.sea.core.certificado.Certificado;
 import mx.gob.sedif.sea.core.certificado.CertificadoService;
 import mx.gob.sedif.sea.core.certificado.VerificacionRecord;
@@ -21,6 +28,8 @@ import mx.gob.sedif.sea.core.solicitud.Solicitud;
 import mx.gob.sedif.sea.core.solicitud.SolicitudService;
 import mx.gob.sedif.sea.security.SecurityUtil;
 import mx.gob.sedif.sea.util.enums.CanalSolicitud;
+
+import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -46,15 +55,60 @@ public class PublicoResource {
     private final CertificadoService certificadoService;
     private final AcusePdfService acusePdfService;
     private final JornadaService jornadaService;
+    private final MunicipioService municipioService;
+    private final EspecieService especieService;
+    private final ColorService colorService;
+    private final SexoService sexoService;
+    private final TamanoService tamanoService;
 
     public PublicoResource(SolicitudService solicitudService,
                            CertificadoService certificadoService,
                            AcusePdfService acusePdfService,
-                           JornadaService jornadaService) {
+                           JornadaService jornadaService,
+                           MunicipioService municipioService,
+                           EspecieService especieService,
+                           ColorService colorService,
+                           SexoService sexoService,
+                           TamanoService tamanoService) {
         this.solicitudService = solicitudService;
         this.certificadoService = certificadoService;
         this.acusePdfService = acusePdfService;
         this.jornadaService = jornadaService;
+        this.municipioService = municipioService;
+        this.especieService = especieService;
+        this.colorService = colorService;
+        this.sexoService = sexoService;
+        this.tamanoService = tamanoService;
+    }
+
+    /**
+     * Listas para los desplegables del formulario publico.
+     *
+     * <p>Van aqui y no en /catalogos porque el formulario ciudadano se llena sin
+     * sesion: pedir permiso de catalogo obligaria a la persona a iniciar sesion
+     * para poder elegir su municipio, que es justo lo que este portal evita.
+     *
+     * <p>Solo lectura y solo lo vigente. La administracion de catalogos sigue
+     * siendo del personal.
+     */
+    @GetMapping("/catalogos")
+    public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<CatalogosPublicos>> catalogos() {
+        CatalogosPublicos listas = new CatalogosPublicos(
+                municipioService.listarVigentes().stream().map(MunicipioRecord::de).toList(),
+                especieService.listarVigentes().stream().map(CatalogoRecord::de).toList(),
+                colorService.listarVigentes().stream().map(CatalogoRecord::de).toList(),
+                sexoService.listarVigentes().stream().map(CatalogoRecord::de).toList(),
+                tamanoService.listarVigentes().stream().map(CatalogoRecord::de).toList());
+
+        return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(listas));
+    }
+
+    /** Lo que el formulario publico necesita para armar sus desplegables. */
+    public record CatalogosPublicos(List<MunicipioRecord> municipios,
+                                    List<CatalogoRecord> especies,
+                                    List<CatalogoRecord> colores,
+                                    List<CatalogoRecord> sexos,
+                                    List<CatalogoRecord> tamanos) {
     }
 
     /**
@@ -108,8 +162,12 @@ public class PublicoResource {
      */
     @GetMapping("/consulta")
     public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<SeguimientoRecord>> consultar(
-            @RequestParam @NotBlank String folio,
-            @RequestParam @NotBlank String curp) {
+            @RequestParam @NotBlank(message = "Escribe tu folio de seguimiento, "
+                    + "el que aparece en tu acuse (por ejemplo SOL-20260101-00001).")
+            String folio,
+            @RequestParam @NotBlank(message = "Escribe la CURP con la que se hizo el registro: "
+                    + "se piden ambos datos para que nadie más pueda consultar tu trámite.")
+            String curp) {
 
         Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
         return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
@@ -194,8 +252,12 @@ public class PublicoResource {
      */
     @GetMapping("/acuse")
     public ResponseEntity<byte[]> descargarAcuse(
-            @RequestParam @NotBlank String folio,
-            @RequestParam @NotBlank String curp) {
+            @RequestParam @NotBlank(message = "Escribe tu folio de seguimiento, "
+                    + "el que aparece en tu acuse (por ejemplo SOL-20260101-00001).")
+            String folio,
+            @RequestParam @NotBlank(message = "Escribe la CURP con la que se hizo el registro: "
+                    + "se piden ambos datos para que nadie más pueda consultar tu trámite.")
+            String curp) {
 
         Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
         byte[] pdf = acusePdfService.generar(solicitud);

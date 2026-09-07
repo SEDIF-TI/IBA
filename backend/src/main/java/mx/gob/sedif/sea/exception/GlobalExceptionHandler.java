@@ -17,6 +17,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -82,6 +86,45 @@ public class GlobalExceptionHandler {
                 .toList();
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error(MessageConstants.DATOS_INVALIDOS, errores));
+    }
+
+    /**
+     * Parametros de consulta invalidos (@RequestParam validado).
+     *
+     * <p>Sin esto caia en el manejador general y la persona leia "falla del
+     * sistema, reporta a informatica" por haber dejado un campo vacio: se
+     * culpaba al sistema de un dato que la propia persona puede corregir.
+     */
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> manejarParametrosInvalidos(
+            HandlerMethodValidationException ex) {
+
+        List<Map<String, String>> errores = new ArrayList<>();
+        for (ParameterValidationResult resultado : ex.getAllValidationResults()) {
+            String campo = resultado.getMethodParameter().getParameterName();
+            String nombre = campo == null || campo.isBlank() ? "dato" : campo;
+            for (MessageSourceResolvable error : resultado.getResolvableErrors()) {
+                errores.add(Map.of(
+                        "campo", nombre,
+                        "mensaje", error.getDefaultMessage() == null
+                                ? MessageConstants.DATOS_INVALIDOS
+                                : error.getDefaultMessage()));
+            }
+        }
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(MessageConstants.DATOS_INVALIDOS, errores));
+    }
+
+    /** Falta por completo un parametro obligatorio en la direccion. */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse<Void>> manejarParametroFaltante(
+            MissingServletRequestParameterException ex) {
+
+        String campo = ex.getParameterName();
+        return ResponseEntity.badRequest().body(ApiResponse.error(
+                MessageConstants.DATOS_INVALIDOS,
+                List.of(Map.of("campo", campo,
+                               "mensaje", "Falta este dato y es obligatorio para poder continuar."))));
     }
 
     /**

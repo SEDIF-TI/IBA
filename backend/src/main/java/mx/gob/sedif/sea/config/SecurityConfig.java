@@ -163,6 +163,6 @@ public class SecurityConfig {
         respuesta.setCharacterEncoding("UTF-8");
         respuesta.getWriter().write(
                 """
-                {"success":false,"message":"No tienes autorizacion para realizar está accion"}""");
+                {"success":false,"message":"No tienes autorizacion para realizar está acción"}""");
     }
 }

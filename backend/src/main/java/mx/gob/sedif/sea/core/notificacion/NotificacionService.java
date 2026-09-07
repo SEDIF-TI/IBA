@@ -121,7 +121,7 @@ public class NotificacionService
 
             if (plantilla == null) {
                 log.error("No existe la plantilla '{}' o esta dada de baja; "
-                        + "el tramite {} se queda sin aviso",
+                        + "el trámite {} se queda sin aviso",
                         claveAviso, solicitud.getFolioSolicitud());
                 return;
             }
@@ -272,7 +272,7 @@ public class NotificacionService
         Notificacion guardado = notificacionRepository.saveAndFlush(aviso);
 
         auditoria.registrar(AccionAuditoria.MODIFICAR, "notificacion", notificacionId,
-                "Contacto %s con %s sobre el tramite %s".formatted(
+                "Contacto %s con %s sobre el trámite %s".formatted(
                         logrado ? "logrado" : "no logrado",
                         aviso.getDestinatario(),
                         aviso.getSolicitud().getFolioSolicitud()));

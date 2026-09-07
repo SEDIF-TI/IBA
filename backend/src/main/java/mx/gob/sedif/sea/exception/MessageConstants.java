@@ -4,7 +4,7 @@ package mx.gob.sedif.sea.exception;
  * Mensajes que devuelve el API.
  *
  * <p>Regla que gobierna este archivo: quien lee el mensaje debe saber que paso
- * y que hacer. Un "operacion no válida" obliga a adivinar; un "no puedes
+ * y que hacer. Un "operación no válida" obliga a adivinar; un "no puedes
  * aprobar un tramite que ya fue rechazado" se entiende de una vez.
  *
  * <p>Los mensajes de error dicen la causa concreta y, cuando aplica, como
@@ -22,7 +22,7 @@ public final class MessageConstants {
 
     // ---- Operaciones correctas ----
     // Dicen que quedo hecho, no solo que "se realizo".
-    public static final String OPERACION_EXITOSA = "La operacion se completo correctamente";
+    public static final String OPERACION_EXITOSA = "La operación se completó correctamente";
     public static final String REGISTRO_CREADO = "El registro se dio de alta correctamente";
     public static final String REGISTRO_ACTUALIZADO = "Los cambios se guardaron correctamente";
     public static final String REGISTRO_ELIMINADO =
@@ -35,10 +35,10 @@ public final class MessageConstants {
     public static final String DATOS_INVALIDOS =
             "Revisa los campos marcados: hay datos que faltan o no tienen el formato correcto";
     public static final String ERROR_INTERNO =
-            "No se pudo completar la operacion por una falla del sistema. "
-                    + "Intenta de nuevo; si persiste, reporta a informatica.";
+            "No se pudo completar la operación por una falla del sistema. "
+                    + "Intenta de nuevo; si persiste, reporta a informática.";
     public static final String OPERACION_NO_PERMITIDA =
-            "Esta operacion no procede en la situación actual del registro";
+            "Esta operación no procede en la situación actual del registro";
 
     // ---- Autenticacion y autorizacion ----
     /**
@@ -53,17 +53,17 @@ public final class MessageConstants {
             "La cuenta quedó bloqueada temporalmente por varios intentos fallidos. "
                     + "Espera unos minutos antes de volver a intentar.";
     public static final String CUENTA_INACTIVA =
-            "Esta cuenta fue dada de baja. Solicita a informatica que la reactive.";
+            "Esta cuenta fue dada de baja. Solicita a informática que la reactive.";
     public static final String SESION_EXPIRADA =
             "Tu sesión expiro por inactividad. Inicia sesión de nuevo para continuar.";
     public static final String NO_AUTORIZADO =
-            "No tienes permiso para está accion. Si necesitas hacerla, "
-                    + "pide a informatica que revise tus permisos.";
+            "No tienes permiso para esta acción. Si necesitas hacerla, "
+                    + "pide a informática que revise tus permisos.";
     public static final String TOKEN_INVALIDO =
             "El enlace no es válido o ya expiro. Solicita uno nuevo.";
     public static final String CAMBIO_PASSWORD_REQUERIDO =
             "Define una contraseña propia antes de continuar: la inicial viene en "
-                    + "un archivo de configuracion y no puede seguir en uso.";
+                    + "un archivo de configuración y no puede seguir en uso.";
 
     // ---- Limite de peticiones ----
     public static final String DEMASIADAS_PETICIONES =
@@ -79,7 +79,7 @@ public final class MessageConstants {
                     + "persona para que sepa que corregir.";
     public static final String SOLICITUD_NO_ENCONTRADA =
             "No hay ningún trámite con ese folio y esa CURP. Verifica que el folio "
-                    + "este completo y que la CURP sea la que uso al registrar.";
+                    + "este completo y que la CURP sea la que usó al registrar.";
     public static final String CONTACTO_REQUERIDO =
             "Falta un medio de contacto. Escribe al menos un correo o un teléfono: "
                     + "es por donde se avisa el resultado del trámite.";
@@ -101,7 +101,7 @@ public final class MessageConstants {
                     + "Vuelve a guardarlo en el formato correcto y súbelo de nuevo.";
     public static final String ERROR_ALMACENAR_ARCHIVO =
             "No se pudo guardar el archivo. Intenta de nuevo; si persiste, "
-                    + "reporta a informatica.";
+                    + "reporta a informática.";
     public static final String DOCUMENTO_NO_ENCONTRADO =
             "No se encontro el documento. Es posible que se haya retirado del trámite.";
 
@@ -129,6 +129,6 @@ public final class MessageConstants {
     public static final String CONTACTO_YA_REGISTRADO =
             "Este contacto ya se marco como atendido";
     public static final String SIN_CORREO_PARA_ENVIAR =
-            "La persona no dejo correo, así que el aviso no se puede enviar solo. "
+            "La persona no dejó correo, así que el aviso no se puede enviar solo. "
                     + "Queda en la bandeja de contacto para llamarle.";
 }

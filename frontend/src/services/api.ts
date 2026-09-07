@@ -119,9 +119,16 @@ api.interceptors.response.use(
         // La renovacion tampoco sirvio: hay que volver a entrar.
         avisarAEsperando(null);
         borrarToken();
-        // Se conserva a donde queria ir, para regresar despues de entrar.
-        const destino = window.location.pathname + window.location.search;
-        if (!window.location.pathname.startsWith('/admin/login')) {
+
+        // Solo el panel manda a la pantalla de acceso. En el portal ciudadano no
+        // hay sesion que renovar: mandar ahi a la persona la deja frente a un
+        // acceso de personal que no le corresponde, y pareceria que necesita
+        // cuenta para hacer su tramite.
+        const enPanel = window.location.pathname.startsWith('/admin');
+        const enAcceso = window.location.pathname.startsWith('/admin/login');
+        if (enPanel && !enAcceso) {
+          // Se conserva a donde queria ir, para regresar despues de entrar.
+          const destino = window.location.pathname + window.location.search;
           window.location.href = `/admin/login?destino=${encodeURIComponent(destino)}`;
         }
         return Promise.reject(fallo);

@@ -29,7 +29,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { useNotificacion } from '@/context/NotificationContext';
 import { mensajeDeError } from '@/services/api';
-import { catalogos } from '@/services/catalogoService';
+import { catalogos, catalogosPublicos } from '@/services/catalogoService';
 import jornadaService from '@/services/jornadaService';
 import solicitudService, {
   type RegistroPublicoRequest,
@@ -147,18 +147,30 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
   useEffect(() => {
     async function cargarCatalogos() {
       try {
-        const [mun, esp, col, sex, tam] = await Promise.all([
-          catalogos.municipios.opciones() as Promise<Municipio[]>,
-          catalogos.especies.opciones(),
-          catalogos.colores.opciones(),
-          catalogos.sexos.opciones(),
-          catalogos.tamanos.opciones(),
-        ]);
-        setMunicipios(mun);
-        setEspecies(esp);
-        setColores(col);
-        setSexos(sex);
-        setTamanos(tam);
+        // En ventanilla hay sesion y se usan los catalogos del personal. En el
+        // portal no hay sesion: ahi va el destino publico, porque pedir permiso
+        // de catalogo mandaria a la persona a la pantalla de acceso.
+        if (ventanilla) {
+          const [mun, esp, col, sex, tam] = await Promise.all([
+            catalogos.municipios.opciones() as Promise<Municipio[]>,
+            catalogos.especies.opciones(),
+            catalogos.colores.opciones(),
+            catalogos.sexos.opciones(),
+            catalogos.tamanos.opciones(),
+          ]);
+          setMunicipios(mun);
+          setEspecies(esp);
+          setColores(col);
+          setSexos(sex);
+          setTamanos(tam);
+        } else {
+          const listas = await catalogosPublicos();
+          setMunicipios(listas.municipios);
+          setEspecies(listas.especies);
+          setColores(listas.colores);
+          setSexos(listas.sexos);
+          setTamanos(listas.tamanos);
+        }
       } catch (fallo) {
         notificacion.error(mensajeDeError(fallo));
       }
