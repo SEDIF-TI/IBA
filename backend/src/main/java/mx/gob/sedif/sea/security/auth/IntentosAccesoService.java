@@ -54,12 +54,13 @@ public class IntentosAccesoService {
      * fallar cinco veces contra su nombre de usuario.
      *
      * @param usuarioId identificador de la cuenta que fallo
+     * @return número de intento, si con él quedó bloqueada y los límites vigentes; para la bitácora
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void registrarFallo(Long usuarioId) {
+    public ResultadoFallo registrarFallo(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
         if (usuario == null) {
-            return;
+            return new ResultadoFallo(0, false, maxIntentosFallidos, minutosBloqueo);
         }
 
         int intentos = usuario.getIntentosFallidos() + 1;
@@ -75,6 +76,19 @@ public class IntentosAccesoService {
         }
 
         usuarioRepository.saveAndFlush(usuario);
+        return new ResultadoFallo(intentos, intentos >= maxIntentosFallidos,
+                maxIntentosFallidos, minutosBloqueo);
+    }
+
+    /**
+     * Resultado de registrar un intento fallido.
+     *
+     * @param intento       número de intento fallido consecutivo
+     * @param bloqueada     verdadero si con este intento la cuenta quedó bloqueada
+     * @param maximo        intentos permitidos antes del bloqueo
+     * @param minutosBloqueo duración del bloqueo
+     */
+    public record ResultadoFallo(int intento, boolean bloqueada, int maximo, int minutosBloqueo) {
     }
 
     /** Limpia el contador tras un acceso correcto. */

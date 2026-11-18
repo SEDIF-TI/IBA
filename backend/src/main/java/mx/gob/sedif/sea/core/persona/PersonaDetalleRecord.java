@@ -30,7 +30,9 @@ public record PersonaDetalleRecord(
         String numeroInterior,
         String colonia,
         String codigoPostal,
-        Long animalesACargo) {
+        Long animalesACargo,
+        // Versión del registro (bloqueo optimista); el formulario la reenvía al guardar.
+        Long version) {
 
     public static PersonaDetalleRecord de(Persona persona, long animalesACargo) {
         return new PersonaDetalleRecord(
@@ -57,6 +59,7 @@ public record PersonaDetalleRecord(
                 persona.getNumeroInterior(),
                 persona.getColonia(),
                 persona.getCodigoPostal(),
-                animalesACargo);
+                animalesACargo,
+                persona.getVersion());
     }
 }

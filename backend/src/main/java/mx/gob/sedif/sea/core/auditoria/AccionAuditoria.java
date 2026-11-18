@@ -46,4 +46,6 @@ public final class AccionAuditoria {
     public static final String LOGOUT = "LOGOUT";
     public static final String CAMBIO_PASSWORD = "CAMBIO_PASSWORD";
     public static final String CUENTA_BLOQUEADA = "CUENTA_BLOQUEADA";
+    /** Sesión cerrada por el sistema: token de renovación reutilizado o copiado. */
+    public static final String SESION_REVOCADA = "SESION_REVOCADA";
 }

@@ -29,6 +29,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '@/context/AuthContext';
 import { useNotificacion } from '@/context/NotificationContext';
+import { soloDigitos } from '@/utils/validaciones';
 import { mensajeDeError } from '@/services/api';
 import { catalogos } from '@/services/catalogoService';
 import jornadaService from '@/services/jornadaService';
@@ -111,7 +112,10 @@ export function AdminJornadas() {
     setGuardando(true);
     try {
       if (editando) {
-        await jornadaService.actualizar(editando.id, formulario);
+        await jornadaService.actualizar(editando.id, {
+          ...formulario,
+          version: editando.version,
+        });
         notificacion.exito(`Se guardaron los cambios de "${formulario.nombre}"`);
       } else {
         await jornadaService.crear(formulario);
@@ -344,14 +348,16 @@ export function AdminJornadas() {
               <Grid item xs={5}>
                 <TextField
                   label="Cupo"
-                  type="number"
                   value={formulario.cupo ?? ''}
-                  onChange={(e) =>
+                  // Solo digitos al escribir; nunca type="number".
+                  inputProps={{ inputMode: 'numeric', maxLength: 5 }}
+                  onChange={(e) => {
+                    const digitos = soloDigitos(e.target.value, 5);
                     setFormulario({
                       ...formulario,
-                      cupo: e.target.value ? parseInt(e.target.value, 10) : undefined,
-                    })
-                  }
+                      cupo: digitos ? parseInt(digitos, 10) : undefined,
+                    });
+                  }}
                   fullWidth
                   margin="normal"
                   helperText="Vacío si no hay limite"

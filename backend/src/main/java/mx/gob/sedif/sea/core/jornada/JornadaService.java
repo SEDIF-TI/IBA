@@ -2,7 +2,9 @@ package mx.gob.sedif.sea.core.jornada;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import mx.gob.sedif.sea.core.catalogo.Municipio;
 import mx.gob.sedif.sea.core.catalogo.MunicipioRepository;
 import mx.gob.sedif.sea.core.solicitud.Solicitud;
 import mx.gob.sedif.sea.core.solicitud.SolicitudRepository;
+import mx.gob.sedif.sea.exception.EdicionConcurrenteException;
 import mx.gob.sedif.sea.exception.MessageConstants;
 import mx.gob.sedif.sea.exception.RecursoNoEncontradoException;
 import mx.gob.sedif.sea.exception.ReglaNegocioException;
@@ -88,21 +91,46 @@ public class JornadaService {
         return guardada;
     }
 
+    /**
+     * Datos de la jornada que se guardan en la bitácora antes y después de editarla.
+     * Son datos del evento, no personales.
+     *
+     * @param jornada jornada a describir
+     * @return campos editables, en orden fijo
+     */
+    private Map<String, Object> instantanea(Jornada jornada) {
+        Map<String, Object> valores = new LinkedHashMap<>();
+        valores.put("nombre", jornada.getNombre());
+        valores.put("descripcion", jornada.getDescripcion());
+        valores.put("municipio", jornada.getMunicipio() == null ? null : jornada.getMunicipio().getNombre());
+        valores.put("domicilioSede", jornada.getDomicilioSede());
+        valores.put("fechaInicio", String.valueOf(jornada.getFechaInicio()));
+        valores.put("fechaFin", String.valueOf(jornada.getFechaFin()));
+        valores.put("horario", jornada.getHorario());
+        valores.put("cupo", jornada.getCupo());
+        valores.put("responsableId", jornada.getUsuarioResponsable() == null
+                ? null : jornada.getUsuarioResponsable().getId());
+        return valores;
+    }
+
     /** Modifica una jornada. */
     @Transactional
     public Jornada actualizar(Long id, JornadaRequest peticion) {
         validarFechas(peticion.fechaInicio(), peticion.fechaFin());
 
         Jornada jornada = obtener(id);
+        EdicionConcurrenteException.verificar(jornada.getVersion(), peticion.version());
         Municipio municipio = municipioRepository.findById(peticion.municipioId())
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "Municipio", peticion.municipioId()));
 
+        Map<String, Object> antes = instantanea(jornada);
         aplicar(jornada, peticion, municipio);
         Jornada guardada = jornadaRepository.save(jornada);
 
-        auditoria.registrar(AccionAuditoria.MODIFICAR, "jornada", id,
-                "Cambios en la jornada '%s'".formatted(guardada.getNombre()));
+        auditoria.registrarCambio(AccionAuditoria.MODIFICAR, "jornada", id,
+                "Cambios en la jornada '%s'".formatted(guardada.getNombre()),
+                antes, instantanea(guardada));
 
         return guardada;
     }

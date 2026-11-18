@@ -565,8 +565,8 @@ public class SolicitudService {
             personaRepository.save(persona);
 
             auditoria.registrar(AccionAuditoria.ELIMINAR, "persona", persona.getId(),
-                    "Baja de %s al no quedarle trámites vigentes: %s".formatted(
-                            persona.getNombreCompleto(), motivo));
+                    "Baja del tutor %d al no quedarle trámites vigentes: %s".formatted(
+                            persona.getId(), motivo));
 
             log.info("Tramite {}, su animal y la persona dados de baja",
                     solicitud.getFolioSolicitud());

@@ -1,6 +1,8 @@
 package mx.gob.sedif.sea.core.catalogo;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import mx.gob.sedif.sea.core.auditoria.AccionAuditoria;
 import mx.gob.sedif.sea.core.auditoria.AuditoriaService;
+import mx.gob.sedif.sea.exception.EdicionConcurrenteException;
 import mx.gob.sedif.sea.exception.MessageConstants;
 import mx.gob.sedif.sea.exception.RecursoNoEncontradoException;
 import mx.gob.sedif.sea.exception.ReglaNegocioException;
@@ -122,14 +125,17 @@ public class CatalogoService<T extends CatalogoBase> {
     @Transactional
     public T actualizar(Integer id, CatalogoRequest peticion) {
         T entidad = obtener(id);
+        EdicionConcurrenteException.verificar(entidad.getVersion(), peticion.version());
         String nombreAnterior = entidad.getNombre();
+        Map<String, Object> antes = instantanea(entidad);
 
         aplicar(entidad, peticion);
         T guardado = repositorio.save(entidad);
 
-        auditoria.registrar(AccionAuditoria.MODIFICAR, nombreEntidad, id.longValue(),
+        auditoria.registrarCambio(AccionAuditoria.MODIFICAR, nombreEntidad, id.longValue(),
                 "Cambio en %s: '%s' pasa a '%s'".formatted(
-                        nombreEntidad, nombreAnterior, guardado.getNombre()));
+                        nombreEntidad, nombreAnterior, guardado.getNombre()),
+                antes, instantanea(guardado));
 
         return guardado;
     }
@@ -182,6 +188,21 @@ public class CatalogoService<T extends CatalogoBase> {
         if (peticion.activo() != null) {
             entidad.setActivo(peticion.activo());
         }
+    }
+
+    /**
+     * Valores editables del registro, para guardar en la bitácora el antes y el después.
+     *
+     * @param entidad registro del catálogo
+     * @return nombre, descripción, orden y vigencia, en orden fijo
+     */
+    private Map<String, Object> instantanea(T entidad) {
+        Map<String, Object> valores = new LinkedHashMap<>();
+        valores.put("nombre", entidad.getNombre());
+        valores.put("descripcion", entidad.getDescripcion());
+        valores.put("orden", entidad.getOrden());
+        valores.put("activo", entidad.getActivo());
+        return valores;
     }
 
     /** Nombre de la tabla que administra este servicio. */

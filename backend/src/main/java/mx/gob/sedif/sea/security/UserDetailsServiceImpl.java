@@ -49,6 +49,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 Boolean.TRUE.equals(usuario.getActivo()),
                 Boolean.TRUE.equals(usuario.getCambioPasswordRequerido()),
                 !usuario.estaBloqueado(),
+                usuario.getTokenVersion() == null ? 0 : usuario.getTokenVersion(),
                 roles,
                 permisos);
     }

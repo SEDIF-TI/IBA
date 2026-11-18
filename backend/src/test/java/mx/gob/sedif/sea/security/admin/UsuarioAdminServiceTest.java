@@ -29,6 +29,7 @@ import mx.gob.sedif.sea.security.Rol;
 import mx.gob.sedif.sea.security.RolRepository;
 import mx.gob.sedif.sea.security.Usuario;
 import mx.gob.sedif.sea.security.UsuarioRepository;
+import mx.gob.sedif.sea.security.sesion.SesionService;
 
 /**
  * Reglas del alta de cuentas del personal.
@@ -46,13 +47,14 @@ class UsuarioAdminServiceTest {
     @Mock private SedeRepository sedeRepository;
     @Mock private PasswordEncoder codificador;
     @Mock private AuditoriaService auditoria;
+    @Mock private SesionService sesionService;
 
     private UsuarioAdminService servicio;
 
     @BeforeEach
     void preparar() {
         servicio = new UsuarioAdminService(usuarioRepository, rolRepository,
-                sedeRepository, codificador, auditoria);
+                sedeRepository, codificador, auditoria, sesionService);
         when(codificador.encode(anyString())).thenReturn("$2a$10$huella");
         when(usuarioRepository.saveAndFlush(any(Usuario.class)))
                 .thenAnswer(invocacion -> invocacion.getArgument(0));
@@ -68,7 +70,7 @@ class UsuarioAdminServiceTest {
 
     private GuardarUsuarioRequest peticion() {
         return new GuardarUsuarioRequest("jperez", "Juan", "Perez", "Gomez",
-                "juan@puebla.gob.mx", "2221234567", null, List.of(2));
+                "juan@puebla.gob.mx", "2221234567", null, List.of(2), null);
     }
 
     @Nested
@@ -124,7 +126,7 @@ class UsuarioAdminServiceTest {
         @DisplayName("no crea una cuenta sin rol, porque no podria hacer nada")
         void exigeAlMenosUnRol() {
             GuardarUsuarioRequest sinRol = new GuardarUsuarioRequest("jperez", "Juan",
-                    "Perez", null, "juan@puebla.gob.mx", null, null, List.of());
+                    "Perez", null, "juan@puebla.gob.mx", null, null, List.of(), null);
 
             assertThatThrownBy(() -> servicio.crear(sinRol))
                     .isInstanceOf(ReglaNegocioException.class)

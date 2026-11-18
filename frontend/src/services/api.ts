@@ -1,5 +1,6 @@
 import axios, { AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import type { ApiResponse } from '@/types/api';
+import type { Sesion } from '@/types/auth';
 
 /**
  * Instancia de axios que usa todo el sistema.
@@ -18,8 +19,6 @@ import type { ApiResponse } from '@/types/api';
  */
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 
-/** Donde se guarda el token de acceso en el navegador. */
-const CLAVE_TOKEN = 'sea_token';
 
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -29,19 +28,39 @@ export const api: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-/** Guarda el token de acceso. */
+/**
+ * Token de acceso vigente, SOLO en memoria.
+ *
+ * <p>No se guarda en localStorage ni en sessionStorage: cualquier script que lograra colarse en la
+ * página podría leerlo de ahí y llevarse la sesión. En memoria desaparece al recargar o cerrar la
+ * pestaña; entonces la sesión se recupera con la cookie HttpOnly de refresco, que JavaScript no
+ * puede leer.
+ */
+let tokenEnMemoria: string | null = null;
+
+// Versiones anteriores guardaban el token en localStorage; se borra el que haya quedado.
+try {
+  localStorage.removeItem('sea_token');
+} catch {
+  // Navegación privada o almacenamiento bloqueado: no hay nada que borrar.
+}
+
+/**
+ * Guarda el token de acceso en memoria.
+ * @param {string} token - token de acceso recibido del backend
+ */
 export function guardarToken(token: string): void {
-  localStorage.setItem(CLAVE_TOKEN, token);
+  tokenEnMemoria = token;
 }
 
-/** Token de acceso vigente, si lo hay. */
+/** @returns {string | null} token de acceso vigente, o null si no hay sesión */
 export function obtenerToken(): string | null {
-  return localStorage.getItem(CLAVE_TOKEN);
+  return tokenEnMemoria;
 }
 
-/** Borra el token al cerrar sesion. */
+/** Olvida el token de acceso (cierre de sesión o sesión vencida). */
 export function borrarToken(): void {
-  localStorage.removeItem(CLAVE_TOKEN);
+  tokenEnMemoria = null;
 }
 
 // Cada peticion sale con el token, si hay sesion abierta.
@@ -53,19 +72,44 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-/**
- * Control de renovacion.
- *
- * <p>Si varias peticiones caducan a la vez, solo la primera pide un token
- * nuevo; las demas esperan a que termine. Sin esto, una pantalla con cinco
- * consultas simultaneas dispararia cinco renovaciones.
- */
-let renovando = false;
-let esperando: Array<(token: string | null) => void> = [];
+/** Renovación en curso dentro de esta pestaña; las peticiones que caducan a la vez la comparten. */
+let renovacionEnCurso: Promise<Sesion> | null = null;
 
-function avisarAEsperando(token: string | null): void {
-  esperando.forEach((resolver) => resolver(token));
-  esperando = [];
+/**
+ * Ejecuta la tarea con un candado compartido entre pestañas (Web Locks API).
+ *
+ * <p>El backend rota el token de refresco en cada uso y trata como robo un token usado dos veces.
+ * Si dos pestañas renovaran exactamente al mismo tiempo con la misma cookie, la segunda cerraría la
+ * sesión. Con el candado renuevan una tras otra, y la segunda ya envía la cookie nueva.
+ */
+function conCandado<T>(tarea: () => Promise<T>): Promise<T> {
+  const candados = typeof navigator !== 'undefined' ? navigator.locks : undefined;
+  return candados
+    ? (candados.request('sea-renovacion-sesion', tarea) as Promise<T>)
+    : tarea();
+}
+
+/**
+ * Pide un token de acceso nuevo con la cookie de refresco y lo guarda en memoria.
+ *
+ * @returns {Promise<Sesion>} la sesión renovada, con permisos releídos del backend
+ * @throws error de axios si la sesión ya no es válida (401)
+ */
+export function renovarSesion(): Promise<Sesion> {
+  if (!renovacionEnCurso) {
+    renovacionEnCurso = conCandado(async () => {
+      const { data } = await axios.post<ApiResponse<Sesion>>(
+        `${BASE_URL}/auth/refrescar`,
+        {},
+        { withCredentials: true },
+      );
+      guardarToken(data.data.tokenAcceso);
+      return data.data;
+    }).finally(() => {
+      renovacionEnCurso = null;
+    });
+  }
+  return renovacionEnCurso;
 }
 
 api.interceptors.response.use(
@@ -75,66 +119,37 @@ api.interceptors.response.use(
     const peticionOriginal = error.config as InternalAxiosRequestConfig & {
       _reintentada?: boolean;
     };
+    const url = peticionOriginal?.url ?? '';
 
     // Sesion caducada: se intenta renovar una sola vez.
     if (
       error.response?.status === 401 &&
       peticionOriginal &&
       !peticionOriginal._reintentada &&
-      !peticionOriginal.url?.includes('/auth/login') &&
-      !peticionOriginal.url?.includes('/auth/refrescar')
+      !url.includes('/auth/login') &&
+      !url.includes('/auth/refrescar') &&
+      !url.includes('/auth/logout')
     ) {
-      if (renovando) {
-        // Ya hay una renovacion en curso: esperar su resultado.
-        return new Promise((resolver, rechazar) => {
-          esperando.push((token) => {
-            if (token) {
-              peticionOriginal.headers.Authorization = `Bearer ${token}`;
-              resolver(api(peticionOriginal));
-            } else {
-              rechazar(error);
-            }
-          });
-        });
-      }
-
       peticionOriginal._reintentada = true;
-      renovando = true;
-
       try {
-        const { data } = await axios.post<ApiResponse<{ tokenAcceso: string }>>(
-          `${BASE_URL}/auth/refrescar`,
-          {},
-          { withCredentials: true },
-        );
-
-        const tokenNuevo = data.data.tokenAcceso;
-        guardarToken(tokenNuevo);
-        avisarAEsperando(tokenNuevo);
-
-        peticionOriginal.headers.Authorization = `Bearer ${tokenNuevo}`;
+        const sesion = await renovarSesion();
+        peticionOriginal.headers.Authorization = `Bearer ${sesion.tokenAcceso}`;
         return api(peticionOriginal);
-
       } catch (fallo) {
         // La renovacion tampoco sirvio: hay que volver a entrar.
-        avisarAEsperando(null);
         borrarToken();
 
         // Solo el panel manda a la pantalla de acceso. En el portal ciudadano no
         // hay sesion que renovar: mandar ahi a la persona la deja frente a un
-        // acceso de personal que no le corresponde, y pareceria que necesita
-        // cuenta para hacer su tramite.
+        // acceso de personal que no le corresponde.
         const enPanel = window.location.pathname.startsWith('/admin');
         const enAcceso = window.location.pathname.startsWith('/admin/login');
         if (enPanel && !enAcceso) {
-          // Se conserva a donde queria ir, para regresar despues de entrar.
+          // Recarga completa: borra de la memoria todo lo consultado por la sesion anterior.
           const destino = window.location.pathname + window.location.search;
           window.location.href = `/admin/login?destino=${encodeURIComponent(destino)}`;
         }
         return Promise.reject(fallo);
-
-      } finally {
-        renovando = false;
       }
     }
 

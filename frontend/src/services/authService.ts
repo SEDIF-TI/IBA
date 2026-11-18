@@ -1,4 +1,4 @@
-import api, { borrarToken, guardarToken } from './api';
+import api, { borrarToken, guardarToken, renovarSesion } from './api';
 import type { ApiResponse } from '@/types/api';
 import type { CambiarPasswordRequest, LoginRequest, Sesion } from '@/types/auth';
 
@@ -29,16 +29,27 @@ export const authService = {
     }
   },
 
-  /** Cambia la contrasena de quien esta en sesion. */
-  async cambiarPassword(peticion: CambiarPasswordRequest): Promise<void> {
-    await api.post('/auth/cambiar-password', peticion);
-  },
-
-  /** Renueva el token a partir de la cookie de refresco. */
-  async refrescar(): Promise<Sesion> {
-    const { data } = await api.post<ApiResponse<Sesion>>('/auth/refrescar');
+  /**
+   * Cambia la contrasena de quien esta en sesion.
+   *
+   * <p>El backend cierra las demas sesiones de la cuenta y devuelve una nueva para este
+   * dispositivo; su token sustituye al anterior, que deja de servir.
+   *
+   * @param {CambiarPasswordRequest} peticion - contrasena actual y nueva
+   * @returns {Promise<Sesion>} la sesion nueva
+   */
+  async cambiarPassword(peticion: CambiarPasswordRequest): Promise<Sesion> {
+    const { data } = await api.post<ApiResponse<Sesion>>('/auth/cambiar-password', peticion);
     guardarToken(data.data.tokenAcceso);
     return data.data;
+  },
+
+  /**
+   * Renueva el token a partir de la cookie de refresco.
+   * @returns {Promise<Sesion>} la sesion renovada
+   */
+  refrescar(): Promise<Sesion> {
+    return renovarSesion();
   },
 };
 

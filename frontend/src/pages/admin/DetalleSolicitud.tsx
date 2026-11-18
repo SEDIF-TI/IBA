@@ -428,7 +428,7 @@ export function DetalleSolicitud() {
                 </Stack>
               )}
 
-              {tienePermiso('documento:ver') && !tramiteCerrado && (
+              {tienePermiso('documento:subir') && !tramiteCerrado && (
                 <>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="subtitle2" fontWeight={600} gutterBottom>

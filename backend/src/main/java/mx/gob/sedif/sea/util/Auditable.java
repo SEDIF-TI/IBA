@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 
 /**
  * Columnas de auditoria que lleva toda tabla transaccional del sistema.
@@ -42,6 +43,19 @@ public abstract class Auditable {
     @LastModifiedBy
     @Column(name = "fn_usuario_modificacion_id")
     private Long usuarioModificacionId;
+
+    /**
+     * Versión para el bloqueo optimista ({@code n_version}). Hibernate la incrementa en cada
+     * actualización y rechaza el cambio si otra persona guardó antes; los formularios de edición
+     * mandan la versión que tenían a la vista para detectar también ese caso.
+     */
+    @Version
+    @Column(name = "n_version", nullable = false)
+    private Long version;
+
+    public Long getVersion() {
+        return version;
+    }
 
     public OffsetDateTime getFechaCreacion() {
         return fechaCreacion;

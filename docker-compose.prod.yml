@@ -15,9 +15,9 @@ services:
   backend:
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # Detras del proxy, sin esto la IP que ve el rate limiting es la del
-      # proxy y no la del cliente: todos compartirian el mismo bucket.
-      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      # Subredes de los proxies de confianza (CIDR): la red interna del proyecto
+      # y la de Nginx Proxy Manager. Ver deploy/README.md, "IP real del cliente".
+      APP_PROXIES_CONFIABLES: ${APP_PROXIES_CONFIABLES}
     networks:
       - sea_interna
       - proxy

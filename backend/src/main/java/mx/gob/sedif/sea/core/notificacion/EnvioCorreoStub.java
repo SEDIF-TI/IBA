@@ -40,8 +40,8 @@ public class EnvioCorreoStub implements EnvioCorreoService {
 
     @Override
     public ResultadoEnvio enviar(String destinatario, String asunto, String cuerpo) {
-        log.info("Correo no enviado (envio deshabilitado). Destinatario: {}, asunto: {}",
-                destinatario, asunto);
+        // El destinatario es un dato personal de la ciudadanía: no se escribe en el log.
+        log.info("Correo no enviado (envio deshabilitado). Asunto: {}", asunto);
 
         return ResultadoEnvio.fallo(
                 "El envio de correo no está configurado en el sistema, así que este "

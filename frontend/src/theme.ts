@@ -1,3 +1,4 @@
+import { esES } from '@mui/material/locale';
 import { createTheme } from '@mui/material/styles';
 import type { PaletteColorOptions } from '@mui/material/styles';
 
@@ -82,123 +83,127 @@ const colorPrimario: PaletteColorOptions = {
   contrastText: '#FFFFFF',
 };
 
-export const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: colorPrimario,
-    secondary: {
-      light: neutro[500],
-      main: neutro[700],
-      dark: neutro[900],
-      contrastText: '#FFFFFF',
+export const theme = createTheme(
+  {
+    palette: {
+      mode: 'light',
+      primary: colorPrimario,
+      secondary: {
+        light: neutro[500],
+        main: neutro[700],
+        dark: neutro[900],
+        contrastText: '#FFFFFF',
+      },
+      success: { ...estado.exito, contrastText: '#FFFFFF' },
+      error: { ...estado.error, contrastText: '#FFFFFF' },
+      warning: { ...estado.aviso, contrastText: '#FFFFFF' },
+      info: { ...estado.info, contrastText: '#FFFFFF' },
+      background: {
+        default: neutro[50],
+        paper: '#FFFFFF',
+      },
+      text: {
+        primary: neutro[900],
+        secondary: neutro[600],
+        disabled: neutro[400],
+      },
+      divider: neutro[200],
     },
-    success: { ...estado.exito, contrastText: '#FFFFFF' },
-    error: { ...estado.error, contrastText: '#FFFFFF' },
-    warning: { ...estado.aviso, contrastText: '#FFFFFF' },
-    info: { ...estado.info, contrastText: '#FFFFFF' },
-    background: {
-      default: neutro[50],
-      paper: '#FFFFFF',
+
+    typography: {
+      fontFamily: [
+        'Inter',
+        '-apple-system',
+        'BlinkMacSystemFont',
+        'Segoe UI',
+        'Roboto',
+        'sans-serif',
+      ].join(','),
+      // Base de 16px: por debajo de eso el texto cansa en jornadas largas.
+      fontSize: 16,
+      h1: { fontSize: '2.5rem', fontWeight: 700, lineHeight: 1.2 },
+      h2: { fontSize: '2rem', fontWeight: 600, lineHeight: 1.25 },
+      h3: { fontSize: '1.75rem', fontWeight: 600, lineHeight: 1.3 },
+      h4: { fontSize: '1.5rem', fontWeight: 600, lineHeight: 1.3 },
+      h5: { fontSize: '1.25rem', fontWeight: 600, lineHeight: 1.4 },
+      h6: { fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.4 },
+      body1: { fontSize: '1rem', lineHeight: 1.6 },
+      body2: { fontSize: '0.875rem', lineHeight: 1.5 },
+      button: { fontWeight: 500, textTransform: 'none' },
     },
-    text: {
-      primary: neutro[900],
-      secondary: neutro[600],
-      disabled: neutro[400],
+
+    shape: {
+      borderRadius: 8,
     },
-    divider: neutro[200],
-  },
 
-  typography: {
-    fontFamily: [
-      'Inter',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      'Segoe UI',
-      'Roboto',
-      'sans-serif',
-    ].join(','),
-    // Base de 16px: por debajo de eso el texto cansa en jornadas largas.
-    fontSize: 16,
-    h1: { fontSize: '2.5rem', fontWeight: 700, lineHeight: 1.2 },
-    h2: { fontSize: '2rem', fontWeight: 600, lineHeight: 1.25 },
-    h3: { fontSize: '1.75rem', fontWeight: 600, lineHeight: 1.3 },
-    h4: { fontSize: '1.5rem', fontWeight: 600, lineHeight: 1.3 },
-    h5: { fontSize: '1.25rem', fontWeight: 600, lineHeight: 1.4 },
-    h6: { fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.4 },
-    body1: { fontSize: '1rem', lineHeight: 1.6 },
-    body2: { fontSize: '0.875rem', lineHeight: 1.5 },
-    button: { fontWeight: 500, textTransform: 'none' },
-  },
+    // Escala de 8px: los margenes se derivan de ella y no se inventan por pantalla.
+    spacing: 8,
 
-  shape: {
-    borderRadius: 8,
-  },
-
-  // Escala de 8px: los margenes se derivan de ella y no se inventan por pantalla.
-  spacing: 8,
-
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        // Quien navega con teclado tiene que ver donde esta parado.
-        '*:focus-visible': {
-          outline: `3px solid ${guinda[500]}`,
-          outlineOffset: '2px',
-        },
-        // Se respeta a quien pidio menos movimiento en su sistema.
-        '@media (prefers-reduced-motion: reduce)': {
-          '*': {
-            animationDuration: '0.01ms !important',
-            transitionDuration: '0.01ms !important',
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          // Quien navega con teclado tiene que ver donde esta parado.
+          '*:focus-visible': {
+            outline: `3px solid ${guinda[500]}`,
+            outlineOffset: '2px',
+          },
+          // Se respeta a quien pidio menos movimiento en su sistema.
+          '@media (prefers-reduced-motion: reduce)': {
+            '*': {
+              animationDuration: '0.01ms !important',
+              transitionDuration: '0.01ms !important',
+            },
           },
         },
       },
-    },
 
-    MuiButton: {
-      defaultProps: { disableElevation: true },
-      styleOverrides: {
-        root: {
-          // 44px: lo minimo para poder tocarlo con el dedo sin fallar.
-          minHeight: 44,
-          paddingInline: 20,
-        },
-        sizeSmall: { minHeight: 36 },
-      },
-    },
-
-    MuiTextField: {
-      defaultProps: { variant: 'outlined', size: 'medium' },
-    },
-
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          border: `1px solid ${neutro[200]}`,
-          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)',
+      MuiButton: {
+        defaultProps: { disableElevation: true },
+        styleOverrides: {
+          root: {
+            // 44px: lo minimo para poder tocarlo con el dedo sin fallar.
+            minHeight: 44,
+            paddingInline: 20,
+          },
+          sizeSmall: { minHeight: 36 },
         },
       },
-    },
 
-    MuiTableHead: {
-      styleOverrides: {
-        root: { backgroundColor: neutro[100] },
+      MuiTextField: {
+        defaultProps: { variant: 'outlined', size: 'medium' },
       },
-    },
 
-    MuiChip: {
-      styleOverrides: {
-        root: { fontWeight: 500 },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            border: `1px solid ${neutro[200]}`,
+            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)',
+          },
+        },
       },
-    },
 
-    MuiAppBar: {
-      defaultProps: { elevation: 0 },
-      styleOverrides: {
-        root: { borderBottom: `1px solid ${neutro[200]}` },
+      MuiTableHead: {
+        styleOverrides: {
+          root: { backgroundColor: neutro[100] },
+        },
+      },
+
+      MuiChip: {
+        styleOverrides: {
+          root: { fontWeight: 500 },
+        },
+      },
+
+      MuiAppBar: {
+        defaultProps: { elevation: 0 },
+        styleOverrides: {
+          root: { borderBottom: `1px solid ${neutro[200]}` },
+        },
       },
     },
   },
-});
+  // Textos internos de los componentes (paginador, selectores, autocompletado) en español.
+  esES,
+);
 
 export default theme;

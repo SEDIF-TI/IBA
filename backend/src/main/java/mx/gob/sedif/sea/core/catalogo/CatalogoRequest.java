@@ -13,6 +13,8 @@ import jakarta.validation.constraints.Size;
  * @param descripcion detalle opcional
  * @param orden       posicion de despliegue
  * @param activo      si sigue disponible
+ * @param version  versión del registro para el bloqueo optimista; obligatoria al modificar y
+ *                 debe ser la que la persona tenía a la vista
  */
 public record CatalogoRequest(
         @NotBlank(message = "La clave es obligatoria")
@@ -33,5 +35,8 @@ public record CatalogoRequest(
         @PositiveOrZero(message = "El orden no puede ser negativo")
         Integer orden,
 
-        Boolean activo) {
+        Boolean activo,
+
+        // Versión que la persona tenía a la vista; obligatoria al modificar (bloqueo optimista).
+        Long version) {
 }

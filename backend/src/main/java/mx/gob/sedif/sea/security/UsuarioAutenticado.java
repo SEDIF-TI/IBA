@@ -26,11 +26,20 @@ public class UsuarioAutenticado implements UserDetails {
     private final boolean activo;
     private final boolean cambioPasswordRequerido;
     private final boolean cuentaNoBloqueada;
+    /** Versión de tokens de la cuenta; se compara contra la que trae cada token. */
+    private final int tokenVersion;
     private final List<GrantedAuthority> autoridades;
 
     /**
-     * @param roles    claves de rol, por ejemplo ADMINISTRADOR
-     * @param permisos claves de permiso, por ejemplo documento:descargar
+     * @param id                      identificador de la cuenta
+     * @param usuario                 nombre de usuario
+     * @param passwordHash            hash BCrypt, solo para la verificación inicial
+     * @param activo                  falso si la cuenta está dada de baja
+     * @param cambioPasswordRequerido verdadero si debe cambiar la contraseña antes de operar
+     * @param cuentaNoBloqueada       falso mientras dure un bloqueo por intentos fallidos
+     * @param tokenVersion            versión vigente de los tokens de la cuenta
+     * @param roles                   claves de rol, por ejemplo ADMINISTRADOR
+     * @param permisos                claves de permiso, por ejemplo documento:descargar
      */
     public UsuarioAutenticado(Long id,
                               String usuario,
@@ -38,6 +47,7 @@ public class UsuarioAutenticado implements UserDetails {
                               boolean activo,
                               boolean cambioPasswordRequerido,
                               boolean cuentaNoBloqueada,
+                              int tokenVersion,
                               Collection<String> roles,
                               Collection<String> permisos) {
         this.id = id;
@@ -46,6 +56,7 @@ public class UsuarioAutenticado implements UserDetails {
         this.activo = activo;
         this.cambioPasswordRequerido = cambioPasswordRequerido;
         this.cuentaNoBloqueada = cuentaNoBloqueada;
+        this.tokenVersion = tokenVersion;
 
         // Los roles llevan el prefijo ROLE_, que es lo que espera hasRole().
         // Los permisos van sin prefijo, para poder escribir
@@ -59,6 +70,10 @@ public class UsuarioAutenticado implements UserDetails {
 
     public Long getId() {
         return id;
+    }
+
+    public int getTokenVersion() {
+        return tokenVersion;
     }
 
     public boolean isCambioPasswordRequerido() {

@@ -19,6 +19,8 @@ import jakarta.validation.constraints.Size;
  * @param numeroInterior   numero interior
  * @param colonia          colonia
  * @param codigoPostal     codigo postal
+ * @param version  versión del registro para el bloqueo optimista; obligatoria al modificar y
+ *                 debe ser la que la persona tenía a la vista
  */
 public record ActualizarPersonaRequest(
         @Email(message = "El correo no tiene un formato válido. Revisa que incluya "
@@ -44,5 +46,8 @@ public record ActualizarPersonaRequest(
 
         @Pattern(regexp = "^$|^[0-9]{5}$",
                  message = "El código postal debe tener 5 dígitos")
-        String codigoPostal) {
+        String codigoPostal,
+
+        // Versión que la persona tenía a la vista; obligatoria al modificar (bloqueo optimista).
+        Long version) {
 }

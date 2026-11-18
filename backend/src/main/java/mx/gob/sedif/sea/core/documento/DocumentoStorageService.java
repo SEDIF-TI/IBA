@@ -142,7 +142,10 @@ public class DocumentoStorageService {
             }
             hash = calcularHash(destino);
 
-            String mime = tika.detect(destino);
+            String mime;
+            try (InputStream guardado = Files.newInputStream(destino)) {
+                mime = tika.detect(guardado);
+            }
 
             log.debug("Archivo guardado: {} ({} bytes, {})",
                     nombreGenerado, archivo.getSize(), mime);
@@ -263,7 +266,9 @@ public class DocumentoStorageService {
         String mimeReal;
         try (InputStream entrada = archivo.getInputStream()) {
             inicio = entrada.readNBytes(512);
-            mimeReal = tika.detect(inicio, archivo.getOriginalFilename());
+            // Solo los bytes: si se pasara el nombre, Tika lo usaría de pista cuando no reconoce el
+            // contenido, y cualquier binario llamado .png pasaría como imagen.
+            mimeReal = tika.detect(inicio);
         } catch (IOException ex) {
             throw new AlmacenamientoException("No se pudo leer el archivo recibido", ex);
         }

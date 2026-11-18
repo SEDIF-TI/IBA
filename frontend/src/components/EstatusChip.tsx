@@ -1,6 +1,6 @@
 import { Chip } from '@mui/material';
 
-import { colorEstatus } from '@/theme';
+import { colorEstatus, neutro } from '@/theme';
 import type { ClaveEstatus } from '@/types/dominio';
 
 interface Props {
@@ -21,7 +21,7 @@ interface Props {
  * ciertos colores tiene que poder leer en que va el tramite igual.
  */
 export function EstatusChip({ clave, nombre, color, size = 'small' }: Props) {
-  const colorFinal = color ?? colorEstatus[clave] ?? '#64748B';
+  const colorFinal = color ?? colorEstatus[clave] ?? neutro[500];
 
   return (
     <Chip

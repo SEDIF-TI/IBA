@@ -32,6 +32,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificacion } from '@/context/NotificationContext';
+import { soloDigitos } from '@/utils/validaciones';
 import { mensajeDeError } from '@/services/api';
 import { crearCatalogoService } from '@/services/catalogoService';
 import type { Catalogo, CatalogoRequest } from '@/types/dominio';
@@ -127,7 +128,7 @@ export function AdminCatalogo({ ruta, titulo, singular }: Props) {
 
     try {
       if (editando) {
-        await servicio.actualizar(editando.id, formulario);
+        await servicio.actualizar(editando.id, { ...formulario, version: editando.version });
         notificacion.exito(`Se guardaron los cambios de "${formulario.nombre}"`);
       } else {
         await servicio.crear(formulario);
@@ -386,11 +387,14 @@ export function AdminCatalogo({ ruta, titulo, singular }: Props) {
 
             <TextField
               label="Orden"
-              type="number"
-              value={formulario.orden}
-              onChange={(e) =>
-                setFormulario({ ...formulario, orden: parseInt(e.target.value, 10) || 0 })
-              }
+              value={formulario.orden ?? ''}
+              // Solo acepta digitos al escribir (nunca type="number": admite e, + y - y cambia
+              // el valor con la rueda del raton).
+              inputProps={{ inputMode: 'numeric', maxLength: 4 }}
+              onChange={(e) => {
+                const digitos = soloDigitos(e.target.value, 4);
+                setFormulario({ ...formulario, orden: digitos ? parseInt(digitos, 10) : 0 });
+              }}
               fullWidth
               margin="normal"
               helperText="Posicion en la que aparece en las listas"

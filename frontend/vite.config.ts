@@ -36,7 +36,10 @@ export default defineConfig({
         // una vez y no vuelva a bajarlas en cada despliegue.
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
-          mui: ['@mui/material', '@mui/icons-material'],
+          // Material UI y sus iconos en archivos separados: cada uno cambia con distinta frecuencia
+          // y asi ninguno pasa de 500 kB.
+          mui: ['@mui/material'],
+          'mui-iconos': ['@mui/icons-material'],
         },
       },
     },

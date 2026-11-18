@@ -8,6 +8,8 @@ export interface Catalogo {
   descripcion?: string;
   orden: number;
   activo: boolean;
+  /** Versión del registro (bloqueo optimista); se reenvía al guardar cambios. */
+  version: number;
 }
 
 /** Municipio, con su clave geoestadistica. */
@@ -38,6 +40,8 @@ export interface CatalogoRequest {
   descripcion?: string;
   orden?: number;
   activo?: boolean;
+  /** Versión que se tenía a la vista; obligatoria al modificar (bloqueo optimista). */
+  version?: number;
 }
 
 /** Situaciones por las que pasa un tramite. */
@@ -173,6 +177,8 @@ export interface Jornada {
   fechaPublicacion?: string;
   responsable?: string;
   enCurso: boolean;
+  /** Versión del registro (bloqueo optimista); se reenvía al guardar cambios. */
+  version: number;
 }
 
 /** Jornada tal como la ve la ciudadania en el portal. */
@@ -198,6 +204,8 @@ export interface JornadaRequest {
   horario?: string;
   cupo?: number;
   usuarioResponsableId?: number;
+  /** Versión que se tenía a la vista; obligatoria al modificar (bloqueo optimista). */
+  version?: number;
 }
 
 /** Avance de una jornada durante el evento. */
@@ -277,6 +285,8 @@ export interface TutorDetalle {
   colonia?: string;
   codigoPostal?: string;
   animalesACargo: number;
+  /** Versión del registro (bloqueo optimista); se reenvía al guardar cambios. */
+  version: number;
 }
 
 /** Animal empadronado. */
@@ -324,4 +334,6 @@ export interface ActualizarTutorRequest {
   numeroInterior?: string;
   colonia?: string;
   codigoPostal?: string;
+  /** Versión que se tenía a la vista; obligatoria al modificar (bloqueo optimista). */
+  version?: number;
 }

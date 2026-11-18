@@ -128,6 +128,21 @@ class DocumentoStorageServiceTest {
         }
 
         @Test
+        @DisplayName("rechaza contenido desconocido aunque la extension sea de imagen")
+        void rechazaContenidoDesconocido() {
+            // Bytes que no corresponden a ningun formato: antes, Tika tomaba la extension como
+            // pista y lo daba por imagen PNG.
+            byte[] desconocido = new byte[600];
+            new java.util.Random(7).nextBytes(desconocido);
+            desconocido[0] = 0x01;
+            var archivo = new MockMultipartFile(
+                    "documento", "foto.png", "image/png", desconocido);
+
+            assertThatThrownBy(() -> servicio.guardar(archivo))
+                    .isInstanceOf(ReglaNegocioException.class);
+        }
+
+        @Test
         @DisplayName("rechaza un guion de consola renombrado a PDF")
         void rechazaGuionDisfrazado() {
             byte[] guion = "#!/bin/bash\nrm -rf /\n".getBytes(StandardCharsets.UTF_8);

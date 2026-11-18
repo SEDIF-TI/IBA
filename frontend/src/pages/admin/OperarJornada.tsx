@@ -99,9 +99,8 @@ export function OperarJornada() {
       } finally {
         setBuscando(false);
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [jornadaId],
+    [jornadaId, notificacion],
   );
 
   // Al abrir se muestran todas las precargas: el personal necesita ver de

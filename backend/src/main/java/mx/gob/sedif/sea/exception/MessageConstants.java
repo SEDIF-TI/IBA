@@ -55,15 +55,28 @@ public final class MessageConstants {
     public static final String CUENTA_INACTIVA =
             "Esta cuenta fue dada de baja. Solicita a informática que la reactive.";
     public static final String SESION_EXPIRADA =
-            "Tu sesión expiro por inactividad. Inicia sesión de nuevo para continuar.";
+            "Tu sesión expiró por inactividad. Inicia sesión de nuevo para continuar.";
     public static final String NO_AUTORIZADO =
             "No tienes permiso para esta acción. Si necesitas hacerla, "
                     + "pide a informática que revise tus permisos.";
     public static final String TOKEN_INVALIDO =
-            "El enlace no es válido o ya expiro. Solicita uno nuevo.";
+            "El enlace no es válido o ya expiró. Solicita uno nuevo.";
+    public static final String CUERPO_ILEGIBLE =
+            "Los datos enviados no tienen el formato esperado. Recarga la página y vuelve a intentarlo.";
+    public static final String METODO_NO_ADMITIDO =
+            "Esta operación no está disponible en esa dirección.";
+    public static final String CONFLICTO_DATOS =
+            "No se pudo guardar porque choca con datos que ya existen (por ejemplo, un registro duplicado). "
+                    + "Revisa los datos y vuelve a intentarlo.";
+    public static final String EDICION_CONCURRENTE =
+            "Otra persona guardó cambios en este registro mientras lo tenías abierto. "
+                    + "Recarga la página para ver la versión actual y vuelve a hacer tu cambio.";
+    public static final String VERSION_FALTANTE =
+            "No se pudo comprobar si el registro cambió mientras lo editabas. "
+                    + "Recarga la página y vuelve a intentarlo.";
     public static final String CAMBIO_PASSWORD_REQUERIDO =
-            "Define una contraseña propia antes de continuar: la inicial viene en "
-                    + "un archivo de configuración y no puede seguir en uso.";
+            "Define una contraseña propia antes de continuar: la que recibiste es temporal "
+                    + "y no permite operar el sistema.";
 
     // ---- Limite de peticiones ----
     public static final String DEMASIADAS_PETICIONES =

@@ -2,13 +2,11 @@ package mx.gob.sedif.sea.config;
 
 import java.io.IOException;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,9 +18,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 
+import mx.gob.sedif.sea.core.auditoria.RegistroActividadFilter;
 import mx.gob.sedif.sea.security.JwtAuthFilter;
 import mx.gob.sedif.sea.security.RateLimitingFilter;
-import mx.gob.sedif.sea.security.UserDetailsServiceImpl;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -46,14 +44,14 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final RateLimitingFilter rateLimitingFilter;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final RegistroActividadFilter registroActividadFilter;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
                           RateLimitingFilter rateLimitingFilter,
-                          UserDetailsServiceImpl userDetailsService) {
+                          RegistroActividadFilter registroActividadFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.rateLimitingFilter = rateLimitingFilter;
-        this.userDetailsService = userDetailsService;
+        this.registroActividadFilter = registroActividadFilter;
     }
 
     @Bean
@@ -70,8 +68,10 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(peticiones -> peticiones
                     // ---- Publico: sin autenticacion ----
-                    // Inicio de sesion y refresco.
-                    .requestMatchers("/auth/login", "/auth/refrescar").permitAll()
+                    // Inicio de sesion, refresco y cierre: los dos ultimos solo usan la
+                    // cookie HttpOnly de refresco, que puede seguir viva aunque el token de
+                    // acceso ya haya vencido.
+                    .requestMatchers("/auth/login", "/auth/refrescar", "/auth/logout").permitAll()
                     // Portal ciudadano: alta de tramite, consulta de folio,
                     // verificacion del certificado por QR y calendario de jornadas.
                     .requestMatchers("/publico/**").permitAll()
@@ -93,8 +93,10 @@ public class SecurityConfig {
                     .frameOptions(marco -> marco.deny())
                     // Obliga a respetar el tipo declarado en lugar de adivinarlo.
                     .contentTypeOptions(tipo -> {})
+                    // X-XSS-Protection se desactiva ("0"): los navegadores actuales ya no lo
+                    // usan y en los antiguos podia abrir fugas; la proteccion real es la CSP.
                     .xssProtection(xss -> xss
-                            .headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+                            .headerValue(XXssProtectionHeaderWriter.HeaderValue.DISABLED))
                     // Exige HTTPS durante un ano, subdominios incluidos.
                     .httpStrictTransportSecurity(hsts -> hsts
                             .includeSubDomains(true)
@@ -106,12 +108,46 @@ public class SecurityConfig {
                     .referrerPolicy(referencia -> referencia
                             .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
 
-            // El limite de peticiones va primero: frena la fuerza bruta antes de
-            // gastar recursos verificando tokens o consultando la base.
+            // Orden (los tres van antes de UsernamePasswordAuthenticationFilter y se
+            // ejecutan en el orden en que se agregan):
+            // 1. Limite de peticiones: frena la fuerza bruta antes de gastar recursos.
+            // 2. Bitacora de actividad: envuelve todo lo que sigue para registrar el
+            //    usuario y el codigo final, incluidos 401, 403 y 500.
+            // 3. Autenticacion por token.
             .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(registroActividadFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * Evita que Spring Boot registre estos filtros por segunda vez como filtros de servlet.
+     * Solo deben ejecutarse dentro de la cadena de seguridad, en el orden de arriba.
+     *
+     * @param filtro filtro de la cadena de seguridad
+     * @return registro deshabilitado
+     */
+    @Bean
+    public FilterRegistrationBean<RateLimitingFilter> sinRegistroLimite(RateLimitingFilter filtro) {
+        return deshabilitado(filtro);
+    }
+
+    @Bean
+    public FilterRegistrationBean<RegistroActividadFilter> sinRegistroActividad(
+            RegistroActividadFilter filtro) {
+        return deshabilitado(filtro);
+    }
+
+    @Bean
+    public FilterRegistrationBean<JwtAuthFilter> sinRegistroJwt(JwtAuthFilter filtro) {
+        return deshabilitado(filtro);
+    }
+
+    private static <F extends jakarta.servlet.Filter> FilterRegistrationBean<F> deshabilitado(F filtro) {
+        FilterRegistrationBean<F> registro = new FilterRegistrationBean<>(filtro);
+        registro.setEnabled(false);
+        return registro;
     }
 
     /**
@@ -125,24 +161,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(12);
     }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider proveedor = new DaoAuthenticationProvider();
-        proveedor.setUserDetailsService(userDetailsService);
-        proveedor.setPasswordEncoder(passwordEncoder());
-        // Comprobar siempre la contrasena, incluso si el usuario no existe:
-        // si se omitiera, la respuesta seria mas rapida y revelaria que cuentas
-        // existen por el tiempo que tarda.
-        proveedor.setHideUserNotFoundExceptions(true);
-        return proveedor;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuracion) throws Exception {
-        return configuracion.getAuthenticationManager();
-    }
-
     /** Falta de sesion: 401 con el formato uniforme del API. */
     private void responderNoAutenticado(jakarta.servlet.http.HttpServletRequest peticion,
                                         HttpServletResponse respuesta,
@@ -153,7 +171,7 @@ public class SecurityConfig {
         respuesta.setCharacterEncoding("UTF-8");
         respuesta.getWriter().write(
                 """
-                {"success":false,"message":"La sesión expiro. Inicia sesión nuevamente."}""");
+                {"success":false,"message":"La sesión expiró. Inicia sesión nuevamente."}""");
     }
 
     /** Sesion valida pero sin permisos: 403. */
@@ -163,6 +181,6 @@ public class SecurityConfig {
         respuesta.setCharacterEncoding("UTF-8");
         respuesta.getWriter().write(
                 """
-                {"success":false,"message":"No tienes autorizacion para realizar está acción"}""");
+                {"success":false,"message":"No tienes autorización para realizar esta acción."}""");
     }
 }

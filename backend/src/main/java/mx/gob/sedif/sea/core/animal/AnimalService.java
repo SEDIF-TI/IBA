@@ -138,8 +138,8 @@ public class AnimalService {
                 .orElse(guardada);
 
         auditoria.registrar(AccionAuditoria.MODIFICAR, "titularidad", guardada.getId(),
-                "%s pasa a ser tutor de %s: %s".formatted(
-                        nuevoTutor.getNombreCompleto(), animal.getNombre(), motivo));
+                "El tutor %d pasa a ser responsable de %s: %s".formatted(
+                        nuevoTutor.getId(), animal.getNombre(), motivo));
 
         log.info("Animal {} transferido al tutor {}", animalId, nuevoTutorId);
         return guardada;

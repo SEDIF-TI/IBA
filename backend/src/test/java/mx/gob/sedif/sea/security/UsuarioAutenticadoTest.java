@@ -21,7 +21,7 @@ class UsuarioAutenticadoTest {
     @DisplayName("los roles llevan el prefijo ROLE_ y los permisos no")
     void separaRolesDePermisos() {
         UsuarioAutenticado usuario = new UsuarioAutenticado(
-                1L, "jperez", "hash", true, false, true,
+                1L, "jperez", "hash", true, false, true, 0,
                 Set.of("ADMINISTRADOR"),
                 Set.of("documento:descargar", "solicitud:aprobar"));
 
@@ -42,7 +42,7 @@ class UsuarioAutenticadoTest {
     @DisplayName("refleja el estado de la cuenta")
     void reflejaEstadoDeLaCuenta() {
         UsuarioAutenticado bloqueado = new UsuarioAutenticado(
-                1L, "jperez", "hash", true, true, false,
+                1L, "jperez", "hash", true, true, false, 0,
                 Set.of("ADMINISTRADOR"), Set.of());
 
         assertThat(bloqueado.isEnabled()).isTrue();
@@ -54,7 +54,7 @@ class UsuarioAutenticadoTest {
     @DisplayName("permite descartar el hash tras autenticar")
     void descartaElHash() {
         UsuarioAutenticado usuario = new UsuarioAutenticado(
-                1L, "jperez", "$2a$12$hash", true, false, true,
+                1L, "jperez", "$2a$12$hash", true, false, true, 0,
                 Set.of("ADMINISTRADOR"), Set.of());
 
         assertThat(usuario.getPassword()).isNotNull();

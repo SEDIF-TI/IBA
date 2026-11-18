@@ -13,7 +13,7 @@ import {
   FormControlLabel,
   IconButton,
   InputAdornment,
-  MenuItem,
+  Autocomplete,
   Stack,
   Switch,
   Table,
@@ -158,7 +158,10 @@ export function AdminUsuarios() {
     setGuardando(true);
     try {
       if (editando) {
-        const { mensaje } = await usuarioService.actualizar(editando.id, formulario);
+        const { mensaje } = await usuarioService.actualizar(editando.id, {
+          ...formulario,
+          version: editando.version,
+        });
         notificacion.exito(mensaje);
         setAbierto(false);
       } else {
@@ -487,23 +490,26 @@ export function AdminUsuarios() {
               size="small"
             />
 
-            <TextField
-              select
-              label="Rol"
-              value={formulario.rolesIds[0] ?? ''}
-              onChange={(e) =>
-                setFormulario({ ...formulario, rolesIds: [Number(e.target.value)] })
+            {/* Lista de autocompletado (regla del equipo: nunca TextField select). */}
+            <Autocomplete
+              options={roles}
+              getOptionLabel={(rol) => rol.nombre}
+              isOptionEqualToValue={(opcion, valor) => opcion.id === valor.id}
+              value={roles.find((rol) => rol.id === formulario.rolesIds[0]) ?? null}
+              onChange={(_evento, rol) =>
+                setFormulario({ ...formulario, rolesIds: rol ? [rol.id] : [] })
               }
-              helperText="Determina qué puede hacer dentro del sistema."
+              noOptionsText="No hay roles que coincidan"
               fullWidth
               size="small"
-            >
-              {roles.map((rol) => (
-                <MenuItem key={rol.id} value={rol.id}>
-                  {rol.nombre}
-                </MenuItem>
-              ))}
-            </TextField>
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Rol"
+                  helperText="Determina qué puede hacer dentro del sistema."
+                />
+              )}
+            />
           </Stack>
         </DialogContent>
         <DialogActions>

@@ -2,6 +2,7 @@ package mx.gob.sedif.sea.core.auditoria;
 
 import java.time.OffsetDateTime;
 
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -28,8 +29,13 @@ import jakarta.validation.constraints.NotBlank;
  *
  * <p>El legado no registraba nada: no habia forma de saber quien aprobo un
  * tramite ni quien consulto los datos de una persona.
+ *
+ * <p>Desde V20 también guarda cada petición al API (filtro de actividad) y es de solo inserción:
+ * un disparador en la base rechaza UPDATE, DELETE y TRUNCATE, y la entidad es inmutable para
+ * Hibernate. Área: Núcleo compartido (auditoría).
  */
 @Entity
+@Immutable
 @Table(name = "bitacora_auditoria")
 public class BitacoraAuditoria {
 
@@ -92,6 +98,64 @@ public class BitacoraAuditoria {
 
     @Column(name = "d_fecha", nullable = false, updatable = false)
     private OffsetDateTime fecha = OffsetDateTime.now();
+
+    /** Método HTTP de la petición registrada por el filtro de actividad; nulo en eventos explícitos. */
+    @Column(name = "s_metodo", length = 10)
+    private String metodo;
+
+    /** Ruta del API sin parámetros de consulta (nunca se guardan los valores buscados). */
+    @Column(name = "s_ruta", length = 300)
+    private String ruta;
+
+    @Column(name = "n_codigo_http")
+    private Short codigoHttp;
+
+    /** EXITO, RECHAZADO, DENEGADO o ERROR; nulo en eventos explícitos. */
+    @Column(name = "s_resultado", length = 20)
+    private String resultado;
+
+    @Column(name = "n_duracion_ms")
+    private Integer duracionMs;
+
+    public String getMetodo() {
+        return metodo;
+    }
+
+    public void setMetodo(String metodo) {
+        this.metodo = metodo;
+    }
+
+    public String getRuta() {
+        return ruta;
+    }
+
+    public void setRuta(String ruta) {
+        this.ruta = ruta;
+    }
+
+    public Short getCodigoHttp() {
+        return codigoHttp;
+    }
+
+    public void setCodigoHttp(Short codigoHttp) {
+        this.codigoHttp = codigoHttp;
+    }
+
+    public String getResultado() {
+        return resultado;
+    }
+
+    public void setResultado(String resultado) {
+        this.resultado = resultado;
+    }
+
+    public Integer getDuracionMs() {
+        return duracionMs;
+    }
+
+    public void setDuracionMs(Integer duracionMs) {
+        this.duracionMs = duracionMs;
+    }
 
     public Long getId() {
         return id;

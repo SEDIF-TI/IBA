@@ -25,18 +25,24 @@ cd sea
 cp .env.example .env
 ```
 
-### 2. Generar el secreto JWT
+### 2. Generar los secretos
 
-El arranque **falla a propósito** si el secreto es corto, de baja entropía o si
-sigue siendo el valor de ejemplo. Genera uno real:
+Cada secreto se genera; ninguno se reutiliza ni se deja con el valor de ejemplo:
 
-```bash
-# Bash
-openssl rand -base64 64
-```
+| Variable de `.env` | Comando |
+|---|---|
+| `APP_JWT_SECRET` | `openssl rand -base64 64` |
+| `POSTGRES_PASSWORD`, `DB_OWNER_PASSWORD`, `DB_APP_PASSWORD` | `openssl rand -base64 24` (una distinta cada una) |
+| `APP_ADMIN_PASSWORD` | `openssl rand -base64 18` (mínimo 12 caracteres) |
+| `RESPALDO_CLAVE` | `openssl rand -base64 32` |
 
-Pega el resultado en `APP_JWT_SECRET` dentro de `.env`. Cambia también
-`POSTGRES_PASSWORD` y `APP_ADMIN_PASSWORD`.
+El arranque **falla a propósito** si `APP_JWT_SECRET` es corto, de baja entropía
+o sigue siendo el valor de ejemplo.
+
+La aplicación nunca se conecta a la base como superusuario: en el primer
+arranque, `deploy/db/init/01-roles.sh` crea la cuenta dueña del esquema (la usa
+Flyway) y la cuenta de la aplicación (solo lee y escribe datos). Ver
+`deploy/README.md`.
 
 ### 3. Levantar
 
@@ -53,6 +59,26 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 
 > El puerto **5433** es intencional: evita chocar con un PostgreSQL instalado
 > directamente en la máquina, que ocupa el 5432.
+>
+> Si otro proyecto ya ocupa esos puertos, se cambian solo para esa ejecución:
+> `FRONTEND_PORT_HOST=8088 BACKEND_PORT_HOST=8089 POSTGRES_PORT_HOST=5434 docker compose ...`
+
+### Pruebas y revisión de código
+
+```bash
+# Bash — desde la raíz del proyecto
+./backend/mvnw -f backend/pom.xml test     # unitarias + integracion (requiere Docker encendido)
+cd frontend && npm run lint                # ESLint, 0 errores y 0 advertencias
+cd frontend && npm run build               # tipos de TypeScript + compilacion de Vite
+```
+
+Las pruebas de integración levantan un PostgreSQL real con Testcontainers,
+ejecutan el mismo script de cuentas de `deploy/db/init/` y generan al arrancar
+sus propias contraseñas y su secreto JWT: no hay secretos escritos en el código.
+
+> Si el editor (extensión de Java de VS Code) compila al mismo tiempo en
+> `backend/target`, Maven puede fallar con `NoClassDefFoundError`. Se resuelve
+> con `./backend/mvnw -f backend/pom.xml clean test`.
 
 ### 4. Recorrer el sistema
 
@@ -142,7 +168,23 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
 No publica puertos: el acceso entra por el reverse proxy (NPM) conectado a la
-red externa definida en `PROXY_NETWORK`.
+red externa definida en `PROXY_NETWORK`. Instalación, actualización, IP real del
+cliente, respaldos y restauración: `deploy/README.md`.
+
+### Actualizar imágenes base
+
+Las imágenes de los `Dockerfile` y de `docker-compose.yml` van fijadas por
+digest (`imagen:etiqueta@sha256:...`): la etiqueta puede cambiar de contenido,
+el digest no. Para actualizar una:
+
+```bash
+# Bash
+docker pull nginx:1.27-alpine
+docker image inspect --format '{{index .RepoDigests 0}}' nginx:1.27-alpine
+```
+
+Se copia el digest nuevo al archivo correspondiente, se reconstruye y se corren
+las pruebas.
 
 ---
 
@@ -150,7 +192,7 @@ red externa definida en `PROXY_NETWORK`.
 
 | Capa           | Tecnología                                   |
 |----------------|----------------------------------------------|
-| Backend        | Java 21 + Spring Boot 3.x (Maven)            |
+| Backend        | Java 21 + Spring Boot 3.5 (Maven)            |
 | Persistencia   | Spring Data JPA / Hibernate + PostgreSQL 16  |
 | Migraciones    | Flyway (SQL versionado)                      |
 | Seguridad      | Spring Security + JWT                        |
@@ -199,9 +241,42 @@ En el frontend, ningún componente o página llama a `axios` directamente:
   verificador público.
 - Cada consulta por CURP queda registrada en `bitacora_auditoria`.
 - Sin credenciales en el repositorio: todo por variables de entorno.
+- **Sesión:** token de acceso de 1 hora solo en memoria del navegador; token de
+  renovación de 7 días en cookie `HttpOnly`, `Secure` y `SameSite=Strict` (prod),
+  que rota en cada uso. Reutilizar uno ya usado cierra la sesión. Cerrar sesión,
+  cambiar o reiniciar la contraseña y dar de baja la cuenta invalidan los tokens
+  al instante (tabla `sesion_usuario` y columna `usuario.n_token_version`).
+- **Contraseña temporal:** la genera el sistema, se muestra una vez y, mientras no
+  se cambie, el servidor solo permite cambiarla (403 en todo lo demás).
+- **Límite de peticiones** por IP y ruta en login, renovación y portal público.
+  La IP real la resuelve `IpRealFilter`, que solo cree a los proxies de
+  `APP_PROXIES_CONFIABLES`.
+- **Bitácora de todos los movimientos:** cada petición al API (consultas, altas,
+  ediciones, bajas, accesos denegados y errores) más los eventos de sesión, con
+  usuario, IP, navegador y resultado. Es de solo inserción (disparador en la
+  base) y solo la consulta informática (`bitacora:ver`). De una búsqueda se
+  guardan los nombres de los filtros, nunca los valores.
+- **Edición concurrente:** toda tabla editable lleva `n_version`; guardar con una
+  versión vieja responde 409 en lugar de pisar el cambio de otra persona.
 
 ### Commits
 En español, formato convencional: `feat:`, `fix:`, `refactor:`, `docs:`.
+
+---
+
+## Desviaciones del estándar
+
+Diferencias con `ESTANDAR-DESARROLLO-Y-REVISION.md` (v1.1), justificadas:
+
+| Desviación | Motivo |
+|---|---|
+| Spring Boot 3.5 en lugar de 4.x | Proyecto existente; el estándar admite versiones anteriores documentadas. La migración a 4.x (Jackson 3, Hibernate 7, Spring Security 7) se hará como trabajo aparte, con su propia ronda de pruebas. |
+| Frontend en TypeScript (`.tsx`) en lugar de JavaScript | Da revisión de tipos en compilación; no cambia la estructura de carpetas del estándar. |
+| CSP con `style-src 'unsafe-inline'` | Material UI (Emotion) inserta estilos en tiempo de ejecución. Los scripts no llevan `unsafe-inline` y no se carga nada de dominios externos. |
+| Datos personales sin cifrar en la base | Decisión del responsable del proyecto (17-11-2026). Se compensa con acceso restringido por permiso, enmascarado en listados, bitácora de cada consulta y respaldos cifrados. |
+| Sin alcance jerárquico de datos | Decisión del responsable (17-11-2026): todo el personal ve el padrón estatal completo. Los permisos por rol sí se validan en cada endpoint. |
+| IP real con un filtro propio (`IpRealFilter`) y no con `server.forward-headers-strategy` | `framework` cree el primer valor de `X-Forwarded-For` (lo escribe el cliente) y `native` confía en todas las redes privadas. El filtro solo cree a las subredes de `APP_PROXIES_CONFIABLES`. |
+| La bitácora no guarda las respuestas 429 ni las rutas `/auth/**` del filtro de actividad | Registrar cada 429 convertiría un ataque en miles de escrituras; los eventos de `/auth` se registran de forma explícita y más precisa (con número de intento y motivo). |
 
 ---
 

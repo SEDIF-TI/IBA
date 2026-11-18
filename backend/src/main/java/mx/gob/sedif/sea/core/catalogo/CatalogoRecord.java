@@ -12,6 +12,7 @@ package mx.gob.sedif.sea.core.catalogo;
  * @param descripcion detalle opcional
  * @param orden       posicion en la que se despliega
  * @param activo      si sigue disponible para elegirse
+ * @param version  versión del registro para el bloqueo optimista
  */
 public record CatalogoRecord(
         Integer id,
@@ -19,7 +20,8 @@ public record CatalogoRecord(
         String nombre,
         String descripcion,
         Integer orden,
-        Boolean activo) {
+        Boolean activo,
+        Long version) {
 
     public static CatalogoRecord de(CatalogoBase catalogo) {
         return new CatalogoRecord(
@@ -28,6 +30,7 @@ public record CatalogoRecord(
                 catalogo.getNombre(),
                 catalogo.getDescripcion(),
                 catalogo.getOrden(),
-                catalogo.getActivo());
+                catalogo.getActivo(),
+                catalogo.getVersion());
     }
 }

@@ -9,6 +9,7 @@ package mx.gob.sedif.sea.core.catalogo;
  * @param claveInegi  clave INEGI de cinco dígitos
  * @param orden       posicion de despliegue
  * @param activo      si sigue disponible
+ * @param version  versión del registro para el bloqueo optimista
  */
 public record MunicipioRecord(
         Integer id,
@@ -16,7 +17,8 @@ public record MunicipioRecord(
         String nombre,
         String claveInegi,
         Integer orden,
-        Boolean activo) {
+        Boolean activo,
+        Long version) {
 
     public static MunicipioRecord de(Municipio municipio) {
         return new MunicipioRecord(
@@ -25,6 +27,7 @@ public record MunicipioRecord(
                 municipio.getNombre(),
                 municipio.getClaveInegi(),
                 municipio.getOrden(),
-                municipio.getActivo());
+                municipio.getActivo(),
+                municipio.getVersion());
     }
 }

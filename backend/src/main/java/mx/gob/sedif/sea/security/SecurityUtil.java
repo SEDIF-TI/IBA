@@ -49,22 +49,21 @@ public final class SecurityUtil {
     }
 
     /**
-     * Direccion desde la que llega la peticion.
+     * Dirección IP real del cliente.
      *
-     * <p>Detras del proxy inverso la direccion real viaja en X-Forwarded-For;
-     * se toma la primera de la lista, que es la del cliente. Sin esto, todas
-     * las peticiones parecerian venir del proxy y tanto la evidencia de
-     * consentimiento como el limite por direccion quedarian inservibles.
+     * <p>Nunca se leen a mano las cabeceras {@code X-Forwarded-For} o {@code X-Real-IP}: su primer
+     * valor lo escribe el propio cliente y bastaría con inventarlo para saltarse el límite de
+     * peticiones y falsear la IP de la bitácora y del consentimiento.
+     *
+     * <p>La traducción la hace {@link IpRealFilter} antes que cualquier otro filtro: recorre
+     * {@code X-Forwarded-For} de derecha a izquierda, salta solo los proxies de confianza
+     * ({@code app.proxies-confiables}) y deja en {@code getRemoteAddr()} la primera dirección que no
+     * es de confianza, que es la que anotó el primer proxy al recibir la conexión.
+     *
+     * @param peticion petición en curso
+     * @return la IP del cliente; nunca nula dentro de una petición HTTP
      */
     public static String obtenerIpCliente(HttpServletRequest peticion) {
-        String reenviada = peticion.getHeader("X-Forwarded-For");
-        if (reenviada != null && !reenviada.isBlank()) {
-            return reenviada.split(",")[0].trim();
-        }
-        String ipReal = peticion.getHeader("X-Real-IP");
-        if (ipReal != null && !ipReal.isBlank()) {
-            return ipReal.trim();
-        }
         return peticion.getRemoteAddr();
     }
 

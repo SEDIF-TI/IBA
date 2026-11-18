@@ -83,7 +83,7 @@ public class DocumentoResource {
 
     /** Adjunta un archivo a un tramite. */
     @PostMapping("/solicitud/{solicitudId}")
-    @PreAuthorize("hasAuthority('documento:ver')")
+    @PreAuthorize("hasAuthority('documento:subir')")
     public ResponseEntity<ApiResponse<DocumentoRecord>> adjuntar(
             @PathVariable Long solicitudId,
             @RequestParam Integer tipoDocumentoId,

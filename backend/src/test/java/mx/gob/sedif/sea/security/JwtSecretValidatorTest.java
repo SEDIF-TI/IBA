@@ -18,9 +18,14 @@ import org.junit.jupiter.params.provider.ValueSource;
  */
 class JwtSecretValidatorTest {
 
-    /** Secreto realista, del estilo que produce openssl rand -base64 64. */
-    private static final String SECRETO_VALIDO =
-            "K7f2Bq9xZmW4tR8vL3nH6yJ1cP5dS0aE9gU2iO7kX4wQ8zM1bN6rT3hV5jY0lD2f";
+    /** Secreto aleatorio generado en cada ejecución, del estilo de openssl rand -base64 48. */
+    private static final String SECRETO_VALIDO = secretoAleatorio();
+
+    private static String secretoAleatorio() {
+        byte[] bytes = new byte[48];
+        new java.security.SecureRandom().nextBytes(bytes);
+        return java.util.Base64.getEncoder().encodeToString(bytes);
+    }
 
     @Test
     @DisplayName("acepta un secreto aleatorio de longitud suficiente")

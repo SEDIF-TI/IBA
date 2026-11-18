@@ -2,7 +2,9 @@ package mx.gob.sedif.sea.security.admin;
 
 import java.security.SecureRandom;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -17,11 +19,13 @@ import mx.gob.sedif.sea.core.auditoria.AccionAuditoria;
 import mx.gob.sedif.sea.core.auditoria.AuditoriaService;
 import mx.gob.sedif.sea.core.catalogo.Sede;
 import mx.gob.sedif.sea.core.catalogo.SedeRepository;
+import mx.gob.sedif.sea.exception.EdicionConcurrenteException;
 import mx.gob.sedif.sea.exception.RecursoNoEncontradoException;
 import mx.gob.sedif.sea.exception.ReglaNegocioException;
 import mx.gob.sedif.sea.security.Rol;
 import mx.gob.sedif.sea.security.RolRepository;
 import mx.gob.sedif.sea.security.SecurityUtil;
+import mx.gob.sedif.sea.security.sesion.SesionService;
 import mx.gob.sedif.sea.security.Usuario;
 import mx.gob.sedif.sea.security.UsuarioRepository;
 
@@ -51,18 +55,21 @@ public class UsuarioAdminService {
     private final SedeRepository sedeRepository;
     private final PasswordEncoder codificador;
     private final AuditoriaService auditoria;
+    private final SesionService sesionService;
     private final SecureRandom azar = new SecureRandom();
 
     public UsuarioAdminService(UsuarioRepository usuarioRepository,
                                RolRepository rolRepository,
                                SedeRepository sedeRepository,
                                PasswordEncoder codificador,
-                               AuditoriaService auditoria) {
+                               AuditoriaService auditoria,
+                               SesionService sesionService) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.sedeRepository = sedeRepository;
         this.codificador = codificador;
         this.auditoria = auditoria;
+        this.sesionService = sesionService;
     }
 
     /** Listado del personal, con o sin las cuentas dadas de baja. */
@@ -132,6 +139,7 @@ public class UsuarioAdminService {
     @Transactional
     public Usuario actualizar(Long id, GuardarUsuarioRequest peticion) {
         Usuario usuario = obtener(id);
+        EdicionConcurrenteException.verificar(usuario.getVersion(), peticion.version());
 
         String correo = peticion.correo().trim().toLowerCase();
         usuarioRepository.findByCorreoIgnoreCase(correo)
@@ -142,14 +150,16 @@ public class UsuarioAdminService {
                                     correo, otro.getUsuario()));
                 });
 
+        Map<String, Object> antes = instantanea(usuario);
         usuario.setCorreo(correo);
         aplicarDatos(usuario, peticion);
 
         Usuario guardado = usuarioRepository.saveAndFlush(usuario);
 
-        auditoria.registrar(AccionAuditoria.MODIFICAR, "usuario", guardado.getId(),
+        auditoria.registrarCambio(AccionAuditoria.MODIFICAR, "usuario", guardado.getId(),
                 "Cambio de datos de la cuenta '%s'. Roles: %s".formatted(
-                        guardado.getUsuario(), nombresDeRoles(guardado)));
+                        guardado.getUsuario(), nombresDeRoles(guardado)),
+                antes, instantanea(guardado));
 
         return guardado;
     }
@@ -159,6 +169,13 @@ public class UsuarioAdminService {
      *
      * <p>Es el camino cuando alguien la olvida: no se puede recuperar la
      * anterior porque no se guarda, solo su huella.
+     *
+     * <p>Cierra todas las sesiones abiertas de la cuenta: si la contraseña se reinicia porque
+     * alguien más la conocía, esa persona queda fuera de inmediato.
+     *
+     * @param id identificador de la cuenta
+     * @return la cuenta y su contraseña temporal nueva, que solo se muestra una vez
+     * @throws RecursoNoEncontradoException si la cuenta no existe
      */
     @Transactional
     public ResultadoAlta reiniciarPassword(Long id) {
@@ -170,11 +187,13 @@ public class UsuarioAdminService {
         // Se libera el bloqueo: la contrasena vieja ya no sirve.
         usuario.setIntentosFallidos(0);
         usuario.setBloqueoHasta(null);
+        int cerradas = sesionService.revocarTodas(usuario, SesionService.MOTIVO_REINICIO_PASSWORD);
 
         Usuario guardado = usuarioRepository.saveAndFlush(usuario);
 
         auditoria.registrar(AccionAuditoria.CAMBIO_PASSWORD, "usuario", guardado.getId(),
-                "Se reinicio la contrasena de la cuenta '%s'".formatted(guardado.getUsuario()));
+                "Se reinició la contraseña de la cuenta '%s' y se cerraron %d sesión(es)"
+                        .formatted(guardado.getUsuario(), cerradas));
 
         return new ResultadoAlta(guardado, temporal);
     }
@@ -208,6 +227,9 @@ public class UsuarioAdminService {
         if (activa) {
             usuario.setIntentosFallidos(0);
             usuario.setBloqueoHasta(null);
+        } else {
+            // La baja surte efecto en la siguiente petición en todos sus dispositivos.
+            sesionService.revocarTodas(usuario, SesionService.MOTIVO_BAJA);
         }
 
         Usuario guardado = usuarioRepository.saveAndFlush(usuario);
@@ -272,6 +294,24 @@ public class UsuarioAdminService {
                     .orElseThrow(() -> new RecursoNoEncontradoException("Rol", rolId)));
         }
         usuario.setRoles(roles);
+    }
+
+    /**
+     * Datos de la cuenta que se guardan en la bitácora antes y después de editarla. Es información
+     * laboral del personal (nombre, correo institucional, sede y roles); el teléfono no se incluye.
+     *
+     * @param usuario cuenta a describir
+     * @return campos editables, en orden fijo
+     */
+    private Map<String, Object> instantanea(Usuario usuario) {
+        Map<String, Object> valores = new LinkedHashMap<>();
+        valores.put("nombre", usuario.getNombre());
+        valores.put("apellidoPaterno", usuario.getApellidoPaterno());
+        valores.put("apellidoMaterno", usuario.getApellidoMaterno());
+        valores.put("correo", usuario.getCorreo());
+        valores.put("sede", usuario.getSede() == null ? null : usuario.getSede().getNombre());
+        valores.put("roles", nombresDeRoles(usuario));
+        return valores;
     }
 
     /** Comprueba que no se quede el sistema sin quien administre. */

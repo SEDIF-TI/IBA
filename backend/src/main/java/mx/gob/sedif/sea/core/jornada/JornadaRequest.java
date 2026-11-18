@@ -19,6 +19,8 @@ import jakarta.validation.constraints.Size;
  * @param horario              horario de atencion
  * @param cupo                 limite de personas; nulo si no lo tiene
  * @param usuarioResponsableId quien coordina la jornada
+ * @param version  versión del registro para el bloqueo optimista; obligatoria al modificar y
+ *                 debe ser la que la persona tenía a la vista
  */
 public record JornadaRequest(
         @NotBlank(message = "Escribe el nombre de la jornada")
@@ -48,5 +50,8 @@ public record JornadaRequest(
         @Positive(message = "El cupo debe ser mayor que cero. Dejalo vacío si no hay limite.")
         Integer cupo,
 
-        Long usuarioResponsableId) {
+        Long usuarioResponsableId,
+
+        // Versión que la persona tenía a la vista; obligatoria al modificar (bloqueo optimista).
+        Long version) {
 }

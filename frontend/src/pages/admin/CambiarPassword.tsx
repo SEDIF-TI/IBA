@@ -37,7 +37,7 @@ export function CambiarPassword() {
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
-  const { sesion, marcarPasswordCambiada } = useAuth();
+  const { sesion, reemplazarSesion } = useAuth();
   const notificacion = useNotificacion();
   const navegar = useNavigate();
 
@@ -51,10 +51,13 @@ export function CambiarPassword() {
     setEnviando(true);
 
     try {
-      await authService.cambiarPassword({ passwordActual: actual, passwordNueva: nueva });
-      marcarPasswordCambiada();
+      const nuevaSesion = await authService.cambiarPassword({
+        passwordActual: actual,
+        passwordNueva: nueva,
+      });
+      reemplazarSesion(nuevaSesion);
       notificacion.exito(
-        'Tu contraseña quedó actualizada. Úsala la próxima vez que entres.',
+        'Tu contraseña quedó actualizada. Se cerró la sesión en tus otros dispositivos.',
       );
       navegar('/admin', { replace: true });
     } catch (fallo) {

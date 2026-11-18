@@ -4,7 +4,7 @@ import {
   Box,
   Button,
   CircularProgress,
-  MenuItem,
+  Autocomplete,
   Stack,
   TextField,
   Typography,
@@ -102,24 +102,22 @@ export function CargaDocumento({ tipos, alSubir, ayuda, deshabilitado = false }:
       )}
 
       <Stack spacing={2}>
-        <TextField
-          select
-          label="¿Qué documento es?"
-          value={tipoId || ''}
-          onChange={(e) => {
-            setTipoId(Number(e.target.value));
+        {/* Lista de autocompletado (regla del equipo: nunca TextField select). */}
+        <Autocomplete
+          options={tipos}
+          getOptionLabel={(tipo) => tipo.nombre}
+          isOptionEqualToValue={(opcion, valor) => opcion.id === valor.id}
+          value={tipos.find((tipo) => tipo.id === tipoId) ?? null}
+          onChange={(_evento, tipo) => {
+            setTipoId(tipo ? tipo.id : 0);
             setError('');
           }}
           disabled={deshabilitado || subiendo}
+          noOptionsText="No hay documentos que coincidan"
           fullWidth
           size="small"
-        >
-          {tipos.map((tipo) => (
-            <MenuItem key={tipo.id} value={tipo.id}>
-              {tipo.nombre}
-            </MenuItem>
-          ))}
-        </TextField>
+          renderInput={(params) => <TextField {...params} label="¿Qué documento es?" />}
+        />
 
         <Button
           component="label"

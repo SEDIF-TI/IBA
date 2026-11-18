@@ -19,6 +19,7 @@ import java.time.OffsetDateTime;
  * @param publicada      si aparece en el portal
  * @param responsable    quien la coordina
  * @param enCurso        si se esta celebrando hoy
+ * @param version  versión del registro para el bloqueo optimista
  */
 public record JornadaRecord(
         Long id,
@@ -34,7 +35,8 @@ public record JornadaRecord(
         Boolean publicada,
         OffsetDateTime fechaPublicacion,
         String responsable,
-        boolean enCurso) {
+        boolean enCurso,
+        Long version) {
 
     public static JornadaRecord de(Jornada jornada) {
         return new JornadaRecord(
@@ -52,6 +54,7 @@ public record JornadaRecord(
                 jornada.getFechaPublicacion(),
                 jornada.getUsuarioResponsable() == null
                         ? null : jornada.getUsuarioResponsable().getNombreCompleto(),
-                jornada.estaEnCurso());
+                jornada.estaEnCurso(),
+                jornada.getVersion());
     }
 }

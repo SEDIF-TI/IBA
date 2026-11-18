@@ -96,6 +96,13 @@ public class Usuario extends Auditable {
     @Column(name = "d_bloqueo_hasta")
     private OffsetDateTime bloqueoHasta;
 
+    /**
+     * Versión de los tokens de la cuenta. Viaja en cada token; subirla invalida de inmediato todas
+     * las sesiones abiertas (cambio o reinicio de contraseña, baja de la cuenta).
+     */
+    @Column(name = "n_token_version", nullable = false)
+    private Integer tokenVersion = 0;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "usuario_rol",
@@ -229,6 +236,15 @@ public class Usuario extends Auditable {
 
     public void setBloqueoHasta(OffsetDateTime bloqueoHasta) {
         this.bloqueoHasta = bloqueoHasta;
+    }
+
+    public Integer getTokenVersion() {
+        return tokenVersion;
+    }
+
+    /** Invalida todos los tokens emitidos hasta ahora para esta cuenta. */
+    public void incrementarTokenVersion() {
+        this.tokenVersion = (tokenVersion == null ? 0 : tokenVersion) + 1;
     }
 
     public Set<Rol> getRoles() {

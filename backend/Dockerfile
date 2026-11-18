@@ -5,7 +5,9 @@
 # =============================================================================
 
 # ---------- Etapa 1: build ----------
-FROM maven:3.9-eclipse-temurin-21 AS build
+# Imagen fijada por digest (huella del contenido): la etiqueta puede moverse, el digest no.
+# Para actualizar: docker pull <imagen:etiqueta> y copiar el nuevo digest (ver README).
+FROM maven:3.9-eclipse-temurin-21@sha256:d7e7f57407437c014571f1ad5a9955f03fc3edcb1d964067ef351fa38e798665 AS build
 WORKDIR /build
 
 # Se copia primero el pom solo: si no cambian las dependencias, Docker reutiliza
@@ -17,7 +19,7 @@ COPY src ./src
 RUN mvn -B clean package -DskipTests
 
 # ---------- Etapa 2: runtime ----------
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-alpine@sha256:3f08b13888f595cc49edabea7250ba69499ba25602b267da591720769400e08c
 WORKDIR /app
 
 # wget para el healthcheck del compose; tzdata para America/Mexico_City.

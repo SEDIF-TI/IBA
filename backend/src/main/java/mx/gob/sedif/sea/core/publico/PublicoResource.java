@@ -162,21 +162,20 @@ public class PublicoResource {
     }
 
     /**
-     * Consulta del avance del tramite.
+     * {@code POST /api/publico/consulta} — público, con límite de peticiones por IP.
+     * Consulta del avance del trámite.
      *
-     * <p>Exige folio Y CURP. Nunca solo la CURP: quien conociera la de un
-     * tercero podria ver sus datos.
+     * <p>Exige folio Y CURP. Nunca solo la CURP: quien conociera la de un tercero podría ver sus
+     * datos. Ambos viajan en el cuerpo, no en la dirección.
+     *
+     * @param peticion folio y CURP
+     * @return 200 con el seguimiento; 404 si no hay un trámite con ese folio y esa CURP
      */
-    @GetMapping("/consulta")
+    @PostMapping("/consulta")
     public ResponseEntity<mx.gob.sedif.sea.exception.ApiResponse<SeguimientoRecord>> consultar(
-            @RequestParam @NotBlank(message = "Escribe tu folio de seguimiento, "
-                    + "el que aparece en tu acuse (por ejemplo SOL-20260101-00001).")
-            String folio,
-            @RequestParam @NotBlank(message = "Escribe la CURP con la que se hizo el registro: "
-                    + "se piden ambos datos para que nadie más pueda consultar tu trámite.")
-            String curp) {
+            @Valid @RequestBody ConsultaPublicaRequest peticion) {
 
-        Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
+        Solicitud solicitud = solicitudService.consultarPublica(peticion.folio(), peticion.curp());
         return ResponseEntity.ok(mx.gob.sedif.sea.exception.ApiResponse.ok(
                 SeguimientoRecord.de(solicitud)));
     }
@@ -296,21 +295,19 @@ public class PublicoResource {
     }
 
     /**
-     * Descarga el acuse del tramite.
+     * {@code POST /api/publico/acuse} — público, con límite de peticiones por IP.
+     * Descarga el acuse del trámite en PDF.
      *
-     * <p>Exige folio y CURP, igual que la consulta: el acuse lleva datos
-     * personales y no puede quedar al alcance de quien solo conozca el folio.
+     * <p>Exige folio y CURP, igual que la consulta: el acuse lleva datos personales y no puede
+     * quedar al alcance de quien solo conozca el folio.
+     *
+     * @param peticion folio y CURP
+     * @return 200 con el PDF; 404 si no hay un trámite con ese folio y esa CURP
      */
-    @GetMapping("/acuse")
-    public ResponseEntity<byte[]> descargarAcuse(
-            @RequestParam @NotBlank(message = "Escribe tu folio de seguimiento, "
-                    + "el que aparece en tu acuse (por ejemplo SOL-20260101-00001).")
-            String folio,
-            @RequestParam @NotBlank(message = "Escribe la CURP con la que se hizo el registro: "
-                    + "se piden ambos datos para que nadie más pueda consultar tu trámite.")
-            String curp) {
+    @PostMapping("/acuse")
+    public ResponseEntity<byte[]> descargarAcuse(@Valid @RequestBody ConsultaPublicaRequest peticion) {
 
-        Solicitud solicitud = solicitudService.consultarPublica(folio, curp);
+        Solicitud solicitud = solicitudService.consultarPublica(peticion.folio(), peticion.curp());
         byte[] pdf = acusePdfService.generar(solicitud);
 
         org.springframework.http.ContentDisposition disposicion =

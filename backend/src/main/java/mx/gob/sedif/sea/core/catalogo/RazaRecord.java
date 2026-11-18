@@ -10,6 +10,7 @@ package mx.gob.sedif.sea.core.catalogo;
  * @param especieNombre nombre de la especie, para mostrar
  * @param orden         posicion de despliegue
  * @param activo        si sigue disponible
+ * @param version  versión del registro para el bloqueo optimista
  */
 public record RazaRecord(
         Integer id,
@@ -18,7 +19,8 @@ public record RazaRecord(
         Integer especieId,
         String especieNombre,
         Integer orden,
-        Boolean activo) {
+        Boolean activo,
+        Long version) {
 
     public static RazaRecord de(Raza raza) {
         return new RazaRecord(
@@ -28,6 +30,7 @@ public record RazaRecord(
                 raza.getEspecie() == null ? null : raza.getEspecie().getId(),
                 raza.getEspecie() == null ? null : raza.getEspecie().getNombre(),
                 raza.getOrden(),
-                raza.getActivo());
+                raza.getActivo(),
+                raza.getVersion());
     }
 }

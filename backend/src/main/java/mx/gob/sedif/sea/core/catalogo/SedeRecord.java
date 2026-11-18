@@ -16,6 +16,7 @@ package mx.gob.sedif.sea.core.catalogo;
  * @param telefono        telefono de contacto
  * @param correo          correo de contacto
  * @param activo          si sigue disponible
+ * @param version  versión del registro para el bloqueo optimista
  */
 public record SedeRecord(
         Integer id,
@@ -27,7 +28,8 @@ public record SedeRecord(
         String horario,
         String telefono,
         String correo,
-        Boolean activo) {
+        Boolean activo,
+        Long version) {
 
     public static SedeRecord de(Sede sede) {
         return new SedeRecord(
@@ -40,6 +42,7 @@ public record SedeRecord(
                 sede.getHorario(),
                 sede.getTelefono(),
                 sede.getCorreo(),
-                sede.getActivo());
+                sede.getActivo(),
+                sede.getVersion());
     }
 }

@@ -18,16 +18,19 @@ import mx.gob.sedif.sea.exception.MessageConstants;
 import mx.gob.sedif.sea.security.JwtTokenProvider;
 import mx.gob.sedif.sea.security.SecurityUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 /**
  * Acceso al panel administrativo.
+ * Área: Núcleo compartido (seguridad). Lógica: inicio, renovación y cierre de sesión.
  *
- * <p>Solo el personal se autentica: la ciudadania usa el portal publico sin
- * cuenta.
+ * <p>Solo el personal se autentica: la ciudadanía usa el portal público sin cuenta. Es el único
+ * controlador con sufijo Controller, por la convención del estándar del equipo.
  *
- * <p>Es el unico controlador que conserva el sufijo Controller, por la
- * convencion heredada del proyecto base; el resto usa Resource.
+ * <p>El token de acceso viaja en el cuerpo y el frontend lo guarda solo en memoria; el de refresco
+ * viaja en una cookie {@code HttpOnly} (JavaScript no puede leerla), {@code Secure} y
+ * {@code SameSite=Strict} en producción, acotada a {@code /api/auth}, y se reemplaza en cada uso.
  */
 @RestController
 @RequestMapping("/auth")
@@ -52,93 +55,100 @@ public class AuthController {
     }
 
     /**
-     * Inicia sesion.
+     * {@code POST /api/auth/login} — público, con límite de peticiones por IP.
      *
-     * <p>El token de acceso va en el cuerpo; el de refresco, en una cookie
-     * HttpOnly que JavaScript no puede leer.
+     * @param peticion usuario y contraseña
+     * @param http     petición, para la IP y el navegador de la sesión
+     * @return 200 con el token de acceso y la cookie de refresco; 401 si las credenciales no son
+     *         correctas; 423 si la cuenta está bloqueada
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<JwtResponse>> iniciarSesion(
-            @Valid @RequestBody LoginRequest peticion) {
+            @Valid @RequestBody LoginRequest peticion, HttpServletRequest http) {
 
-        AuthService.ResultadoAutenticacion resultado = authService.autenticar(peticion);
+        AuthService.ResultadoAutenticacion resultado = authService.autenticar(
+                peticion, SecurityUtil.obtenerIpCliente(http), SecurityUtil.obtenerUserAgent(http));
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE,
-                        construirCookieRefresco(resultado.tokenRefresco()).toString())
-                .body(ApiResponse.ok(resultado.respuesta(), "Sesión iniciada correctamente"));
+        return conCookie(resultado, "Sesión iniciada correctamente");
     }
 
     /**
-     * Emite un token de acceso nuevo a partir de la cookie de refresco.
+     * {@code POST /api/auth/refrescar} — público (solo necesita la cookie), con límite por IP.
+     * Rota la cookie: el token de refresco recibido deja de servir.
      *
-     * <p>Los permisos se releen de la base, de modo que revocar uno surte
-     * efecto en el siguiente refresco.
+     * @param tokenRefresco valor de la cookie {@code sea_refresh}; puede faltar
+     * @return 200 con un token de acceso nuevo y la cookie nueva; 401 si la sesión ya no es válida
      */
     @PostMapping("/refrescar")
     public ResponseEntity<ApiResponse<JwtResponse>> refrescar(
             @CookieValue(name = COOKIE_REFRESCO, required = false) String tokenRefresco) {
 
-        JwtResponse respuesta = authService.refrescar(tokenRefresco);
-        return ResponseEntity.ok(ApiResponse.ok(respuesta, "Sesión renovada"));
+        return conCookie(authService.refrescar(tokenRefresco), "Sesión renovada");
     }
 
     /**
-     * Cierra la sesion.
+     * {@code POST /api/auth/logout} — público (solo necesita la cookie). Cierra la sesión en el
+     * servidor, con lo que el token de refresco y el de acceso de esa sesión dejan de servir, y vacía
+     * la cookie.
      *
-     * <p>Vacia la cookie de refresco. El token de acceso sigue siendo valido
-     * hasta que expira, por su propia naturaleza; por eso dura poco.
+     * @param tokenRefresco valor de la cookie {@code sea_refresh}; puede faltar
+     * @return siempre 200
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> cerrarSesion() {
-        ResponseCookie cookieVacia = ResponseCookie.from(COOKIE_REFRESCO, "")
-                .httpOnly(true)
-                .secure(cookieSegura)
-                .sameSite(cookieSameSite)
-                .path("/api/auth")
-                .maxAge(0)
-                .build();
+    public ResponseEntity<ApiResponse<Void>> cerrarSesion(
+            @CookieValue(name = COOKIE_REFRESCO, required = false) String tokenRefresco) {
+
+        authService.cerrarSesion(tokenRefresco);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookieVacia.toString())
+                .header(HttpHeaders.SET_COOKIE, cookie("", Duration.ZERO).toString())
                 .body(ApiResponse.ok("Sesión cerrada correctamente"));
     }
 
     /**
-     * Cambia la contrasena de quien esta en sesion.
+     * {@code POST /api/auth/cambiar-password} — requiere sesión; es la única operación permitida
+     * mientras la contraseña temporal no se haya cambiado. Cierra las demás sesiones de la cuenta y
+     * devuelve tokens nuevos para este dispositivo.
      *
-     * <p>Es el paso que el usuario inicial debe completar antes de operar.
+     * @param peticion contraseña actual y nueva
+     * @param http     petición, para la IP y el navegador de la sesión nueva
+     * @return 200 con la sesión nueva; 401 si la actual no es correcta; 400 si la nueva no cumple la
+     *         política; 409 si es igual a la actual
      */
     @PostMapping("/cambiar-password")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Void>> cambiarPassword(
-            @Valid @RequestBody CambiarPasswordRequest peticion) {
+    public ResponseEntity<ApiResponse<JwtResponse>> cambiarPassword(
+            @Valid @RequestBody CambiarPasswordRequest peticion, HttpServletRequest http) {
 
         Long usuarioId = SecurityUtil.obtenerUsuarioId()
                 .orElseThrow(() -> new IllegalStateException(MessageConstants.NO_AUTORIZADO));
 
-        authService.cambiarPassword(usuarioId, peticion);
-        return ResponseEntity.ok(ApiResponse.ok("Contraseña actualizada correctamente"));
+        AuthService.ResultadoAutenticacion resultado = authService.cambiarPassword(usuarioId, peticion,
+                SecurityUtil.obtenerIpCliente(http), SecurityUtil.obtenerUserAgent(http));
+        return conCookie(resultado, "Contraseña actualizada correctamente. "
+                + "Se cerró la sesión en tus otros dispositivos.");
+    }
+
+    /** Respuesta 200 con la cookie de refresco nueva y el token de acceso en el cuerpo. */
+    private ResponseEntity<ApiResponse<JwtResponse>> conCookie(
+            AuthService.ResultadoAutenticacion resultado, String mensaje) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie(resultado.tokenRefresco(),
+                        Duration.ofSeconds(tokenProvider.getExpiracionRefrescoSegundos())).toString())
+                .body(ApiResponse.ok(resultado.respuesta(), mensaje));
     }
 
     /**
-     * Arma la cookie del token de refresco.
-     *
-     * <ul>
-     *   <li>HttpOnly: JavaScript no puede leerla, asi una inyeccion de script
-     *       no puede robarla.</li>
-     *   <li>Secure en produccion: solo viaja por HTTPS.</li>
-     *   <li>SameSite: el navegador no la envia en peticiones de otros sitios.</li>
-     *   <li>Ruta acotada a /api/auth: no se manda en cada llamada del API.</li>
-     * </ul>
+     * Cookie del token de refresco: HttpOnly, Secure en producción, SameSite según el perfil y ruta
+     * acotada a {@code /api/auth} para que no viaje en cada llamada del API.
      */
-    private ResponseCookie construirCookieRefresco(String token) {
-        return ResponseCookie.from(COOKIE_REFRESCO, token)
+    private ResponseCookie cookie(String valor, Duration vigencia) {
+        return ResponseCookie.from(COOKIE_REFRESCO, valor)
                 .httpOnly(true)
                 .secure(cookieSegura)
                 .sameSite(cookieSameSite)
                 .path("/api/auth")
-                .maxAge(Duration.ofSeconds(tokenProvider.getExpiracionRefrescoSegundos()))
+                .maxAge(vigencia)
                 .build();
     }
 }

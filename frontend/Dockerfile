@@ -5,7 +5,9 @@
 # =============================================================================
 
 # ---------- Etapa 1: build ----------
-FROM node:22-alpine AS build
+# Imagen fijada por digest (huella del contenido): la etiqueta puede moverse, el digest no.
+# Para actualizar: docker pull <imagen:etiqueta> y copiar el nuevo digest (ver README).
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS build
 WORKDIR /build
 
 # Se copian primero los manifiestos: si no cambian las dependencias, Docker
@@ -23,10 +25,12 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # ---------- Etapa 2: servicio ----------
-FROM nginx:1.27-alpine
+FROM nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
 WORKDIR /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Encabezados de proteccion, incluidos desde cada bloque de nginx.conf.
+COPY nginx-seguridad.conf /etc/nginx/snippets/seguridad.conf
 COPY --from=build /build/dist .
 
 # Usuario sin privilegios. El puerto 8080 en lugar del 80 porque por debajo de

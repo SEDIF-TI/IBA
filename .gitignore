@@ -36,3 +36,21 @@ uploads/
 # ---- Sistema operativo ----
 .DS_Store
 Thumbs.db
+
+# ---- Configuracion de Claude y reglas personales: no se versionan ----
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+ESTANDAR-*.md
+REGLAS-*.md
+
+# ---- Respaldos locales (deploy/respaldo.sh); van cifrados pero no son codigo ----
+*.dump.gpg
+*.tar.gz.gpg
+
+# ---- Notas de traspaso entre conversaciones (su contenido util vive en CONTEXTO-PROYECTO.md) ----
+TRASPASO.md
+
+# ---- Exportaciones para demo (deploy/exportar-demo.sh): datos y hashes, nunca a git ----
+sea-demo-*.sql
+sea-demo-documentos-*.tar.gz

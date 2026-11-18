@@ -6,13 +6,18 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,6 +26,7 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +55,18 @@ public class GlobalExceptionHandler {
         log.debug("Recurso no encontrado en {}: {}", peticion.getRequestURI(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    /**
+     * Otra persona guardó el mismo registro antes (bloqueo optimista): 409 con un mensaje que pide
+     * recargar. Cubre la comprobación explícita de versión de los formularios y el rechazo que hace
+     * Hibernate cuando dos transacciones chocan en el mismo instante.
+     */
+    @ExceptionHandler({EdicionConcurrenteException.class, OptimisticLockingFailureException.class})
+    public ResponseEntity<ApiResponse<Void>> manejarEdicionConcurrente(HttpServletRequest peticion) {
+        log.info("Edición concurrente rechazada en {}", peticion.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(MessageConstants.EDICION_CONCURRENTE));
     }
 
     /** Regla de negocio incumplida. El mensaje si es para la persona usuaria. */
@@ -176,6 +194,53 @@ public class GlobalExceptionHandler {
         log.error("Fallo de almacenamiento", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error(MessageConstants.ERROR_ALMACENAR_ARCHIVO));
+    }
+
+    /**
+     * Cuerpo ilegible: JSON mal formado o con un tipo de dato equivocado (texto donde va un número).
+     * Es un error de quien envía, no del sistema: 400.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> manejarCuerpoIlegible(HttpServletRequest peticion) {
+        log.debug("Cuerpo ilegible en {}", peticion.getRequestURI());
+        return ResponseEntity.badRequest().body(ApiResponse.error(MessageConstants.CUERPO_ILEGIBLE));
+    }
+
+    /** Parámetro de la ruta o de la consulta con un tipo equivocado (por ejemplo, letras en un id): 400. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> manejarTipoIncorrecto(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest().body(ApiResponse.error(
+                MessageConstants.DATOS_INVALIDOS,
+                List.of(Map.of("campo", ex.getName(),
+                               "mensaje", "El valor no tiene el formato esperado."))));
+    }
+
+    /** Método HTTP no admitido en esa ruta: 405. */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> manejarMetodoNoAdmitido() {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ApiResponse.error(MessageConstants.METODO_NO_ADMITIDO));
+    }
+
+    /** Tipo de contenido no admitido (por ejemplo, texto donde se espera JSON): 415. */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> manejarTipoContenido() {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(ApiResponse.error(MessageConstants.CUERPO_ILEGIBLE));
+    }
+
+    /**
+     * Conflicto con datos existentes detectado por la base (duplicado o referencia rota) que el
+     * servicio no previó: 409 con mensaje genérico. El detalle (nombre de la restricción) solo va
+     * al log del servidor.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> manejarIntegridad(DataIntegrityViolationException ex,
+                                                               HttpServletRequest peticion) {
+        log.warn("Violacion de integridad en {}: {}", peticion.getRequestURI(),
+                ex.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(MessageConstants.CONFLICTO_DATOS));
     }
 
     /** Ruta inexistente. */

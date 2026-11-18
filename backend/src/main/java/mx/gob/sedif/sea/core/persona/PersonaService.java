@@ -1,6 +1,9 @@
 package mx.gob.sedif.sea.core.persona;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -17,6 +20,7 @@ import mx.gob.sedif.sea.core.auditoria.AuditoriaService;
 import mx.gob.sedif.sea.core.catalogo.MunicipioRepository;
 import mx.gob.sedif.sea.core.solicitud.Solicitud;
 import mx.gob.sedif.sea.core.solicitud.SolicitudRepository;
+import mx.gob.sedif.sea.exception.EdicionConcurrenteException;
 import mx.gob.sedif.sea.exception.MessageConstants;
 import mx.gob.sedif.sea.exception.RecursoNoEncontradoException;
 import mx.gob.sedif.sea.exception.ReglaNegocioException;
@@ -97,7 +101,7 @@ public class PersonaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Tutor", id));
 
         auditoria.registrar(AccionAuditoria.CONSULTAR_PERSONA, "persona", id,
-                "Consulta de la ficha de " + persona.getNombreCompleto());
+                "Consulta de la ficha del tutor " + id);
 
         return persona;
     }
@@ -172,8 +176,8 @@ public class PersonaService {
         Persona guardada = personaRepository.saveAndFlush(persona);
 
         auditoria.registrar(AccionAuditoria.MODIFICAR, "persona", personaId,
-                "Se completo la CURP de %s%s".formatted(
-                        persona.getNombreCompleto(),
+                "Se completó la CURP del tutor %d%s".formatted(
+                        personaId,
                         coincide ? "" : " (las iniciales no corresponden con el nombre)"));
 
         log.info("CURP completada para el tutor {}{}", personaId,
@@ -187,6 +191,7 @@ public class PersonaService {
     public Persona actualizar(Long personaId, ActualizarPersonaRequest peticion) {
         Persona persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Tutor", personaId));
+        EdicionConcurrenteException.verificar(persona.getVersion(), peticion.version());
 
         boolean tendraContacto = tieneValor(peticion.correo())
                 || tieneValor(peticion.telefono())
@@ -195,6 +200,10 @@ public class PersonaService {
         if (!tendraContacto) {
             throw new ReglaNegocioException(MessageConstants.CONTACTO_REQUERIDO);
         }
+
+        // Para la bitácora solo se anotan los NOMBRES de los campos cambiados: los valores son
+        // datos personales (correo, teléfonos, domicilio) y no deben copiarse a la bitácora.
+        Map<String, Object> antes = camposDeContacto(persona);
 
         persona.setCorreo(limpiar(peticion.correo()));
         persona.setTelefono(limpiar(peticion.telefono()));
@@ -213,10 +222,34 @@ public class PersonaService {
 
         Persona guardada = personaRepository.saveAndFlush(persona);
 
+        Map<String, Object> despues = camposDeContacto(guardada);
+        List<String> cambiados = antes.keySet().stream()
+                .filter(campo -> !Objects.equals(antes.get(campo), despues.get(campo)))
+                .toList();
         auditoria.registrar(AccionAuditoria.MODIFICAR, "persona", personaId,
-                "Se actualizaron los datos de " + persona.getNombreCompleto());
+                cambiados.isEmpty()
+                        ? "Se guardaron los datos del tutor sin cambios"
+                        : "Se actualizaron estos campos del tutor: " + String.join(", ", cambiados));
 
         return personaRepository.findConDetallePorId(personaId).orElse(guardada);
+    }
+
+    /**
+     * Campos editables de contacto y domicilio, para comparar antes y después de guardar.
+     * Solo se usa para saber qué campos cambiaron; sus valores nunca salen de este servicio.
+     */
+    private Map<String, Object> camposDeContacto(Persona persona) {
+        Map<String, Object> campos = new LinkedHashMap<>();
+        campos.put("correo", persona.getCorreo());
+        campos.put("telefono", persona.getTelefono());
+        campos.put("telefonoWhatsapp", persona.getTelefonoWhatsapp());
+        campos.put("municipio", persona.getMunicipio() == null ? null : persona.getMunicipio().getId());
+        campos.put("calle", persona.getCalle());
+        campos.put("numeroExterior", persona.getNumeroExterior());
+        campos.put("numeroInterior", persona.getNumeroInterior());
+        campos.put("colonia", persona.getColonia());
+        campos.put("codigoPostal", persona.getCodigoPostal());
+        return campos;
     }
 
     private boolean tieneValor(String texto) {

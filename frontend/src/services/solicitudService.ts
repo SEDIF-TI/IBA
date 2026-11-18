@@ -80,8 +80,10 @@ export const solicitudService = {
    * podria ver sus datos.
    */
   async consultarPublico(folio: string, curp: string): Promise<Seguimiento> {
-    const { data } = await api.get<ApiResponse<Seguimiento>>('/publico/consulta', {
-      params: { folio, curp },
+    // POST y no GET: la CURP no debe quedar en la direccion (logs de proxies, historial).
+    const { data } = await api.post<ApiResponse<Seguimiento>>('/publico/consulta', {
+      folio,
+      curp,
     });
     return data.data;
   },

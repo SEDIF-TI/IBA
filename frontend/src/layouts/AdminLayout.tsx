@@ -26,11 +26,12 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
 import PetsIcon from '@mui/icons-material/Pets';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
+import CargaPagina from '@/components/CargaPagina';
+
 import { useAuth } from '@/context/AuthContext';
-import { useNotificacion } from '@/context/NotificationContext';
 import notificacionService from '@/services/notificacionService';
 import { guinda, neutro } from '@/theme';
 
@@ -104,7 +105,6 @@ export function AdminLayout() {
   const [contactosPendientes, setContactosPendientes] = useState(0);
 
   const { sesion, cerrarSesion, tienePermiso } = useAuth();
-  const notificacion = useNotificacion();
   const navegar = useNavigate();
   const ubicacion = useLocation();
 
@@ -124,18 +124,14 @@ export function AdminLayout() {
       .catch(() => setContactosPendientes(0));
   }, [tienePermiso, ubicacion.pathname]);
 
+  /** Cierra la sesion; el contexto recarga la aplicacion en la pantalla de acceso. */
   async function salir() {
-    try {
-      await cerrarSesion();
-      navegar('/admin/login', { replace: true });
-    } catch {
-      notificacion.error('No se pudo cerrar la sesión');
-    }
+    await cerrarSesion();
   }
 
   const contenidoMenu = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Toolbar sx={{ gap: 1.5, bgcolor: guinda[500], color: '#FFFFFF' }}>
+      <Toolbar sx={{ gap: 1.5, bgcolor: guinda[500], color: 'common.white' }}>
         <PetsIcon aria-hidden />
         <Box>
           <Typography variant="subtitle1" fontWeight={600} lineHeight={1.2}>
@@ -203,7 +199,7 @@ export function AdminLayout() {
         sx={{
           width: { md: `calc(100% - ${ANCHO_MENU}px)` },
           ml: { md: `${ANCHO_MENU}px` },
-          bgcolor: '#FFFFFF',
+          bgcolor: 'background.paper',
           color: neutro[900],
         }}
       >
@@ -294,12 +290,17 @@ export function AdminLayout() {
         component="main"
         sx={{
           flexGrow: 1,
+          // Sin minWidth 0, un hijo ancho (tabla) agranda este contenedor flexible y toda la
+          // pagina se desplaza a lo ancho en celular; con el, cada tabla se desplaza por dentro.
+          minWidth: 0,
           width: { md: `calc(100% - ${ANCHO_MENU}px)` },
           p: { xs: 2, md: 3 },
           mt: 8,
         }}
       >
-        <Outlet />
+        <Suspense fallback={<CargaPagina />}>
+          <Outlet />
+        </Suspense>
       </Box>
     </Box>
   );

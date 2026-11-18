@@ -18,6 +18,8 @@ export interface Usuario {
   cambioPasswordRequerido: boolean;
   bloqueada: boolean;
   ultimoAcceso: string | null;
+  /** Versión del registro (bloqueo optimista); se reenvía al guardar cambios. */
+  version: number;
 }
 
 export interface RolResumen {
@@ -35,6 +37,8 @@ export interface GuardarUsuarioRequest {
   telefono?: string;
   sedeId?: number | null;
   rolesIds: number[];
+  /** Versión que se tenía a la vista; obligatoria al modificar (bloqueo optimista). */
+  version?: number;
 }
 
 /** Alta o reinicio: trae la contrasena que hay que entregar. */

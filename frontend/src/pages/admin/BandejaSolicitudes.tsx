@@ -138,7 +138,7 @@ export function BandejaSolicitudes() {
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
           {tienePermiso('solicitud:depurar') && (
             <Button
               color="inherit"

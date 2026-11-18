@@ -27,7 +27,9 @@ public record UsuarioRecord(
         boolean activo,
         boolean cambioPasswordRequerido,
         boolean bloqueada,
-        OffsetDateTime ultimoAcceso) {
+        OffsetDateTime ultimoAcceso,
+        // Versión del registro (bloqueo optimista); el formulario la reenvía al guardar.
+        Long version) {
 
     public static UsuarioRecord de(Usuario usuario) {
         boolean bloqueada = usuario.getBloqueoHasta() != null
@@ -51,7 +53,8 @@ public record UsuarioRecord(
                 Boolean.TRUE.equals(usuario.getActivo()),
                 Boolean.TRUE.equals(usuario.getCambioPasswordRequerido()),
                 bloqueada,
-                usuario.getUltimoAcceso());
+                usuario.getUltimoAcceso(),
+                usuario.getVersion());
     }
 
     /** Rol como se muestra al asignarlo. */

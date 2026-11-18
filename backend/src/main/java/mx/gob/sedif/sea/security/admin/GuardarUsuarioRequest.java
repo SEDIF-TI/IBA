@@ -50,5 +50,8 @@ public record GuardarUsuarioRequest(
 
         @NotEmpty(message = "Asigna al menos un rol: sin rol la cuenta no puede hacer "
                 + "nada dentro del sistema")
-        List<Integer> rolesIds) {
+        List<Integer> rolesIds,
+
+        // Versión que la persona tenía a la vista; obligatoria al modificar (bloqueo optimista).
+        Long version) {
 }

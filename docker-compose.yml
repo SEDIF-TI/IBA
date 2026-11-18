@@ -8,17 +8,25 @@
 services:
 
   db:
-    image: postgres:16-alpine
+    # Fijada por digest; para actualizar ver README ("Actualizar imagenes base").
+    image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
     container_name: sea-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Cuentas sin superusuario que crea deploy/db/init/01-roles.sh en el primer arranque.
+      DB_OWNER_USER: ${DB_OWNER_USER}
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD}
+      DB_APP_USER: ${DB_APP_USER}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD}
       # Coteja acentos y enie correctamente en busquedas por apellido.
       LANG: es_MX.utf8
     volumes:
       - sea_db_data:/var/lib/postgresql/data
+      # Solo se ejecuta cuando el volumen de datos esta vacio.
+      - ./deploy/db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -41,8 +49,12 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       # El host es el nombre del servicio en la red interna, no localhost.
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      # La aplicacion opera con una cuenta que solo lee y escribe datos (DML).
+      SPRING_DATASOURCE_USERNAME: ${DB_APP_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_APP_PASSWORD}
+      # Flyway migra con la duena del esquema; ninguna de las dos es superusuario.
+      SPRING_FLYWAY_USER: ${DB_OWNER_USER}
+      SPRING_FLYWAY_PASSWORD: ${DB_OWNER_PASSWORD}
       APP_JWT_SECRET: ${APP_JWT_SECRET}
       APP_JWT_ACCESS_EXPIRATION: ${APP_JWT_ACCESS_EXPIRATION}
       APP_JWT_REFRESH_EXPIRATION: ${APP_JWT_REFRESH_EXPIRATION}
@@ -92,3 +104,11 @@ volumes:
 networks:
   sea_interna:
     driver: bridge
+    # Subred fija: el backend solo confia en los proxies de esta red (app.proxies-confiables).
+    # Los contenedores reciben direcciones de la mitad alta (ip_range); la puerta de enlace .1,
+    # por donde entra el trafico del equipo anfitrion, queda fuera de la mitad de confianza.
+    ipam:
+      config:
+        - subnet: 172.31.250.0/24
+          ip_range: 172.31.250.128/25
+          gateway: 172.31.250.1
