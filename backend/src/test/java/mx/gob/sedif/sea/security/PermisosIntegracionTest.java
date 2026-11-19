@@ -34,6 +34,9 @@ import mx.gob.sedif.sea.IntegracionBase;
  */
 class PermisosIntegracionTest extends IntegracionBase {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private mx.gob.sedif.sea.core.auditoria.BitacoraAuditoriaRepository bitacoraRepository;
+
     private Sesion iba;
     private Sesion informatica;
     private Usuario cuentaIba;
@@ -110,6 +113,24 @@ class PermisosIntegracionTest extends IntegracionBase {
     }
 
     @Test
+    @DisplayName("el verificador público del QR responde sin error aunque el código no exista")
+    void verificadorPublico() throws Exception {
+        // Regresión: un @Param con acento ("código") rompía la consulta y el QR daba 500.
+        mvc.perform(get("/publico/verificar/" + java.util.UUID.randomUUID()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("la búsqueda de la bitácora por acción funciona")
+    void busquedaBitacora() {
+        // Regresión: @Param("acción") no coincidía con :accion de la consulta.
+        org.springframework.data.domain.Page<?> pagina = bitacoraRepository.buscar(
+                null, null, "LOGIN", null, null, org.springframework.data.domain.PageRequest.of(0, 5));
+        assertThat(pagina).isNotNull();
+    }
+
+    @Test
     @DisplayName("la consulta pública lleva folio y CURP en el cuerpo, nunca en la dirección")
     void consultaPublicaPorPost() throws Exception {
         mvc.perform(get("/publico/consulta").param("folio", "SOL-1").param("curp", "GODE561231HDFRRN09"))
@@ -121,7 +142,7 @@ class PermisosIntegracionTest extends IntegracionBase {
                 .andExpect(jsonPath("$.errors[0].campo").value("curp"));
         mvc.perform(post("/publico/consulta").contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of(
-                                "folio", "SOL-20260101-99999", "curp", "GODE561231HDFRRN09"))))
+                                "folio", "SOL-20260101-99999", "curp", "PEGA850315HPLRRN08"))))
                 .andExpect(status().isNotFound());
     }
 

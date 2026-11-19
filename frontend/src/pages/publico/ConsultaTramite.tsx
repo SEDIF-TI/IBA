@@ -15,6 +15,7 @@ import EstatusChip from '@/components/EstatusChip';
 import { mensajeDeError } from '@/services/api';
 import solicitudService from '@/services/solicitudService';
 import type { Seguimiento } from '@/types/dominio';
+import { validarCurp } from '@/utils/validaciones';
 
 /**
  * Consulta del avance del tramite.
@@ -29,6 +30,10 @@ export function ConsultaTramite() {
   const [resultado, setResultado] = useState<Seguimiento | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [consultando, setConsultando] = useState(false);
+
+  // Misma regla que el registro: estructura, fecha, entidad y dígito verificador.
+  const vCurp = validarCurp(curp, true);
+  const curpConError = curp.length > 0 && Boolean(vCurp.error);
 
   async function consultar(evento: FormEvent) {
     evento.preventDefault();
@@ -63,7 +68,8 @@ export function ConsultaTramite() {
             <TextField
               label="Folio de seguimiento"
               value={folio}
-              onChange={(e) => setFolio(e.target.value)}
+              // El folio no lleva espacios y se escribe en mayúsculas (SOL-AAAAMMDD-NNNNN).
+              onChange={(e) => setFolio(e.target.value.toUpperCase().replace(/\s/g, ''))}
               fullWidth
               required
               autoFocus
@@ -75,11 +81,16 @@ export function ConsultaTramite() {
             <TextField
               label="CURP"
               value={curp}
-              onChange={(e) => setCurp(e.target.value.toUpperCase())}
+              // Solo letras y números: la CURP no lleva otra cosa.
+              onChange={(e) =>
+                setCurp(e.target.value.toUpperCase().replace(/[^A-ZÑ0-9]/g, '').slice(0, 18))
+              }
               fullWidth
               required
               margin="normal"
-              inputProps={{ maxLength: 18 }}
+              error={curpConError}
+              helperText={curpConError ? vCurp.error : `${curp.length} de 18 caracteres`}
+              inputProps={{ maxLength: 18, style: { fontFamily: 'monospace' } }}
               disabled={consultando}
             />
 
@@ -88,7 +99,7 @@ export function ConsultaTramite() {
               variant="contained"
               size="large"
               sx={{ mt: 2 }}
-              disabled={consultando || !folio.trim() || !curp.trim()}
+              disabled={consultando || !folio.trim() || Boolean(vCurp.error)}
             >
               {consultando ? 'Consultando...' : 'Consultar'}
             </Button>

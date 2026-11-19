@@ -256,6 +256,13 @@ En el frontend, ningún componente o página llama a `axios` directamente:
   usuario, IP, navegador y resultado. Es de solo inserción (disparador en la
   base) y solo la consulta informática (`bitacora:ver`). De una búsqueda se
   guardan los nombres de los filtros, nunca los valores.
+- **Validación de campos con formato, en un solo lugar:** CURP (estructura, fecha, entidad y
+  dígito verificador), correo (usuario, arroba y dominio con terminación), teléfono (10 dígitos) y
+  código postal (5 dígitos). En el navegador, `frontend/src/utils/validaciones.ts`: los campos
+  numéricos descartan letras al escribir y abren el teclado numérico, y la CURP solo admite letras y
+  números. En el servidor, las anotaciones de `util/validacion/` (`@CurpValida`, `@Correo`,
+  `@Telefono`, `@CodigoPostal`); `ValidacionCamposTest` falla si un `*Request` tiene uno de esos
+  campos sin su anotación.
 - **Edición concurrente:** toda tabla editable lleva `n_version`; guardar con una
   versión vieja responde 409 en lugar de pisar el cambio de otra persona.
 

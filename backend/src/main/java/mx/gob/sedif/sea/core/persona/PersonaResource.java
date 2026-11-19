@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 import mx.gob.sedif.sea.core.animal.AnimalRecord;
 import mx.gob.sedif.sea.core.solicitud.SolicitudRecord;
 import mx.gob.sedif.sea.exception.ApiResponse;
+import mx.gob.sedif.sea.util.validacion.CurpValida;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 /**
  * Tutores responsables.
@@ -147,8 +147,7 @@ public class PersonaResource {
      */
     public record CompletarCurpRequest(
             @NotBlank(message = "Escribe la CURP tal como aparece en el documento")
-            @Size(min = 18, max = 18,
-                  message = "La CURP debe tener exactamente 18 caracteres")
+            @CurpValida
             String curp) {
     }
 }

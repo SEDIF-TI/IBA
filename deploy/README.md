@@ -9,6 +9,7 @@ Operación del SEA en el servidor: instalación, actualización, respaldos y res
 | `restaurar.sh` | Restauración desde un respaldo |
 | `exportar-demo.sh` | Exporta la base local a un `.sql` para montar un demo |
 | `importar-demo.sh` | Carga ese `.sql` (y los documentos) en un servidor nuevo |
+| `demo/convertir_legado_demo.py` | Convierte el volcado MySQL del sistema anterior en datos de demo con los tutores anonimizados |
 
 > El volumen `sea_storage` contiene documentos personales (INE, CURP, comprobantes de
 > domicilio). Los respaldos se cifran siempre; nunca se copian sin cifrar.
@@ -172,3 +173,28 @@ deploy/importar-demo.sh --documentos sea-demo-documentos-AAAAMMDD-HHMM.tar.gz   
 Las cuentas del demo conservan las contraseñas que tenían en local: `APP_ADMIN_PASSWORD` del `.env`
 del servidor ya no se usa, porque solo crea al administrador cuando la base no tiene cuentas.
 
+### Datos del sistema anterior para la demo
+
+`demo/convertir_legado_demo.py` toma el volcado MySQL del sistema anterior de empadronamiento y genera
+un script de carga para el SEA con los **datos reales**, para cotejarlos con la documentación:
+
+- los ciudadanos registrados (tengan o no mascota) con nombre separado en nombre y apellidos, correo,
+  teléfono, domicilio y municipio;
+- las mascotas con su clave original, los trámites con sus folios, los certificados (incluido el
+  cancelado), las correcciones en el expediente y los avisos enviados por correo.
+
+La CURP no se guardaba como dato en el sistema anterior (solo el documento escaneado): queda vacía y
+la persona aparece con identidad pendiente de cotejo. No se importan los administradores, las
+contraseñas ni los archivos de documentos del sistema anterior. Con `--anonimizar` se generan nombres,
+correos, teléfonos, domicilios y CURP ficticios, para presentaciones fuera de la institución.
+
+```bash
+# Bash (local), con la base sin tutores
+python3 deploy/demo/convertir_legado_demo.py empadronamiento.sql ~/respaldos-sea/legado-demo-carga.sql
+docker exec -i sea-db psql -U <POSTGRES_USER> -d <POSTGRES_DB> -v ON_ERROR_STOP=1 < ~/respaldos-sea/legado-demo-carga.sql
+deploy/exportar-demo.sh    # genera el .sql para el servidor (sección 7)
+```
+
+El volcado del sistema anterior y los `.sql` generados contienen datos personales reales: se guardan
+fuera del proyecto, se copian al servidor por `scp` y nunca se suben a git (`empadronamiento*.sql`,
+`empadronamiento*.xlsx` y `sea-demo-*.sql` están en `.gitignore`).

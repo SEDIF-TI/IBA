@@ -1,7 +1,9 @@
 package mx.gob.sedif.sea.core.persona;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
+import mx.gob.sedif.sea.util.validacion.CodigoPostal;
+import mx.gob.sedif.sea.util.validacion.Correo;
+import mx.gob.sedif.sea.util.validacion.Telefono;
+
 import jakarta.validation.constraints.Size;
 
 /**
@@ -23,18 +25,13 @@ import jakarta.validation.constraints.Size;
  *                 debe ser la que la persona tenía a la vista
  */
 public record ActualizarPersonaRequest(
-        @Email(message = "El correo no tiene un formato válido. Revisa que incluya "
-                + "la arroba y el dominio.")
-        @Size(max = 150)
+        @Correo
         String correo,
 
-        @Pattern(regexp = "^$|^[0-9]{10}$",
-                 message = "El teléfono debe tener exactamente 10 dígitos, sin espacios "
-                         + "ni guiones")
+        @Telefono
         String telefono,
 
-        @Pattern(regexp = "^$|^[0-9]{10}$",
-                 message = "El número de WhatsApp debe tener exactamente 10 dígitos")
+        @Telefono(message = "El número de WhatsApp debe tener exactamente 10 dígitos")
         String telefonoWhatsapp,
 
         Integer municipioId,
@@ -44,8 +41,7 @@ public record ActualizarPersonaRequest(
         @Size(max = 20) String numeroInterior,
         @Size(max = 150) String colonia,
 
-        @Pattern(regexp = "^$|^[0-9]{5}$",
-                 message = "El código postal debe tener 5 dígitos")
+        @CodigoPostal
         String codigoPostal,
 
         // Versión que la persona tenía a la vista; obligatoria al modificar (bloqueo optimista).

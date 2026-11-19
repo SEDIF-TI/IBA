@@ -30,6 +30,7 @@ import { mensajeDeError } from '@/services/api';
 import { tutorService } from '@/services/padronService';
 import { guinda } from '@/theme';
 import type { Animal, Solicitud, TutorDetalle } from '@/types/dominio';
+import { validarCurp } from '@/utils/validaciones';
 
 /**
  * Ficha de un tutor responsable.
@@ -51,6 +52,8 @@ export function FichaTutor() {
 
   const [curpAbierta, setCurpAbierta] = useState(false);
   const [curp, setCurp] = useState('');
+  // Validación en vivo de la CURP que el personal coteja contra el documento.
+  const vCurpCaptura = validarCurp(curp, true);
   const [guardando, setGuardando] = useState(false);
 
   const { tienePermiso } = useAuth();
@@ -302,12 +305,21 @@ export function FichaTutor() {
           <TextField
             label="CURP"
             value={curp}
-            onChange={(e) => setCurp(e.target.value.toUpperCase())}
+            // Solo letras y números, y la misma regla que el registro (dígito verificador incluido).
+            onChange={(e) =>
+              setCurp(e.target.value.toUpperCase().replace(/[^A-ZÑ0-9]/g, '').slice(0, 18))
+            }
             fullWidth
             required
             autoFocus
+            error={curp.length > 0 && Boolean(vCurpCaptura.error)}
+            color={!vCurpCaptura.error ? 'success' : undefined}
             inputProps={{ maxLength: 18, style: { fontFamily: 'monospace' } }}
-            helperText={`${curp.length} de 18 caracteres`}
+            helperText={
+              curp.length === 0
+                ? 'Escríbela tal como aparece en el documento'
+                : (vCurpCaptura.error ?? vCurpCaptura.confirmacion)
+            }
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -318,7 +330,7 @@ export function FichaTutor() {
             variant="contained"
             startIcon={<BadgeIcon />}
             onClick={completarCurp}
-            disabled={guardando || curp.length !== 18}
+            disabled={guardando || Boolean(vCurpCaptura.error)}
           >
             {guardando ? 'Guardando...' : 'Guardar'}
           </Button>

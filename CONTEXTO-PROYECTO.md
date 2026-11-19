@@ -101,7 +101,7 @@ domicilio, fotografía del animal, comprobante de vacuna y certificado de adopci
 quien registra como evidencia del consentimiento.
 
 - **Decidido (17-11-2026): no se cifran en la base.** Se protegen con permiso por rol, enmascarado
-  de CURP, teléfono y correo en listados, bitácora de cada consulta de ficha y de cada búsqueda (sin
+  de la CURP en listados, bitácora de cada consulta de ficha y de cada búsqueda (sin
   guardar el valor buscado), y respaldos cifrados con AES-256.
 - El verificador público no muestra datos del tutor. La consulta pública exige folio y CURP en el
   cuerpo de un POST, nunca en la dirección.
@@ -132,6 +132,10 @@ Documentadas en `README.md`, sección "Desviaciones del estándar".
 | 2026-11-18 | Bitácora de todos los movimientos, de solo inserción; `bitacora:ver` solo para informática; permiso `documento:subir` (V20). |
 | 2026-11-18 | Respaldos cifrados con verificación y restauración probada (`deploy/respaldo.sh`, `deploy/restaurar.sh`). |
 | 2026-11-18 | Pruebas de integración con Testcontainers (sesión, permisos, bitácora, edición concurrente). |
+| 2026-11-18 | Demo con los DATOS REALES del sistema anterior (decisión del responsable: se cotejan contra la documentación): 216 tutores, 137 animales, 137 trámites, 130 certificados y 140 avisos (`deploy/demo/convertir_legado_demo.py`; `--anonimizar` queda como opción). |
+| 2026-11-18 | El listado de tutores muestra correo y teléfono completos (decisión del responsable: no ocultar información salvo que se pida). La CURP sigue enmascarada en listados. |
+| 2026-11-18 | Validación de captura unificada: anotaciones `@CurpValida`, `@Correo`, `@Telefono` y `@CodigoPostal` en todos los `*Request`; la consulta pública y la captura de CURP en la ficha del tutor validan la CURP en el navegador; el teclado numérico del celular ya se abre en teléfono, código postal y edad; el teléfono del personal se valida antes de guardar. |
+| 2026-11-18 | Se corrige el verificador público del QR y la búsqueda de la bitácora: un cambio de ortografía había puesto acentos en `@Param("código")` y `@Param("acción")` y las consultas fallaban. |
 | 2026-11-18 | Ajustes medios y bajos: tipo de archivo solo por contenido, consulta pública por POST, manejo de errores 400/405/409/415 y mensajes de validación en español, encabezados de Nginx completos, imágenes por digest, ESLint 9 sin advertencias, rutas diferidas, campos numéricos solo con dígitos, listas de autocompletado, colores del tema y teléfono/correo enmascarados en el listado de tutores. |
 
 ## Pendientes

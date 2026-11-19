@@ -582,7 +582,7 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                     onChange={(e) => actualizar('telefono', soloDigitos(e.target.value))}
                     fullWidth
                     margin="normal"
-                    inputMode="numeric"
+                    inputProps={{ inputMode: 'numeric' }}
                     error={Boolean(vTelefono.error)}
                     InputProps={{
                       endAdornment: datos.telefono && (
@@ -653,7 +653,7 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                     onChange={(e) => actualizar('codigoPostal', soloDigitos(e.target.value, 5))}
                     fullWidth
                     margin="normal"
-                    inputMode="numeric"
+                    inputProps={{ inputMode: 'numeric' }}
                     error={Boolean(vCodigoPostal.error)}
                     helperText={vCodigoPostal.error ?? ' '}
                   />
@@ -782,7 +782,7 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                     onChange={(e) => actualizar('edadAnios', soloDigitos(e.target.value, 2))}
                     fullWidth
                     margin="normal"
-                    inputMode="numeric"
+                    inputProps={{ inputMode: 'numeric' }}
                     error={Boolean(vEdad.error)}
                     helperText=" "
                   />
@@ -794,7 +794,7 @@ export function RegistroTramite({ ventanilla = false, alTerminar }: Props = {}) 
                     onChange={(e) => actualizar('edadMeses', soloDigitos(e.target.value, 2))}
                     fullWidth
                     margin="normal"
-                    inputMode="numeric"
+                    inputProps={{ inputMode: 'numeric' }}
                     error={Boolean(vEdad.error)}
                     helperText={vEdad.error ?? 'De 0 a 11 meses'}
                   />

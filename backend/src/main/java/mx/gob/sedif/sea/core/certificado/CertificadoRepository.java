@@ -24,7 +24,7 @@ public interface CertificadoRepository extends JpaRepository<Certificado, Long> 
             "solicitud", "solicitud.animal", "solicitud.animal.especie",
             "solicitud.animal.raza", "solicitud.animal.sexo", "solicitud.animal.color",
             "solicitud.persona", "solicitud.persona.municipio"})
-    Optional<Certificado> findByCodigoVerificacion(@Param("código") UUID codigo);
+    Optional<Certificado> findByCodigoVerificacion(@Param("codigo") UUID codigo);
 
     @Query("SELECT c FROM Certificado c WHERE c.folio = :folio")
     @EntityGraph(attributePaths = {"solicitud", "solicitud.animal", "solicitud.persona"})

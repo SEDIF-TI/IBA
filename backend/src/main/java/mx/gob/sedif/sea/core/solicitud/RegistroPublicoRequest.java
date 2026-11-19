@@ -1,13 +1,16 @@
 package mx.gob.sedif.sea.core.solicitud;
 
+import mx.gob.sedif.sea.util.validacion.CodigoPostal;
+import mx.gob.sedif.sea.util.validacion.Correo;
+import mx.gob.sedif.sea.util.validacion.CurpValida;
+import mx.gob.sedif.sea.util.validacion.Telefono;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -67,8 +70,7 @@ public record RegistroPublicoRequest(
      * @param codigoPostal     codigo postal
      */
     public record TutorRequest(
-            @Pattern(regexp = "^$|^[A-Za-z]{4}[0-9]{6}[HMhm][A-Za-z]{5}[0-9A-Za-z][0-9]$",
-                     message = "La CURP no tiene el formato correcto")
+            @CurpValida
             String curp,
 
             @NotBlank(message = "El nombre es obligatorio")
@@ -82,16 +84,13 @@ public record RegistroPublicoRequest(
             @Size(max = 120)
             String apellidoMaterno,
 
-            @Email(message = "El correo no es válido")
-            @Size(max = 150)
+            @Correo
             String correo,
 
-            @Pattern(regexp = "^$|^[0-9]{10}$",
-                     message = "El teléfono debe tener 10 dígitos")
+            @Telefono
             String telefono,
 
-            @Pattern(regexp = "^$|^[0-9]{10}$",
-                     message = "El número de WhatsApp debe tener 10 dígitos")
+            @Telefono(message = "El número de WhatsApp debe tener exactamente 10 dígitos")
             String telefonoWhatsapp,
 
             @NotNull(message = "El municipio es obligatorio")
@@ -102,8 +101,7 @@ public record RegistroPublicoRequest(
             @Size(max = 20) String numeroInterior,
             @Size(max = 150) String colonia,
 
-            @Pattern(regexp = "^$|^[0-9]{5}$",
-                     message = "El código postal debe tener 5 dígitos")
+            @CodigoPostal
             String codigoPostal) {
 
         /**

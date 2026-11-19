@@ -2,7 +2,9 @@ package mx.gob.sedif.sea.security.admin;
 
 import java.util.List;
 
-import jakarta.validation.constraints.Email;
+import mx.gob.sedif.sea.util.validacion.Correo;
+import mx.gob.sedif.sea.util.validacion.Telefono;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -37,13 +39,11 @@ public record GuardarUsuarioRequest(
 
         @NotBlank(message = "Escribe el correo institucional: es por donde se avisa "
                 + "cualquier asunto de la cuenta")
-        @Email(message = "El correo no tiene un formato valido. Revisa que lleve arroba "
-                + "y un dominio, por ejemplo nombre@puebla.gob.mx")
-        @Size(max = 150, message = "El correo no puede pasar de 150 caracteres")
+        @Correo(message = "El correo no tiene un formato válido. Revisa que lleve arroba "
+                + "y un dominio con terminación, por ejemplo nombre@puebla.gob.mx")
         String correo,
 
-        @Pattern(regexp = "^$|^[0-9]{10}$",
-                message = "El telefono debe tener exactamente 10 digitos, sin espacios ni guiones")
+        @Telefono
         String telefono,
 
         Integer sedeId,

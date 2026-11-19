@@ -1,5 +1,7 @@
 package mx.gob.sedif.sea.core.publico;
 
+import mx.gob.sedif.sea.util.validacion.CurpValida;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -22,6 +24,6 @@ public record ConsultaPublicaRequest(
 
         @NotBlank(message = "Escribe la CURP con la que se hizo el registro: se piden ambos datos "
                 + "para que nadie más pueda consultar tu trámite.")
-        @Size(max = 18, message = "La CURP tiene 18 caracteres.")
+        @CurpValida
         String curp) {
 }

@@ -54,3 +54,7 @@ TRASPASO.md
 # ---- Exportaciones para demo (deploy/exportar-demo.sh): datos y hashes, nunca a git ----
 sea-demo-*.sql
 sea-demo-documentos-*.tar.gz
+
+# ---- Datos del sistema anterior (empadronamiento): datos personales, nunca a git ----
+empadronamiento*.sql
+empadronamiento*.xlsx

@@ -45,7 +45,7 @@ import usuarioService, {
   type RolResumen,
   type Usuario,
 } from '@/services/usuarioService';
-import { validarCorreo, validarNombre, soloDigitos } from '@/utils/validaciones';
+import { soloDigitos, validarCorreo, validarNombre, validarTelefono } from '@/utils/validaciones';
 
 const FORMULARIO_VACIO: GuardarUsuarioRequest = {
   usuario: '',
@@ -144,6 +144,7 @@ export function AdminUsuarios() {
   const vNombre = validarNombre(formulario.nombre, 'nombre');
   const vPaterno = validarNombre(formulario.apellidoPaterno, 'apellido paterno');
   const vCorreo = validarCorreo(formulario.correo, true);
+  const vTelefono = validarTelefono(formulario.telefono ?? '');
   const usuarioValido =
     formulario.usuario.length >= 4 && /^[a-zA-Z0-9._-]+$/.test(formulario.usuario);
 
@@ -152,6 +153,7 @@ export function AdminUsuarios() {
     !vNombre.error &&
     !vPaterno.error &&
     !vCorreo.error &&
+    !vTelefono.error &&
     formulario.rolesIds.length > 0;
 
   async function guardar() {
@@ -485,7 +487,9 @@ export function AdminUsuarios() {
               onChange={(e) =>
                 setFormulario({ ...formulario, telefono: soloDigitos(e.target.value, 10) })
               }
-              helperText="Opcional. 10 dígitos."
+              error={Boolean(vTelefono.error)}
+              helperText={vTelefono.error ?? 'Opcional. 10 dígitos.'}
+              inputProps={{ inputMode: 'numeric' }}
               fullWidth
               size="small"
             />
