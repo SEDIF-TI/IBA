@@ -37,6 +37,7 @@ Llenar `.env`. Cada secreto se genera con un comando; ninguno se reutiliza:
 | `APP_ADMIN_PASSWORD` | `openssl rand -base64 18` (mínimo 12 caracteres; se cambia en el primer ingreso) |
 | `RESPALDO_CLAVE` | `openssl rand -base64 32` (guardar una copia fuera del servidor) |
 | `APP_PROXIES_CONFIABLES` | ver la sección 3 |
+| `APP_URL_PUBLICA` | La dirección pública sin diagonal final, por ejemplo `https://diba.sedif.gob.mx`. De ella salen el QR de certificados y credenciales y los enlaces de los avisos. **Obligatorio:** en producción el backend no arranca si es `localhost` o no usa `https` |
 | `APP_CORS_ALLOWED_ORIGINS` | el dominio público con `https://`, por ejemplo `https://padron.ejemplo.gob.mx`. **Obligatorio:** detrás de NPM el backend recibe la petición por HTTP y, si el dominio no está aquí, rechaza el inicio de sesión con 403 |
 
 Levantar:

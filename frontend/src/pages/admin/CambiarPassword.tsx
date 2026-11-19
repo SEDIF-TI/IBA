@@ -5,12 +5,12 @@ import {
   Card,
   CardContent,
   Container,
-  TextField,
   Typography,
 } from '@mui/material';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import CampoPassword from '@/components/CampoPassword';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificacion } from '@/context/NotificationContext';
 import authService from '@/services/authService';
@@ -89,9 +89,8 @@ export function CambiarPassword() {
             )}
 
             <Box component="form" onSubmit={enviar} noValidate>
-              <TextField
+              <CampoPassword
                 label="Contraseña actual"
-                type="password"
                 value={actual}
                 onChange={(e) => setActual(e.target.value)}
                 fullWidth
@@ -102,9 +101,8 @@ export function CambiarPassword() {
                 disabled={enviando}
               />
 
-              <TextField
+              <CampoPassword
                 label="Contraseña nueva"
-                type="password"
                 value={nueva}
                 onChange={(e) => setNueva(e.target.value)}
                 fullWidth
@@ -129,9 +127,8 @@ export function CambiarPassword() {
                 ))}
               </Box>
 
-              <TextField
+              <CampoPassword
                 label="Confirmar contraseña nueva"
-                type="password"
                 value={confirmacion}
                 onChange={(e) => setConfirmacion(e.target.value)}
                 fullWidth

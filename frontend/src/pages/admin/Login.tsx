@@ -13,6 +13,7 @@ import PetsIcon from '@mui/icons-material/Pets';
 import { useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import CampoPassword from '@/components/CampoPassword';
 import { useAuth } from '@/context/AuthContext';
 import { mensajeDeError } from '@/services/api';
 import { guinda } from '@/theme';
@@ -104,9 +105,8 @@ export function Login() {
                 disabled={enviando}
               />
 
-              <TextField
+              <CampoPassword
                 label="Contraseña"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 fullWidth

@@ -59,6 +59,8 @@ services:
       APP_JWT_ACCESS_EXPIRATION: ${APP_JWT_ACCESS_EXPIRATION}
       APP_JWT_REFRESH_EXPIRATION: ${APP_JWT_REFRESH_EXPIRATION}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      # Direccion publica: destino del QR de certificados y credenciales y de los enlaces de avisos.
+      APP_URL_PUBLICA: ${APP_URL_PUBLICA:-http://localhost}
       APP_ADMIN_USUARIO: ${APP_ADMIN_USUARIO}
       APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD}
       APP_ADMIN_CORREO: ${APP_ADMIN_CORREO}
